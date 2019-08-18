@@ -17,9 +17,6 @@ namespace UnityFx.Outline
 	{
 		#region data
 
-		private const string _outlineColorParamName = "_Color";
-		private const string _outlineWidthParamName = "_Width";
-
 		private readonly Material _renderMaterial;
 		private readonly Material _postProcessMaterial;
 		private readonly Dictionary<GameObject, Renderer[]> _outlineObjects = new Dictionary<GameObject, Renderer[]>();
@@ -47,7 +44,7 @@ namespace UnityFx.Outline
 				if (_outlineColor != value)
 				{
 					_outlineColor = value;
-					_postProcessMaterial.SetColor(_outlineColorParamName, value);
+					_postProcessMaterial.SetColor(OutlineHelpers.ColorParamName, value);
 					_changed = true;
 				}
 			}
@@ -65,15 +62,12 @@ namespace UnityFx.Outline
 			}
 			set
 			{
-				if (value <= 0)
-				{
-					throw new ArgumentOutOfRangeException("OutlineWidth");
-				}
+				value = Mathf.Clamp(value, 1, 32);
 
 				if (_outlineWidth != value)
 				{
 					_outlineWidth = value;
-					_postProcessMaterial.SetInt(_outlineWidthParamName, value);
+					_postProcessMaterial.SetInt(OutlineHelpers.WidthParamName, value);
 					_changed = true;
 				}
 			}
@@ -111,8 +105,8 @@ namespace UnityFx.Outline
 
 			_renderMaterial = renderMaterial;
 			_postProcessMaterial = postProcessMaterial;
-			_postProcessMaterial.SetColor(_outlineColorParamName, _outlineColor);
-			_postProcessMaterial.SetInt(_outlineWidthParamName, _outlineWidth);
+			_postProcessMaterial.SetColor(OutlineHelpers.ColorParamName, _outlineColor);
+			_postProcessMaterial.SetInt(OutlineHelpers.WidthParamName, _outlineWidth);
 		}
 
 		/// <summary>
@@ -159,29 +153,13 @@ namespace UnityFx.Outline
 		/// <summary>
 		/// Renders the layer into the <paramref name="commandBuffer"/> passed.
 		/// </summary>
-		internal void FillCommandBuffer(CommandBuffer commandBuffer, RenderTargetIdentifier rt, RenderTargetIdentifier dst)
+		internal void FillCommandBuffer(CommandBuffer commandBuffer, RenderTargetIdentifier dst)
 		{
-			Debug.Assert(commandBuffer != null);
-
 			foreach (var kvp in _outlineObjects)
 			{
 				if (kvp.Key)
 				{
-					commandBuffer.SetRenderTarget(rt);
-					commandBuffer.ClearRenderTarget(false, true, Color.black);
-
-					foreach (var renderer in kvp.Value)
-					{
-						if (renderer)
-						{
-							for (var i = 0; i < renderer.sharedMaterials.Length; ++i)
-							{
-								commandBuffer.DrawRenderer(renderer, _renderMaterial, i);
-							}
-						}
-					}
-
-					commandBuffer.Blit(rt, dst, _postProcessMaterial);
+					OutlineHelpers.RenderSingleObject(kvp.Value, _renderMaterial, _postProcessMaterial, commandBuffer, dst);
 				}
 			}
 

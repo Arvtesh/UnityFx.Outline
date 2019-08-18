@@ -12,19 +12,17 @@ namespace UnityFx.Outline
 	/// Post-effect script. Should be attached to camera.
 	/// </summary>
 	/// <seealso cref="OutlineLayer"/>
+	/// <seealso cref="OutlineBehaviour"/>
 	/// <seealso cref="https://willweissman.wordpress.com/tutorials/shaders/unity-shaderlab-object-outlines/"/>
+	[RequireComponent(typeof(Camera))]
 	public sealed class OutlineEffect : MonoBehaviour
 	{
 		#region data
 
-		private const string _effectName = "Outline";
-
 #pragma warning disable 0649
 
 		[SerializeField]
-		private Shader _renderColorShader;
-		[SerializeField]
-		private Shader _postProcessShader;
+		private OutlineResources _outlineResources;
 
 #pragma warning restore 0649
 
@@ -43,7 +41,7 @@ namespace UnityFx.Outline
 		{
 			get
 			{
-				return _renderColorShader;
+				return _outlineResources.RenderShader;
 			}
 			set
 			{
@@ -52,9 +50,9 @@ namespace UnityFx.Outline
 					throw new ArgumentNullException("RenderColorShader");
 				}
 
-				if (_renderColorShader != value)
+				if (_outlineResources.RenderShader != value)
 				{
-					_renderColorShader = value;
+					_outlineResources.RenderShader = value;
 
 					if (_renderMaterial)
 					{
@@ -71,7 +69,7 @@ namespace UnityFx.Outline
 		{
 			get
 			{
-				return _postProcessShader;
+				return _outlineResources.PostProcessShader;
 			}
 			set
 			{
@@ -80,13 +78,13 @@ namespace UnityFx.Outline
 					throw new ArgumentNullException("PostProcessShader");
 				}
 
-				if (_postProcessShader != value)
+				if (_outlineResources.PostProcessShader != value)
 				{
-					_postProcessShader = value;
+					_outlineResources.PostProcessShader = value;
 
 					foreach (var layers in _layers)
 					{
-						layers.PostProcessMaterial.shader = _postProcessShader;
+						layers.PostProcessMaterial.shader = value;
 					}
 				}
 			}
@@ -120,10 +118,10 @@ namespace UnityFx.Outline
 
 			if (_renderMaterial == null)
 			{
-				_renderMaterial = new Material(_renderColorShader);
+				_renderMaterial = new Material(_outlineResources.RenderShader);
 			}
 
-			var layer = new OutlineLayer(_renderMaterial, new Material(_postProcessShader));
+			var layer = new OutlineLayer(_renderMaterial, new Material(_outlineResources.PostProcessShader));
 			_layers.Add(layer);
 			return layer;
 		}
@@ -161,11 +159,11 @@ namespace UnityFx.Outline
 			if (camera)
 			{
 				_commandBuffer = new CommandBuffer();
-				_commandBuffer.name = _effectName;
+				_commandBuffer.name = OutlineHelpers.EffectName;
 
-				FillCommandBuffer(_commandBuffer);
+				FillCommandBuffer();
 
-				camera.AddCommandBuffer(CameraEvent.BeforeImageEffects, _commandBuffer);
+				camera.AddCommandBuffer(OutlineHelpers.RenderEvent, _commandBuffer);
 			}
 		}
 
@@ -175,7 +173,7 @@ namespace UnityFx.Outline
 
 			if (camera)
 			{
-				camera.RemoveCommandBuffer(CameraEvent.BeforeImageEffects, _commandBuffer);
+				camera.RemoveCommandBuffer(OutlineHelpers.RenderEvent, _commandBuffer);
 			}
 
 			if (_commandBuffer != null)
@@ -200,7 +198,7 @@ namespace UnityFx.Outline
 
 			if (needUpdate)
 			{
-				FillCommandBuffer(_commandBuffer);
+				FillCommandBuffer();
 			}
 		}
 
@@ -208,23 +206,18 @@ namespace UnityFx.Outline
 
 		#region implementation
 
-		private void FillCommandBuffer(CommandBuffer cmdbuf)
+		private void FillCommandBuffer()
 		{
-			var rtId = Shader.PropertyToID("_MainTex");
-			var rt = new RenderTargetIdentifier(rtId);
 			var dst = new RenderTargetIdentifier(BuiltinRenderTextureType.CameraTarget);
 
-			cmdbuf.BeginSample(_effectName);
-			cmdbuf.Clear();
-			cmdbuf.GetTemporaryRT(rtId, -1, -1, 0, FilterMode.Bilinear, RenderTextureFormat.R8);
+			OutlineHelpers.RenderBegin(_commandBuffer);
 
 			foreach (var layer in _layers)
 			{
-				layer.FillCommandBuffer(cmdbuf, rt, dst);
+				layer.FillCommandBuffer(_commandBuffer, dst);
 			}
 
-			cmdbuf.ReleaseTemporaryRT(rtId);
-			cmdbuf.EndSample(_effectName);
+			OutlineHelpers.RenderEnd(_commandBuffer);
 		}
 
 		#endregion
