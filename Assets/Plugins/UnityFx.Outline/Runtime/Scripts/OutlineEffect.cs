@@ -29,10 +29,45 @@ namespace UnityFx.Outline
 		private List<OutlineLayer> _layers;
 		private CommandBuffer _commandBuffer;
 		private Material _renderMaterial;
+		private bool _changed;
 
 		#endregion
 
 		#region interface
+
+		/// <summary>
+		/// Gets or sets resources used by the effect implementation.
+		/// </summary>
+		public OutlineResources OutlineResources
+		{
+			get
+			{
+				return _outlineResources;
+			}
+			set
+			{
+				if (value == null)
+				{
+					throw new ArgumentNullException("OutlineResources");
+				}
+
+				if (_outlineResources != value)
+				{
+					_outlineResources = value;
+					_changed = true;
+
+					if (_renderMaterial)
+					{
+						_renderMaterial.shader = _outlineResources.RenderShader;
+					}
+
+					foreach (var layers in _layers)
+					{
+						layers.PostProcessMaterial.shader = _outlineResources.PostProcessShader;
+					}
+				}
+			}
+		}
 
 		/// <summary>
 		/// Gets or sets a <see cref="Shader"/> that renders objects outlined with a solid while color.
@@ -53,6 +88,7 @@ namespace UnityFx.Outline
 				if (_outlineResources.RenderShader != value)
 				{
 					_outlineResources.RenderShader = value;
+					_changed = true;
 
 					if (_renderMaterial)
 					{
@@ -81,6 +117,7 @@ namespace UnityFx.Outline
 				if (_outlineResources.PostProcessShader != value)
 				{
 					_outlineResources.PostProcessShader = value;
+					_changed = true;
 
 					foreach (var layers in _layers)
 					{
@@ -160,8 +197,7 @@ namespace UnityFx.Outline
 			{
 				_commandBuffer = new CommandBuffer();
 				_commandBuffer.name = OutlineHelpers.EffectName;
-
-				FillCommandBuffer();
+				_changed = true;
 
 				camera.AddCommandBuffer(OutlineHelpers.RenderEvent, _commandBuffer);
 			}
@@ -185,20 +221,28 @@ namespace UnityFx.Outline
 
 		private void Update()
 		{
-			var needUpdate = false;
-
-			foreach (var layer in _layers)
-			{
-				if (layer.IsChanged)
-				{
-					needUpdate = true;
-					break;
-				}
-			}
-
-			if (needUpdate)
+			if (_changed)
 			{
 				FillCommandBuffer();
+				_changed = false;
+			}
+			else
+			{
+				var needUpdate = false;
+
+				foreach (var layer in _layers)
+				{
+					if (layer.IsChanged)
+					{
+						needUpdate = true;
+						break;
+					}
+				}
+
+				if (needUpdate)
+				{
+					FillCommandBuffer();
+				}
 			}
 		}
 

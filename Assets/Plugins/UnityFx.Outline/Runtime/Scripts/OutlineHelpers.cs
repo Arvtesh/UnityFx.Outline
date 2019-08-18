@@ -10,13 +10,15 @@ namespace UnityFx.Outline
 	/// <summary>
 	/// Outline helpers.
 	/// </summary>
-	public static class OutlineHelpers
+	internal static class OutlineHelpers
 	{
 		public const string RenderTextureName = "_MainTex";
 		public const string EffectName = "Outline";
 		public const string ColorParamName = "_Color";
 		public const string WidthParamName = "_Width";
 		public const CameraEvent RenderEvent = CameraEvent.BeforeImageEffects;
+		public const int MinWidth = 1;
+		public const int MaxWidth = 32;
 
 		public static readonly int RenderTextureId = Shader.PropertyToID(RenderTextureName);
 

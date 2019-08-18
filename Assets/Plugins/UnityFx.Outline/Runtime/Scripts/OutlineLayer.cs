@@ -62,7 +62,7 @@ namespace UnityFx.Outline
 			}
 			set
 			{
-				value = Mathf.Clamp(value, 1, 32);
+				value = Mathf.Clamp(value, OutlineHelpers.MinWidth, OutlineHelpers.MaxWidth);
 
 				if (_outlineWidth != value)
 				{

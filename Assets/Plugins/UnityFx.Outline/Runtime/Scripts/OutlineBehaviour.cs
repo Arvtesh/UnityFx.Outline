@@ -33,6 +33,81 @@ namespace UnityFx.Outline
 		private CommandBuffer _commandBuffer;
 
 		private Dictionary<Camera, CommandBuffer> _cameraMap = new Dictionary<Camera, CommandBuffer>();
+		private bool _changed = true;
+
+		#endregion
+
+		#region interface
+
+		/// <summary>
+		/// Gets or sets resources used by the effect implementation.
+		/// </summary>
+		public OutlineResources OutlineResources
+		{
+			get
+			{
+				return _outlineResources;
+			}
+			set
+			{
+				if (value == null)
+				{
+					throw new ArgumentNullException("Resources");
+				}
+
+				if (_outlineResources != value)
+				{
+					_outlineResources = value;
+					_renderMaterial.shader = value.RenderShader;
+					_postProcessMaterial.shader = value.PostProcessShader;
+					_changed = true;
+				}
+			}
+		}
+
+		/// <summary>
+		/// Gets or sets outline color for the layer.
+		/// </summary>
+		/// <seealso cref="OutlineWidth"/>
+		public Color OutlineColor
+		{
+			get
+			{
+				return _outlineColor;
+			}
+			set
+			{
+				if (_outlineColor != value)
+				{
+					_outlineColor = value;
+					_postProcessMaterial.SetColor(OutlineHelpers.ColorParamName, value);
+					_changed = true;
+				}
+			}
+		}
+
+		/// <summary>
+		/// Gets or sets outline width in pixels. Only positive values are allowed.
+		/// </summary>
+		/// <seealso cref="OutlineColor"/>
+		public int OutlineWidth
+		{
+			get
+			{
+				return _outlineWidth;
+			}
+			set
+			{
+				value = Mathf.Clamp(value, OutlineHelpers.MinWidth, OutlineHelpers.MaxWidth);
+
+				if (_outlineWidth != value)
+				{
+					_outlineWidth = value;
+					_postProcessMaterial.SetInt(OutlineHelpers.WidthParamName, value);
+					_changed = true;
+				}
+			}
+		}
 
 		#endregion
 
@@ -53,8 +128,7 @@ namespace UnityFx.Outline
 		{
 			_commandBuffer = new CommandBuffer();
 			_commandBuffer.name = OutlineHelpers.EffectName;
-
-			FillCommandBuffer();
+			_changed = true;
 		}
 
 		private void OnDisable()
@@ -74,6 +148,15 @@ namespace UnityFx.Outline
 			}
 
 			_cameraMap.Clear();
+		}
+
+		private void Update()
+		{
+			if (_changed)
+			{
+				FillCommandBuffer();
+				_changed = false;
+			}
 		}
 
 		private void OnWillRenderObject()
