@@ -1,0 +1,27 @@
+{
+    "name": "com.unityfx.outline",
+    "version": "0.1.0",
+    "displayName": "Outline post-effect for Unity",
+    "description": "Provides Unity helpers for outline rendering.",
+    "unity": "2017.2",
+    "keywords": [
+        "UnityFx",
+        "UnityFx.Outline",
+        "outline",
+        "post-effect"
+    ],
+    "category": "UnityFx",
+    "author": {
+        "name": "Arvtesh",
+        "email": "arvtesh@gmail.com"
+    },
+    "license": "MIT",
+    "homepage": "https://github.com/Arvtesh/UnityFx.Outline",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/Arvtesh/UnityFx.Outline.git"
+    },
+    "bugs": {
+        "url": "https://github.com/Arvtesh/UnityFx.Outline/issues"
+    }
+}
