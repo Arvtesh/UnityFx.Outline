@@ -42,9 +42,12 @@ namespace UnityFx.Outline.Examples
 		{
 			foreach (var go in _outlineGos)
 			{
-				_outlineLayer.OutlineColor = _outlineColor;
-				_outlineLayer.OutlineWidth = _outlineWidth;
-				_outlineLayer.Add(go);
+				if (go)
+				{
+					_outlineLayer.OutlineColor = _outlineColor;
+					_outlineLayer.OutlineWidth = _outlineWidth;
+					_outlineLayer.Add(go);
+				}
 			}
 		}
 

@@ -196,10 +196,10 @@ namespace UnityFx.Outline
 			if (camera)
 			{
 				_commandBuffer = new CommandBuffer();
-				_commandBuffer.name = OutlineHelpers.EffectName;
+				_commandBuffer.name = OutlineRenderer.EffectName;
 				_changed = true;
 
-				camera.AddCommandBuffer(OutlineHelpers.RenderEvent, _commandBuffer);
+				camera.AddCommandBuffer(OutlineRenderer.RenderEvent, _commandBuffer);
 			}
 		}
 
@@ -209,7 +209,7 @@ namespace UnityFx.Outline
 
 			if (camera)
 			{
-				camera.RemoveCommandBuffer(OutlineHelpers.RenderEvent, _commandBuffer);
+				camera.RemoveCommandBuffer(OutlineRenderer.RenderEvent, _commandBuffer);
 			}
 
 			if (_commandBuffer != null)
@@ -252,16 +252,13 @@ namespace UnityFx.Outline
 
 		private void FillCommandBuffer()
 		{
-			var dst = new RenderTargetIdentifier(BuiltinRenderTextureType.CameraTarget);
-
-			OutlineHelpers.RenderBegin(_commandBuffer);
-
-			foreach (var layer in _layers)
+			using (var renderer = new OutlineRenderer(_commandBuffer, BuiltinRenderTextureType.CameraTarget))
 			{
-				layer.FillCommandBuffer(_commandBuffer, dst);
+				foreach (var layer in _layers)
+				{
+					layer.FillCommandBuffer(renderer);
+				}
 			}
-
-			OutlineHelpers.RenderEnd(_commandBuffer);
 		}
 
 		#endregion
