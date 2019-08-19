@@ -43,7 +43,7 @@ Npm package is available at [npmjs.com](https://www.npmjs.com/package/com.unityf
     }
   ],
   "dependencies": {
-    "com.unityfx.outline": "0.1.0"
+    "com.unityfx.outline": "0.2.0"
   }
 }
 ```
@@ -54,6 +54,7 @@ Install the package and import the namespace:
 using UnityFx.Outline;
 ```
 
+### Per-camera outlines
 Add `OutlineEffect` script to a camera that should render outlines. Then add and configure as many layers as you need:
 ```csharp
 var outlineEffect = Camera.main.GetComponent<OutlineEffect>();
@@ -64,7 +65,24 @@ layer.OutlineWidth = 7;
 layer.Add(myGo);
 ```
 
-This can be done at runtime or while editing a scene. Disabling `OutlineEffect` script disables outlining for the camera (and frees all resources used).
+This can be done at runtime or while editing a scene. If you choose to assign the script in runtime make sure `OutlineEffect.OutlineResources` is initialied. Disabling `OutlineEffect` script disables outlining for the camera (and frees all resources used).
+
+### Per-object outlines
+Add `OutlineBehaviour` script to objects that should be outlined (in edit mode or in runtime). Make sure `OutlineBehaviour.OutlineResources` is initialized. You can customize outline settings either via Unity inspector or via script. Objects with `OutlineBehaviour` assigned render outlines in all cameras.
+
+```csharp
+var outlineBehaviour = GetComponent<OutlineBehaviour>();
+
+// Make sure to set this is OutlineBehaviour was added at runtime.
+outlineBehaviour.OutlineResources = myResources;
+
+outlineBehaviour.OutlineColor = Color.green;
+outlineBehaviour.OutlineWidth = 2;
+```
+
+### TODO
+- Make different `OutlineEffect` instances share layers.
+- Blur outline frames.
 
 ## Motivation
 The project was initially created to help author with his [Unity3d](https://unity3d.com) projects. There are not many reusable open-source examples of it, so here it is. Hope it will be useful for someone.
