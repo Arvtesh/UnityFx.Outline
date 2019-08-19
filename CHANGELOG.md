@@ -6,8 +6,9 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/); this proj
 ## [0.2.0] - Unreleased
 
 ### Added
-- Added `OutlineBehaviour` for rendering outlines for specific objects.
+- Added `OutlineBehaviour` for rendering per-object outlines.
 - Added `OutlineResources` to help initialize outline effects in runtime.
+- Added `OutlineRenderer` as low-level helper for outline rendering.
 
 ## [0.1.0] - 2019.08.18
 
