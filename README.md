@@ -8,15 +8,18 @@ Npm | [![Npm release](https://img.shields.io/npm/v/com.unityfx.outline.svg)](htt
 **Requires Unity 2017 or higher.**
 
 ## Synopsis
+![Outline demo](OutlineDemo.png "Outline demo")
 
-*UnityFx.Outline* defines tools that can be used to render outline post-effect.
+*UnityFx.Outline* defines tools that can be used to render configurable object outlines for specific cameras. The outlines configuration can be easily customized either through scripts or with Unity editor.
+
+Implementation is based on Unity [command buffers](https://docs.unity3d.com/ScriptReference/Rendering.CommandBuffer.html), does not require putting objects into layers and has no dependencies.
 
 Please see [CHANGELOG](CHANGELOG.md) for information on recent changes.
 
 ## Getting Started
 ### Prerequisites
 You may need the following software installed in order to build/use the library:
-- [Unity3d](https://store.unity.com/).
+- [Unity3d 2017+](https://store.unity.com/).
 
 ### Getting the code
 You can get the code by cloning the github repository using your preffered git client UI or you can do it from command line as follows:
@@ -25,6 +28,7 @@ git clone https://github.com/Arvtesh/UnityFx.Outline.git
 ```
 
 ### Npm package
+[![NPM](https://nodei.co/npm/com.unityfx.outline.png)](https://www.npmjs.com/package/com.unityfx.outline)
 
 Npm package is available at [npmjs.com](https://www.npmjs.com/package/com.unityfx.outline). To use it, add the following line to dependencies section of your `manifest.json`. Unity should download and link the package automatically:
 ```json
@@ -39,13 +43,46 @@ Npm package is available at [npmjs.com](https://www.npmjs.com/package/com.unityf
     }
   ],
   "dependencies": {
-    "com.unityfx.outline": "0.1.0"
+    "com.unityfx.outline": "0.2.0"
   }
 }
 ```
 
-## Understanding the concepts
-TODO
+## Usage
+Install the package and import the namespace:
+```csharp
+using UnityFx.Outline;
+```
+
+### Per-camera outlines
+Add `OutlineEffect` script to a camera that should render outlines. Then add and configure as many layers as you need:
+```csharp
+var outlineEffect = Camera.main.GetComponent<OutlineEffect>();
+var layer = outlineEffect.AddLayer();
+
+layer.OutlineColor = Color.red;
+layer.OutlineWidth = 7;
+layer.Add(myGo);
+```
+
+This can be done at runtime or while editing a scene. If you choose to assign the script in runtime make sure `OutlineEffect.OutlineResources` is initialied. Disabling `OutlineEffect` script disables outlining for the camera (and frees all resources used).
+
+### Per-object outlines
+Add `OutlineBehaviour` script to objects that should be outlined (in edit mode or in runtime). Make sure `OutlineBehaviour.OutlineResources` is initialized. You can customize outline settings either via Unity inspector or via script. Objects with `OutlineBehaviour` assigned render outlines in all cameras.
+
+```csharp
+var outlineBehaviour = GetComponent<OutlineBehaviour>();
+
+// Make sure to set this is OutlineBehaviour was added at runtime.
+outlineBehaviour.OutlineResources = myResources;
+
+outlineBehaviour.OutlineColor = Color.green;
+outlineBehaviour.OutlineWidth = 2;
+```
+
+### TODO
+- Make different `OutlineEffect` instances share layers.
+- Blur outline frames.
 
 ## Motivation
 The project was initially created to help author with his [Unity3d](https://unity3d.com) projects. There are not many reusable open-source examples of it, so here it is. Hope it will be useful for someone.

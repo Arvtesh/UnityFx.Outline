@@ -1,8 +1,8 @@
 {
     "name": "com.unityfx.outline",
-    "version": "0.1.0",
-    "displayName": "Outline post-effect for Unity",
-    "description": "Provides Unity helpers for outline rendering.",
+    "version": "0.2.0",
+    "displayName": "Outline post-effects for Unity",
+    "description": "Tools for rendering configurable per-object and per-camera outlines. The outlines configuration can be easily customized either through scripts or with Unity editor. Implementation is based on Unity command buffers and has no dependencies.",
     "unity": "2017.2",
     "keywords": [
         "UnityFx",

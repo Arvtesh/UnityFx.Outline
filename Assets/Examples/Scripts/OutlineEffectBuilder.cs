@@ -19,9 +19,10 @@ namespace UnityFx.Outline.Examples
 		[SerializeField]
 		private GameObject[] _outlineGos;
 		[SerializeField]
-		private int _outlineWidth = 5;
-		[SerializeField]
 		private Color _outlineColor = Color.red;
+		[SerializeField]
+		[Range(OutlineRenderer.MinWidth, OutlineRenderer.MaxWidth)]
+		private int _outlineWidth = 5;
 
 #pragma warning restore 0649
 
@@ -34,17 +35,37 @@ namespace UnityFx.Outline.Examples
 
 		private void Awake()
 		{
-			_outlineEffect = GetComponent<OutlineEffect>();
-			_outlineLayer = _outlineEffect.AddLayer();
+			if (_outlineEffect == null)
+			{
+				_outlineEffect = GetComponent<OutlineEffect>();
+			}
+
+			if (_outlineLayer == null)
+			{
+				_outlineLayer = _outlineEffect.AddLayer();
+			}
 		}
 
-		private void Update()
+		private void OnValidate()
 		{
+			if (_outlineEffect == null)
+			{
+				_outlineEffect = GetComponent<OutlineEffect>();
+			}
+
+			if (_outlineLayer == null)
+			{
+				_outlineLayer = _outlineEffect.AddLayer();
+			}
+
 			foreach (var go in _outlineGos)
 			{
-				_outlineLayer.OutlineColor = _outlineColor;
-				_outlineLayer.OutlineWidth = _outlineWidth;
-				_outlineLayer.Add(go);
+				if (go)
+				{
+					_outlineLayer.OutlineColor = _outlineColor;
+					_outlineLayer.OutlineWidth = _outlineWidth;
+					_outlineLayer.Add(go);
+				}
 			}
 		}
 
