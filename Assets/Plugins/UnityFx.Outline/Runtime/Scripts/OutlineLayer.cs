@@ -44,7 +44,7 @@ namespace UnityFx.Outline
 				if (_outlineColor != value)
 				{
 					_outlineColor = value;
-					_postProcessMaterial.SetColor(OutlineHelpers.ColorParamName, value);
+					_postProcessMaterial.SetColor(OutlineRenderer.ColorParamName, value);
 					_changed = true;
 				}
 			}
@@ -62,12 +62,12 @@ namespace UnityFx.Outline
 			}
 			set
 			{
-				value = Mathf.Clamp(value, OutlineHelpers.MinWidth, OutlineHelpers.MaxWidth);
+				value = Mathf.Clamp(value, OutlineRenderer.MinWidth, OutlineRenderer.MaxWidth);
 
 				if (_outlineWidth != value)
 				{
 					_outlineWidth = value;
-					_postProcessMaterial.SetInt(OutlineHelpers.WidthParamName, value);
+					_postProcessMaterial.SetInt(OutlineRenderer.WidthParamName, value);
 					_changed = true;
 				}
 			}
@@ -105,8 +105,8 @@ namespace UnityFx.Outline
 
 			_renderMaterial = renderMaterial;
 			_postProcessMaterial = postProcessMaterial;
-			_postProcessMaterial.SetColor(OutlineHelpers.ColorParamName, _outlineColor);
-			_postProcessMaterial.SetInt(OutlineHelpers.WidthParamName, _outlineWidth);
+			_postProcessMaterial.SetColor(OutlineRenderer.ColorParamName, _outlineColor);
+			_postProcessMaterial.SetInt(OutlineRenderer.WidthParamName, _outlineWidth);
 		}
 
 		/// <summary>
@@ -153,13 +153,13 @@ namespace UnityFx.Outline
 		/// <summary>
 		/// Renders the layer into the <paramref name="commandBuffer"/> passed.
 		/// </summary>
-		internal void FillCommandBuffer(CommandBuffer commandBuffer, RenderTargetIdentifier dst)
+		internal void FillCommandBuffer(OutlineRenderer renderer)
 		{
 			foreach (var kvp in _outlineObjects)
 			{
 				if (kvp.Key)
 				{
-					OutlineHelpers.RenderSingleObject(kvp.Value, _renderMaterial, _postProcessMaterial, commandBuffer, dst);
+					renderer.RenderSingleObject(kvp.Value, _renderMaterial, _postProcessMaterial);
 				}
 			}
 

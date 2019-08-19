@@ -80,7 +80,7 @@ namespace UnityFx.Outline
 				if (_outlineColor != value)
 				{
 					_outlineColor = value;
-					_postProcessMaterial.SetColor(OutlineHelpers.ColorParamName, value);
+					_postProcessMaterial.SetColor(OutlineRenderer.ColorParamName, value);
 					_changed = true;
 				}
 			}
@@ -98,12 +98,12 @@ namespace UnityFx.Outline
 			}
 			set
 			{
-				value = Mathf.Clamp(value, OutlineHelpers.MinWidth, OutlineHelpers.MaxWidth);
+				value = Mathf.Clamp(value, OutlineRenderer.MinWidth, OutlineRenderer.MaxWidth);
 
 				if (_outlineWidth != value)
 				{
 					_outlineWidth = value;
-					_postProcessMaterial.SetInt(OutlineHelpers.WidthParamName, value);
+					_postProcessMaterial.SetInt(OutlineRenderer.WidthParamName, value);
 					_changed = true;
 				}
 			}
@@ -118,8 +118,8 @@ namespace UnityFx.Outline
 			_renderMaterial = new Material(_outlineResources.RenderShader);
 
 			_postProcessMaterial = new Material(_outlineResources.PostProcessShader);
-			_postProcessMaterial.SetColor(OutlineHelpers.ColorParamName, _outlineColor);
-			_postProcessMaterial.SetInt(OutlineHelpers.WidthParamName, _outlineWidth);
+			_postProcessMaterial.SetColor(OutlineRenderer.ColorParamName, _outlineColor);
+			_postProcessMaterial.SetInt(OutlineRenderer.WidthParamName, _outlineWidth);
 
 			_renderers = GetComponentsInChildren<Renderer>();
 		}
@@ -127,7 +127,7 @@ namespace UnityFx.Outline
 		private void OnEnable()
 		{
 			_commandBuffer = new CommandBuffer();
-			_commandBuffer.name = OutlineHelpers.EffectName;
+			_commandBuffer.name = OutlineRenderer.EffectName;
 			_changed = true;
 		}
 
@@ -137,7 +137,7 @@ namespace UnityFx.Outline
 			{
 				if (kvp.Key)
 				{
-					kvp.Key.RemoveCommandBuffer(OutlineHelpers.RenderEvent, kvp.Value);
+					kvp.Key.RemoveCommandBuffer(OutlineRenderer.RenderEvent, kvp.Value);
 				}
 			}
 
@@ -169,7 +169,7 @@ namespace UnityFx.Outline
 				{
 					if (!_cameraMap.ContainsKey(camera))
 					{
-						camera.AddCommandBuffer(OutlineHelpers.RenderEvent, _commandBuffer);
+						camera.AddCommandBuffer(OutlineRenderer.RenderEvent, _commandBuffer);
 						_cameraMap.Add(camera, _commandBuffer);
 					}
 				}
@@ -182,11 +182,10 @@ namespace UnityFx.Outline
 
 		private void FillCommandBuffer()
 		{
-			var dst = new RenderTargetIdentifier(BuiltinRenderTextureType.CameraTarget);
-
-			OutlineHelpers.RenderBegin(_commandBuffer);
-			OutlineHelpers.RenderSingleObject(_renderers, _renderMaterial, _postProcessMaterial, _commandBuffer, dst);
-			OutlineHelpers.RenderEnd(_commandBuffer);
+			using (var renderer = new OutlineRenderer(_commandBuffer, BuiltinRenderTextureType.CameraTarget))
+			{
+				renderer.RenderSingleObject(_renderers, _renderMaterial, _postProcessMaterial);
+			}
 		}
 
 		#endregion
