@@ -13,6 +13,7 @@ namespace UnityFx.Outline
 	/// </summary>
 	/// <seealso cref="OutlineEffect"/>
 	[ExecuteInEditMode]
+	[DisallowMultipleComponent]
 	public sealed class OutlineBehaviour : MonoBehaviour
 	{
 		#region data
