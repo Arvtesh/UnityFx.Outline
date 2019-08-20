@@ -42,7 +42,8 @@ namespace UnityFx.Outline.Examples
 
 			if (_outlineLayer == null)
 			{
-				_outlineLayer = _outlineEffect.AddLayer();
+				_outlineLayer = new OutlineLayer();
+				_outlineEffect.OutlineLayers.Add(_outlineLayer);
 			}
 		}
 
@@ -55,7 +56,8 @@ namespace UnityFx.Outline.Examples
 
 			if (_outlineLayer == null)
 			{
-				_outlineLayer = _outlineEffect.AddLayer();
+				_outlineLayer = new OutlineLayer();
+				_outlineEffect.OutlineLayers.Add(_outlineLayer);
 			}
 
 			foreach (var go in _outlineGos)

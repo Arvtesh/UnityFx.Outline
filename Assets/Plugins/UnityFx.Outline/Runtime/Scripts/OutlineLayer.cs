@@ -5,25 +5,28 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.Rendering;
 
 namespace UnityFx.Outline
 {
 	/// <summary>
-	/// A single outline layer.
+	/// A collection of <see cref="GameObject"/> instances that share outlining settings.
 	/// </summary>
 	/// <seealso cref="OutlineEffect"/>
 	public sealed class OutlineLayer : ICollection<GameObject>
 	{
 		#region data
 
-		private readonly Material _renderMaterial;
-		private readonly Material _postProcessMaterial;
-		private readonly Dictionary<GameObject, Renderer[]> _outlineObjects = new Dictionary<GameObject, Renderer[]>();
+		private readonly int _colorNameId = Shader.PropertyToID(OutlineRenderer.ColorParamName);
+		private readonly int _widthNameId = Shader.PropertyToID(OutlineRenderer.WidthParamName);
+
+		private Dictionary<GameObject, Renderer[]> _outlineObjects = new Dictionary<GameObject, Renderer[]>();
+		private Dictionary<OutlineResources, Material> _renderMaterials;
+		private Dictionary<OutlineResources, Material> _postProcessMaterials;
 
 		private Color _outlineColor = Color.green;
 		private int _outlineWidth = 5;
-		private bool _changed = true;
+
+		private bool _changed;
 
 		#endregion
 
@@ -44,7 +47,6 @@ namespace UnityFx.Outline
 				if (_outlineColor != value)
 				{
 					_outlineColor = value;
-					_postProcessMaterial.SetColor(OutlineRenderer.ColorParamName, value);
 					_changed = true;
 				}
 			}
@@ -67,7 +69,6 @@ namespace UnityFx.Outline
 				if (_outlineWidth != value)
 				{
 					_outlineWidth = value;
-					_postProcessMaterial.SetInt(OutlineRenderer.WidthParamName, value);
 					_changed = true;
 				}
 			}
@@ -85,28 +86,10 @@ namespace UnityFx.Outline
 		}
 
 		/// <summary>
-		/// Gets the material used for outline rendering.
-		/// </summary>
-		internal Material PostProcessMaterial
-		{
-			get
-			{
-				return _postProcessMaterial;
-			}
-		}
-
-		/// <summary>
 		/// Initializes a new instance of the <see cref="OutlineLayer"/> class.
 		/// </summary>
-		internal OutlineLayer(Material renderMaterial, Material postProcessMaterial)
+		public OutlineLayer()
 		{
-			Debug.Assert(renderMaterial);
-			Debug.Assert(postProcessMaterial);
-
-			_renderMaterial = renderMaterial;
-			_postProcessMaterial = postProcessMaterial;
-			_postProcessMaterial.SetColor(OutlineRenderer.ColorParamName, _outlineColor);
-			_postProcessMaterial.SetInt(OutlineRenderer.WidthParamName, _outlineWidth);
 		}
 
 		/// <summary>
@@ -151,15 +134,21 @@ namespace UnityFx.Outline
 		}
 
 		/// <summary>
-		/// Renders the layer into the <paramref name="commandBuffer"/> passed.
+		/// Renders the layer with the <paramref name="renderer"/> passed.
 		/// </summary>
-		internal void FillCommandBuffer(OutlineRenderer renderer)
+		internal void Render(OutlineRenderer renderer, OutlineResourceCache resources)
 		{
+			var renderMaterial = resources.GetRenderMaterial(this);
+			var postProcessMaterial = resources.GetPostProcessMaterial(this);
+
+			postProcessMaterial.SetColor(_colorNameId, _outlineColor);
+			postProcessMaterial.SetInt(_widthNameId, _outlineWidth);
+
 			foreach (var kvp in _outlineObjects)
 			{
 				if (kvp.Key)
 				{
-					renderer.RenderSingleObject(kvp.Value, _renderMaterial, _postProcessMaterial);
+					renderer.RenderSingleObject(kvp.Value, renderMaterial, postProcessMaterial);
 				}
 			}
 

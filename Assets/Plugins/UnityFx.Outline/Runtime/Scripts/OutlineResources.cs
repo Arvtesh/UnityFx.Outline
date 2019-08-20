@@ -23,6 +23,17 @@ namespace UnityFx.Outline
 		public Shader PostProcessShader;
 
 		/// <summary>
+		/// Gets a value indicating whether the instance is in valid state.
+		/// </summary>
+		public bool IsValid
+		{
+			get
+			{
+				return RenderShader && PostProcessShader;
+			}
+		}
+
+		/// <summary>
 		/// Resets the resources to defaults.
 		/// </summary>
 		public void ResetToDefaults()
