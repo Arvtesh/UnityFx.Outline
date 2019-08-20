@@ -58,14 +58,32 @@ using UnityFx.Outline;
 Add `OutlineEffect` script to a camera that should render outlines. Then add and configure as many layers as you need:
 ```csharp
 var outlineEffect = Camera.main.GetComponent<OutlineEffect>();
-var layer = outlineEffect.AddLayer();
+var layer = new OutlineLayer();
 
 layer.OutlineColor = Color.red;
 layer.OutlineWidth = 7;
 layer.Add(myGo);
+
+outlineEffect.OutlineLayers.Add(layer);
 ```
 
 This can be done at runtime or while editing a scene. If you choose to assign the script in runtime make sure `OutlineEffect.OutlineResources` is initialied. Disabling `OutlineEffect` script disables outlining for the camera (and frees all resources used).
+
+Multiple `OutlineEffect` scripts can share outline layers rendered. To achieve that assign the same layer set to all `OutlineEffect` instances:
+
+```csharp
+var layers = new List<OutlineLayer>();
+var layer1 = new OutlineLayer();
+var layer2 = new OutlineLayer();
+
+// Setup layer1 and layer2 here
+
+layers.Add(layer1);
+layers.Add(layer2);
+
+camera1.GetComponent<OutlineEffect>().OutlineLayers = layers;
+camera2.GetComponent<OutlineEffect>().OutlineLayers = layers;
+```
 
 ### Per-object outlines
 Add `OutlineBehaviour` script to objects that should be outlined (in edit mode or in runtime). Make sure `OutlineBehaviour.OutlineResources` is initialized. You can customize outline settings either via Unity inspector or via script. Objects with `OutlineBehaviour` assigned render outlines in all cameras.
