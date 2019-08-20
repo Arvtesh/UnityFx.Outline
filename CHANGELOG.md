@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/); this proj
 
 ## [0.3.0] - unreleased
 
+- Added support for sharing outline layers between `OutlineEffect` instances.
+
 ## [0.2.0] - 2019.08.19
 
 ### Added
