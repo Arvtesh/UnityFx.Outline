@@ -83,8 +83,8 @@ namespace UnityFx.Outline
 			_renderTarget = dst;
 
 			_commandBuffer = commandBuffer;
-			_commandBuffer.BeginSample(EffectName);
 			_commandBuffer.Clear();
+			_commandBuffer.BeginSample(EffectName);
 			_commandBuffer.GetTemporaryRT(_renderTextureId, -1, -1, 0, FilterMode.Bilinear, RenderTextureFormat.R8);
 		}
 
