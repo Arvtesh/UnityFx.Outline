@@ -5,7 +5,11 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/); this proj
 
 ## [0.3.0] - unreleased
 
+### Added
 - Added support for sharing outline layers between `OutlineEffect` instances.
+
+### Fixed
+- Fixed profiler error 'BeginSample and EndSample count must match'.
 
 ## [0.2.0] - 2019.08.19
 
