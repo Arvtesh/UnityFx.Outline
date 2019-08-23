@@ -68,6 +68,7 @@ Shader "UnityFx/Outline/PostProcess"
 				float colorIntensityInRadius;
 
 				int n = _Width;
+				float n2 = (float)n / 2;
 
 				// For every iteration we need to do horizontally.
 				for (int k = 0; k < n; k += 1)
@@ -76,7 +77,7 @@ Shader "UnityFx/Outline/PostProcess"
 					for (int j = 0; j < n; j += 1)
 					{
 						// Increase our output color by the pixels in the area.
-						colorIntensityInRadius += tex2D(_MainTex, i.uvs.xy + float2((k - (float)n / 2) * TX_x, (j - (float)n / 2) * TX_y)).r;
+						colorIntensityInRadius += tex2D(_MainTex, i.uvs.xy + float2((k - n2) * TX_x, (j - n2) * TX_y)).r;
 					}
 				}
 
