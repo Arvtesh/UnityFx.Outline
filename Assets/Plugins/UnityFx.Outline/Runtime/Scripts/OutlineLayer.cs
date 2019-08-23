@@ -12,7 +12,8 @@ namespace UnityFx.Outline
 	/// A collection of <see cref="GameObject"/> instances that share outlining settings.
 	/// </summary>
 	/// <seealso cref="OutlineEffect"/>
-	public sealed class OutlineLayer : ICollection<GameObject>
+	[Serializable]
+	public sealed class OutlineLayer : ICollection<GameObject>, ISerializationCallbackReceiver
 	{
 		#region data
 
@@ -23,8 +24,11 @@ namespace UnityFx.Outline
 		private Dictionary<OutlineResources, Material> _renderMaterials;
 		private Dictionary<OutlineResources, Material> _postProcessMaterials;
 
-		private Color _outlineColor = Color.green;
-		private int _outlineWidth = 5;
+		[SerializeField]
+		private Color _outlineColor = Color.red;
+		[SerializeField]
+		[Range(OutlineRenderer.MinWidth, OutlineRenderer.MaxWidth)]
+		private int _outlineWidth = 4;
 
 		private bool _changed;
 
@@ -153,6 +157,25 @@ namespace UnityFx.Outline
 			}
 
 			_changed = false;
+		}
+
+		#endregion
+
+		#region ISerializationCallbackReceiver
+
+		void ISerializationCallbackReceiver.OnAfterDeserialize()
+		{
+			_outlineWidth = Mathf.Clamp(_outlineWidth, OutlineRenderer.MinWidth, OutlineRenderer.MaxWidth);
+
+			if (_outlineColor == Color.clear)
+			{
+				_outlineColor = Color.red;
+			}
+		}
+
+		void ISerializationCallbackReceiver.OnBeforeSerialize()
+		{
+			_changed = true;
 		}
 
 		#endregion

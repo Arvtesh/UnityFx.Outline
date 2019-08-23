@@ -277,8 +277,6 @@ MonoBehaviour:
   _outlineGos:
   - {fileID: 1579373802}
   - {fileID: 748173439}
-  _outlineColor: {r: 1, g: 0, b: 0, a: 1}
-  _outlineWidth: 8
 --- !u!114 &692811818
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -291,6 +289,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _outlineResources: {fileID: 11400000, guid: d28e70f030b1a634db9a6a6d5478ef19, type: 2}
+  _outlineLayers: {fileID: 11400000, guid: 3a6c3b3c5f6e3ad4ab8e09fc219865bd, type: 2}
 --- !u!1 &748173439
 GameObject:
   m_ObjectHideFlags: 0

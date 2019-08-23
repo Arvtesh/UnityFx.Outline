@@ -22,6 +22,8 @@ namespace UnityFx.Outline
 
 		[SerializeField]
 		private OutlineResources _outlineResources;
+		[SerializeField]
+		private OutlineLayerCollection _outlineLayers;
 
 		private IList<OutlineLayer> _layers;
 		private OutlineResourceCache _resourceCache;
@@ -62,31 +64,41 @@ namespace UnityFx.Outline
 		}
 
 		/// <summary>
-		/// Gets or sets outline layers.
+		/// Gets outline layers.
 		/// </summary>
+		/// <seealso cref="ShareLayersWith(OutlineEffect)"/>
 		public IList<OutlineLayer> OutlineLayers
 		{
 			get
 			{
 				if (_layers == null)
 				{
-					_layers = new List<OutlineLayer>();
+					if (_outlineLayers)
+					{
+						_layers = _outlineLayers.Layers;
+					}
+					else
+					{
+						_layers = new List<OutlineLayer>();
+					}
 				}
 
 				return _layers;
 			}
-			set
-			{
-				if (value == null)
-				{
-					throw new ArgumentNullException("OutlineLayers");
-				}
+		}
 
-				if (_layers != value)
-				{
-					_layers = value;
-					_changed = true;
-				}
+		/// <summary>
+		/// Shares <see cref="OutlineLayers"/> with another <see cref="OutlineEffect"/> instace.
+		/// </summary>
+		/// <param name="other">Effect to share <see cref="OutlineLayers"/> with.</param>
+		/// <seealso cref="OutlineLayers"/>
+		public void ShareLayersWith(OutlineEffect other)
+		{
+			if (other)
+			{
+				other._layers = OutlineLayers;
+				other._outlineLayers = _outlineLayers;
+				other._changed = true;
 			}
 		}
 
@@ -101,6 +113,11 @@ namespace UnityFx.Outline
 				_resourceCache = new OutlineResourceCache();
 				_resourceCache.OutlineResources = _outlineResources;
 			}
+
+			if (_outlineLayers)
+			{
+				_layers = _outlineLayers.Layers;
+			}
 		}
 
 		private void OnValidate()
@@ -108,8 +125,25 @@ namespace UnityFx.Outline
 			if (_resourceCache != null)
 			{
 				_resourceCache.OutlineResources = _outlineResources;
-				_changed = true;
 			}
+
+			if (_outlineLayers)
+			{
+				_layers = _outlineLayers.Layers;
+			}
+			else
+			{
+				_layers = null;
+			}
+
+			_changed = true;
+		}
+
+		private void Reset()
+		{
+			_outlineLayers = null;
+			_layers = null;
+			_changed = true;
 		}
 
 		private void OnEnable()
