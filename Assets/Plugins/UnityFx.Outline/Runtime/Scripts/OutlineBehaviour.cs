@@ -129,6 +129,17 @@ namespace UnityFx.Outline
 			}
 		}
 
+		/// <summary>
+		/// Gets all cameras outline data is rendered to.
+		/// </summary>
+		public IEnumerable<Camera> Cameras
+		{
+			get
+			{
+				return _cameraMap.Keys;
+			}
+		}
+
 		#endregion
 
 		#region MonoBehaviour
