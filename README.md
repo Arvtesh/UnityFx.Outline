@@ -43,7 +43,7 @@ Npm package is available at [npmjs.com](https://www.npmjs.com/package/com.unityf
     }
   ],
   "dependencies": {
-    "com.unityfx.outline": "0.2.0"
+    "com.unityfx.outline": "0.3.0"
   }
 }
 ```
@@ -72,17 +72,11 @@ This can be done at runtime or while editing a scene. If you choose to assign th
 Multiple `OutlineEffect` scripts can share outline layers rendered. To achieve that assign the same layer set to all `OutlineEffect` instances:
 
 ```csharp
-var layers = new List<OutlineLayer>();
-var layer1 = new OutlineLayer();
-var layer2 = new OutlineLayer();
+var effect1 = camera1.GetComponent<OutlineEffect>();
+var effect2 = camera2.GetComponent<OutlineEffect>();
 
-// Setup layer1 and layer2 here
-
-layers.Add(layer1);
-layers.Add(layer2);
-
-camera1.GetComponent<OutlineEffect>().OutlineLayers = layers;
-camera2.GetComponent<OutlineEffect>().OutlineLayers = layers;
+// Make effect1 share its layers with effect2.
+effect1.ShareLayersWith(effect2);
 ```
 
 ### Per-object outlines
