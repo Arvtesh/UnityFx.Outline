@@ -7,6 +7,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/); this proj
 
 ### Added
 - Added support for sharing outline layers between `OutlineEffect` instances.
+- Added custom editors for `OutlineEffect` and `OutlineBehaviour`.
+- Added possibility to setup outline layers as `ScriptableObject` asset.
 
 ### Fixed
 - Fixed profiler error 'BeginSample and EndSample count must match'.

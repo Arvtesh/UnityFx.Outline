@@ -13,6 +13,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _layers:
   - _outlineColor: {r: 1, g: 0, b: 0, a: 1}
-    _outlineWidth: 1
+    _outlineWidth: 6
   - _outlineColor: {r: 0.8382353, g: 0.75, b: 0, a: 1}
-    _outlineWidth: 1
+    _outlineWidth: 3
