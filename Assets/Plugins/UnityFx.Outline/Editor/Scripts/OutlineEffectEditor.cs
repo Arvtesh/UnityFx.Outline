@@ -40,9 +40,9 @@ namespace UnityFx.Outline
 							var goIndex = 1;
 
 							EditorGUILayout.BeginHorizontal();
-							EditorGUI.indentLevel += 1;
+							EditorGUI.indentLevel = 1;
 							EditorGUILayout.PrefixLabel("Layer #" + i.ToString());
-							EditorGUI.indentLevel -= 1;
+							EditorGUI.indentLevel = 0;
 							EditorGUILayout.IntField(layer.OutlineWidth, GUILayout.MaxWidth(100));
 							EditorGUILayout.ColorField(layer.OutlineColor, GUILayout.MinWidth(100));
 							EditorGUILayout.EndHorizontal();
@@ -51,26 +51,26 @@ namespace UnityFx.Outline
 							{
 								foreach (var go in layer)
 								{
-									EditorGUI.indentLevel += 2;
+									EditorGUI.indentLevel = 2;
 									EditorGUILayout.ObjectField("#" + goIndex.ToString(), go, typeof(GameObject), true);
-									EditorGUI.indentLevel -= 2;
+									EditorGUI.indentLevel = 0;
 
 									goIndex++;
 								}
 							}
 							else
 							{
-								EditorGUI.indentLevel += 2;
+								EditorGUI.indentLevel = 2;
 								EditorGUILayout.LabelField("No objects.");
-								EditorGUI.indentLevel -= 2;
+								EditorGUI.indentLevel = 0;
 							}
 						}
 					}
 					else
 					{
-						EditorGUI.indentLevel += 1;
+						EditorGUI.indentLevel = 1;
 						EditorGUILayout.LabelField("No layers.");
-						EditorGUI.indentLevel -= 1;
+						EditorGUI.indentLevel = 0;
 					}
 
 					EditorGUI.EndDisabledGroup();
