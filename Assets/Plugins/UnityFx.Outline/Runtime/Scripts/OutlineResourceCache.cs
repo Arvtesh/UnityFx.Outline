@@ -7,13 +7,10 @@ using UnityEngine;
 
 namespace UnityFx.Outline
 {
-	/// <summary>
-	/// Shared outline resource cache.
-	/// </summary>
 	internal class OutlineResourceCache
 	{
 		private OutlineResources _outlineResources;
-		private Dictionary<object, Material> _renderMaterials;
+		private Material _renderMaterial;
 		private Dictionary<object, Material> _postProcessMaterials;
 
 		public OutlineResources OutlineResources
@@ -37,20 +34,12 @@ namespace UnityFx.Outline
 			Debug.Assert(obj != null);
 			Debug.Assert(_outlineResources != null);
 
-			Material mat;
-
-			if (_renderMaterials == null)
+			if (_renderMaterial == null)
 			{
-				_renderMaterials = new Dictionary<object, Material>();
+				_renderMaterial = new Material(_outlineResources.RenderShader);
 			}
 
-			if (!_renderMaterials.TryGetValue(obj, out mat))
-			{
-				mat = new Material(_outlineResources.RenderShader);
-				_renderMaterials.Add(obj, mat);
-			}
-
-			return mat;
+			return _renderMaterial;
 		}
 
 		public Material GetPostProcessMaterial(object obj)
@@ -78,18 +67,15 @@ namespace UnityFx.Outline
 		{
 			if (_outlineResources)
 			{
-				if (_renderMaterials != null)
+				if (_renderMaterial != null)
 				{
 					if (_outlineResources.RenderShader)
 					{
-						foreach (var m in _renderMaterials.Values)
-						{
-							m.shader = _outlineResources.RenderShader;
-						}
+						_renderMaterial.shader = _outlineResources.RenderShader;
 					}
 					else
 					{
-						_renderMaterials.Clear();
+						_renderMaterial = null;
 					}
 				}
 
@@ -116,15 +102,12 @@ namespace UnityFx.Outline
 
 		public void Clear()
 		{
-			if (_renderMaterials != null)
-			{
-				_renderMaterials.Clear();
-			}
-
 			if (_postProcessMaterials != null)
 			{
 				_postProcessMaterials.Clear();
 			}
+
+			_renderMaterial = null;
 		}
 	}
 }
