@@ -31,7 +31,8 @@ namespace UnityFx.Outline
 #pragma warning restore 0649
 
 		private Material _renderMaterial;
-		private Material _postProcessMaterial;
+		private Material _hPassMaterial;
+		private Material _vPassMaterial;
 		private Renderer[] _renderers;
 		private CommandBuffer _commandBuffer;
 
@@ -69,9 +70,14 @@ namespace UnityFx.Outline
 						_renderMaterial.shader = value.RenderShader;
 					}
 
-					if (_postProcessMaterial)
+					if (_hPassMaterial)
 					{
-						_postProcessMaterial.shader = value.PostProcessShader;
+						_hPassMaterial.shader = value.HPassShader;
+					}
+
+					if (_vPassMaterial)
+					{
+						_vPassMaterial.shader = value.VPassBlendShader;
 					}
 				}
 			}
@@ -94,9 +100,9 @@ namespace UnityFx.Outline
 					_outlineColor = value;
 					_changed = true;
 
-					if (_postProcessMaterial)
+					if (_vPassMaterial)
 					{
-						_postProcessMaterial.SetColor(OutlineRenderer.ColorParamName, value);
+						_vPassMaterial.SetColor(OutlineRenderer.ColorParamName, value);
 					}
 				}
 			}
@@ -121,9 +127,14 @@ namespace UnityFx.Outline
 					_outlineWidth = value;
 					_changed = true;
 
-					if (_postProcessMaterial)
+					if (_hPassMaterial)
 					{
-						_postProcessMaterial.SetInt(OutlineRenderer.WidthParamName, value);
+						_hPassMaterial.SetInt(OutlineRenderer.WidthParamName, value);
+					}
+
+					if (_vPassMaterial)
+					{
+						_vPassMaterial.SetInt(OutlineRenderer.WidthParamName, value);
 					}
 				}
 			}
@@ -197,10 +208,16 @@ namespace UnityFx.Outline
 				_changed = true;
 			}
 
-			if (_postProcessMaterial)
+			if (_hPassMaterial)
 			{
-				_postProcessMaterial.SetInt(OutlineRenderer.WidthParamName, _outlineWidth);
-				_postProcessMaterial.SetColor(OutlineRenderer.ColorParamName, _outlineColor);
+				_hPassMaterial.SetInt(OutlineRenderer.WidthParamName, _outlineWidth);
+				_changed = true;
+			}
+
+			if (_vPassMaterial)
+			{
+				_vPassMaterial.SetInt(OutlineRenderer.WidthParamName, _outlineWidth);
+				_vPassMaterial.SetColor(OutlineRenderer.ColorParamName, _outlineColor);
 				_changed = true;
 			}
 		}
@@ -279,18 +296,24 @@ namespace UnityFx.Outline
 					_renderMaterial = new Material(_outlineResources.RenderShader);
 				}
 
-				if (_postProcessMaterial == null && _outlineResources.PostProcessShader)
+				if (_hPassMaterial == null && _outlineResources.HPassShader)
 				{
-					_postProcessMaterial = new Material(_outlineResources.PostProcessShader);
-					_postProcessMaterial.SetColor(OutlineRenderer.ColorParamName, _outlineColor);
-					_postProcessMaterial.SetInt(OutlineRenderer.WidthParamName, _outlineWidth);
+					_hPassMaterial = new Material(_outlineResources.HPassShader);
+					_hPassMaterial.SetInt(OutlineRenderer.WidthParamName, _outlineWidth);
 				}
 
-				if (_renderMaterial && _postProcessMaterial)
+				if (_vPassMaterial == null && _outlineResources.VPassBlendShader)
+				{
+					_vPassMaterial = new Material(_outlineResources.VPassBlendShader);
+					_vPassMaterial.SetInt(OutlineRenderer.WidthParamName, _outlineWidth);
+					_vPassMaterial.SetColor(OutlineRenderer.ColorParamName, _outlineColor);
+				}
+
+				if (_renderMaterial && _hPassMaterial && _vPassMaterial)
 				{
 					using (var renderer = new OutlineRenderer(_commandBuffer, BuiltinRenderTextureType.CameraTarget))
 					{
-						renderer.RenderSingleObject(_renderers, _renderMaterial, _postProcessMaterial);
+						renderer.RenderSingleObject(_renderers, _renderMaterial, _hPassMaterial, _vPassMaterial);
 					}
 
 					_changed = false;

@@ -18,9 +18,14 @@ namespace UnityFx.Outline
 		public Shader RenderShader;
 
 		/// <summary>
-		/// Gets or sets a <see cref="Shader"/> that renders outline around the mask, that was generated with <see cref="RenderShader"/>.
+		/// Gets or sets a <see cref="Shader"/> that renders outline around the mask, that was generated with <see cref="RenderShader"/> (pass 1).
 		/// </summary>
-		public Shader PostProcessShader;
+		public Shader HPassShader;
+
+		/// <summary>
+		/// Gets or sets a <see cref="Shader"/> that renders outline around the mask, that was generated with <see cref="RenderShader"/> (pass 2).
+		/// </summary>
+		public Shader VPassBlendShader;
 
 		/// <summary>
 		/// Gets a value indicating whether the instance is in valid state.
@@ -29,7 +34,7 @@ namespace UnityFx.Outline
 		{
 			get
 			{
-				return RenderShader && PostProcessShader;
+				return RenderShader && HPassShader && VPassBlendShader;
 			}
 		}
 
@@ -39,7 +44,8 @@ namespace UnityFx.Outline
 		public void ResetToDefaults()
 		{
 			RenderShader = Shader.Find("UnityFx/Outline/RenderColor");
-			PostProcessShader = Shader.Find("UnityFx/Outline/PostProcess");
+			HPassShader = Shader.Find("UnityFx/Outline/HPass");
+			VPassBlendShader = Shader.Find("UnityFx/Outline/VPassBlend");
 		}
 	}
 }

@@ -3,15 +3,12 @@
 
 // Renders outline based on a texture produces by 'UnityF/Outline/RenderColor' output.
 // Modified version of 'Custom/Post Outline' shader taken from https://willweissman.wordpress.com/tutorials/shaders/unity-shaderlab-object-outlines/.
-
-// TODO: Blur the outline.
-Shader "UnityFx/Outline/PostProcess"
+Shader "UnityFx/Outline/VPassBlend"
 {
 	Properties
 	{
 		_Color("Outline Color", Color) = (1, 0, 0, 1)
-		_Width("Outline Thickness", Range(1, 30)) = 5
-		_MainTex("Main Texture", 2D) = "white"{}
+		_Width("Outline Thickness", Range(1, 32)) = 5
 	}
 
 	SubShader
@@ -26,10 +23,12 @@ Shader "UnityFx/Outline/PostProcess"
 			#pragma fragment frag
 			#include "UnityCG.cginc"
 
-			sampler2D _MainTex;
+			sampler2D _MaskTex;
+			sampler2D _PostProcessTex;
 
 			// <SamplerName>_TexelSize is a float2 that says how much screen space a texel occupies.
-			float2 _MainTex_TexelSize;
+			float2 _MaskTex_TexelSize;
+			float2 _PostProcessTex_TexelSize;
 			float4 _Color;
 			int _Width;
 
@@ -55,33 +54,22 @@ Shader "UnityFx/Outline/PostProcess"
 			half4 frag(v2f i) : COLOR
 			{
 				// If something already exists underneath the fragment, discard the fragment.
-				if (tex2D(_MainTex, i.uvs.xy).r > 0)
+				if (tex2D(_MaskTex, i.uvs.xy).r > 0)
 				{
 					discard;
 				}
 
-				// Split texel size into smaller words.
-				float TX_x = _MainTex_TexelSize.x;
-				float TX_y = _MainTex_TexelSize.y;
-
-				// And a final intensity that increments based on surrounding intensities.
+				float TX_y = _PostProcessTex_TexelSize.y;
 				float colorIntensityInRadius;
-
 				int n = _Width;
 				float n2 = (float)n / 2;
 
-				// For every iteration we need to do horizontally.
 				for (int k = 0; k < n; k += 1)
 				{
-					// For every iteration we need to do vertically.
-					for (int j = 0; j < n; j += 1)
-					{
-						// Increase our output color by the pixels in the area.
-						colorIntensityInRadius += tex2D(_MainTex, i.uvs.xy + float2((k - n2) * TX_x, (j - n2) * TX_y)).r;
-					}
+					colorIntensityInRadius += tex2D(_PostProcessTex, i.uvs.xy + float2(0, (k - n2) * TX_y)).r / n;
 				}
 
-				return colorIntensityInRadius * _Color;
+				return half4(_Color.rgb, _Color.a * colorIntensityInRadius * 2);
 			}
 
 			ENDCG

@@ -11,7 +11,8 @@ namespace UnityFx.Outline
 	{
 		private OutlineResources _outlineResources;
 		private Material _renderMaterial;
-		private Dictionary<object, Material> _postProcessMaterials;
+		private Dictionary<object, Material> _hPassMeterials;
+		private Dictionary<object, Material> _vPassMeterials;
 
 		public OutlineResources OutlineResources
 		{
@@ -42,22 +43,43 @@ namespace UnityFx.Outline
 			return _renderMaterial;
 		}
 
-		public Material GetPostProcessMaterial(object obj)
+		public Material GetHPassMaterial(object obj)
 		{
 			Debug.Assert(obj != null);
 			Debug.Assert(_outlineResources != null);
 
 			Material mat;
 
-			if (_postProcessMaterials == null)
+			if (_hPassMeterials == null)
 			{
-				_postProcessMaterials = new Dictionary<object, Material>();
+				_hPassMeterials = new Dictionary<object, Material>();
 			}
 
-			if (!_postProcessMaterials.TryGetValue(obj, out mat))
+			if (!_hPassMeterials.TryGetValue(obj, out mat))
 			{
-				mat = new Material(_outlineResources.PostProcessShader);
-				_postProcessMaterials.Add(obj, mat);
+				mat = new Material(_outlineResources.HPassShader);
+				_hPassMeterials.Add(obj, mat);
+			}
+
+			return mat;
+		}
+
+		public Material GetVPassMaterial(object obj)
+		{
+			Debug.Assert(obj != null);
+			Debug.Assert(_outlineResources != null);
+
+			Material mat;
+
+			if (_vPassMeterials == null)
+			{
+				_vPassMeterials = new Dictionary<object, Material>();
+			}
+
+			if (!_vPassMeterials.TryGetValue(obj, out mat))
+			{
+				mat = new Material(_outlineResources.VPassBlendShader);
+				_vPassMeterials.Add(obj, mat);
 			}
 
 			return mat;
@@ -79,18 +101,33 @@ namespace UnityFx.Outline
 					}
 				}
 
-				if (_postProcessMaterials != null)
+				if (_hPassMeterials != null)
 				{
-					if (_outlineResources.PostProcessShader)
+					if (_outlineResources.HPassShader)
 					{
-						foreach (var m in _postProcessMaterials.Values)
+						foreach (var m in _hPassMeterials.Values)
 						{
-							m.shader = _outlineResources.PostProcessShader;
+							m.shader = _outlineResources.HPassShader;
 						}
 					}
 					else
 					{
-						_postProcessMaterials.Clear();
+						_hPassMeterials.Clear();
+					}
+				}
+
+				if (_vPassMeterials != null)
+				{
+					if (_outlineResources.VPassBlendShader)
+					{
+						foreach (var m in _vPassMeterials.Values)
+						{
+							m.shader = _outlineResources.VPassBlendShader;
+						}
+					}
+					else
+					{
+						_vPassMeterials.Clear();
 					}
 				}
 			}
@@ -102,9 +139,14 @@ namespace UnityFx.Outline
 
 		public void Clear()
 		{
-			if (_postProcessMaterials != null)
+			if (_hPassMeterials != null)
 			{
-				_postProcessMaterials.Clear();
+				_hPassMeterials.Clear();
+			}
+
+			if (_vPassMeterials != null)
+			{
+				_vPassMeterials.Clear();
 			}
 
 			_renderMaterial = null;

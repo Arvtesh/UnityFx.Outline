@@ -143,16 +143,18 @@ namespace UnityFx.Outline
 		internal void Render(OutlineRenderer renderer, OutlineResourceCache resources)
 		{
 			var renderMaterial = resources.GetRenderMaterial(this);
-			var postProcessMaterial = resources.GetPostProcessMaterial(this);
+			var hPassMaterial = resources.GetHPassMaterial(this);
+			var vPassMaterial = resources.GetVPassMaterial(this);
 
-			postProcessMaterial.SetColor(_colorNameId, _outlineColor);
-			postProcessMaterial.SetInt(_widthNameId, _outlineWidth);
+			hPassMaterial.SetInt(_widthNameId, _outlineWidth);
+			vPassMaterial.SetInt(_widthNameId, _outlineWidth);
+			vPassMaterial.SetColor(_colorNameId, _outlineColor);
 
 			foreach (var kvp in _outlineObjects)
 			{
 				if (kvp.Key)
 				{
-					renderer.RenderSingleObject(kvp.Value, renderMaterial, postProcessMaterial);
+					renderer.RenderSingleObject(kvp.Value, renderMaterial, hPassMaterial, vPassMaterial);
 				}
 			}
 

@@ -26,7 +26,8 @@ namespace UnityFx.Outline
 	{
 		#region data
 
-		private readonly int _renderTextureId;
+		private readonly int _maskRtId;
+		private readonly int _postProcessRtId;
 		private readonly RenderTargetIdentifier _renderTarget;
 		private readonly CommandBuffer _commandBuffer;
 
@@ -79,27 +80,28 @@ namespace UnityFx.Outline
 		{
 			Debug.Assert(commandBuffer != null);
 
-			_renderTextureId = Shader.PropertyToID("_MainTex");
+			_maskRtId = Shader.PropertyToID("_MaskTex");
+			_postProcessRtId = Shader.PropertyToID("_PostProcessTex");
 			_renderTarget = dst;
 
 			_commandBuffer = commandBuffer;
 			_commandBuffer.Clear();
 			_commandBuffer.BeginSample(EffectName);
-			_commandBuffer.GetTemporaryRT(_renderTextureId, -1, -1, 0, FilterMode.Bilinear, RenderTextureFormat.R8);
+			_commandBuffer.GetTemporaryRT(_maskRtId, -1, -1, 0, FilterMode.Bilinear, RenderTextureFormat.R8);
+			_commandBuffer.GetTemporaryRT(_postProcessRtId, -1, -1, 0, FilterMode.Bilinear, RenderTextureFormat.R8);
 		}
 
 		/// <summary>
 		/// Adds commands for rendering single outline object.
 		/// </summary>
-		public void RenderSingleObject(Renderer[] renderers, Material renderMaterial, Material postProcessMaterial)
+		public void RenderSingleObject(Renderer[] renderers, Material renderMaterial, Material hPassMaterial, Material vPassMaterial)
 		{
 			Debug.Assert(renderers != null);
 			Debug.Assert(renderMaterial != null);
-			Debug.Assert(postProcessMaterial != null);
+			Debug.Assert(hPassMaterial != null);
+			Debug.Assert(vPassMaterial != null);
 
-			var rt = new RenderTargetIdentifier(_renderTextureId);
-
-			_commandBuffer.SetRenderTarget(rt);
+			_commandBuffer.SetRenderTarget(_maskRtId);
 			_commandBuffer.ClearRenderTarget(false, true, Color.black);
 
 			foreach (var renderer in renderers)
@@ -113,7 +115,9 @@ namespace UnityFx.Outline
 				}
 			}
 
-			_commandBuffer.Blit(rt, _renderTarget, postProcessMaterial);
+			_commandBuffer.SetGlobalTexture(_maskRtId, _maskRtId);
+			_commandBuffer.Blit(_maskRtId, _postProcessRtId, hPassMaterial);
+			_commandBuffer.Blit(_postProcessRtId, _renderTarget, vPassMaterial);
 		}
 
 		#endregion
@@ -123,7 +127,8 @@ namespace UnityFx.Outline
 		/// <inheritdoc/>
 		public void Dispose()
 		{
-			_commandBuffer.ReleaseTemporaryRT(_renderTextureId);
+			_commandBuffer.ReleaseTemporaryRT(_postProcessRtId);
+			_commandBuffer.ReleaseTemporaryRT(_maskRtId);
 			_commandBuffer.EndSample(EffectName);
 		}
 
