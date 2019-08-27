@@ -13,6 +13,7 @@ namespace UnityFx.Outline
 	/// </summary>
 	/// <seealso cref="OutlineEffect"/>
 	[ExecuteInEditMode]
+	[DisallowMultipleComponent]
 	public sealed class OutlineBehaviour : MonoBehaviour
 	{
 		#region data
@@ -125,6 +126,17 @@ namespace UnityFx.Outline
 						_postProcessMaterial.SetInt(OutlineRenderer.WidthParamName, value);
 					}
 				}
+			}
+		}
+
+		/// <summary>
+		/// Gets all cameras outline data is rendered to.
+		/// </summary>
+		public IEnumerable<Camera> Cameras
+		{
+			get
+			{
+				return _cameraMap.Keys;
 			}
 		}
 

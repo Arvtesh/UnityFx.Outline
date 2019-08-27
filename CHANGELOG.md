@@ -3,6 +3,16 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/); this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [0.3.0] - 2019.08.27
+
+### Added
+- Added support for sharing outline layers between `OutlineEffect` instances.
+- Added custom editors for `OutlineEffect` and `OutlineBehaviour`.
+- Added possibility to setup outline layers as `ScriptableObject` asset.
+
+### Fixed
+- Fixed profiler error 'BeginSample and EndSample count must match'.
+
 ## [0.2.0] - 2019.08.19
 
 ### Added
