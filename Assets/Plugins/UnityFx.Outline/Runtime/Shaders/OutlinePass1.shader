@@ -30,7 +30,9 @@ Shader "UnityFx/Outline/HPass"
 			int _Width;
 
 #if _MODE_BLURRED
+
 			float _GaussSamples[32];
+
 #endif
 
 			struct v2f
@@ -51,18 +53,22 @@ Shader "UnityFx/Outline/HPass"
 
 			half frag(v2f i) : COLOR
 			{
-				int n = _Width * 2 - 1;
-
 				float TX_x = _MaskTex_TexelSize.x;
 				float intensity;
-				float n2 = _Width;
+				int n = _Width;
 
-				for (int k = -n2; k <= n2; k += 1)
+				for (int k = -n; k <= n; k += 1)
 				{
+					half pixelIntensity = tex2D(_MaskTex, i.uvs.xy + float2(k * TX_x, 0)).r;
+
 #if _MODE_BLURRED
-					intensity += tex2D(_MaskTex, i.uvs.xy + float2(k * TX_x, 0)).r * _GaussSamples[abs(k)];
+
+					intensity += pixelIntensity * _GaussSamples[abs(k)];
+
 #else
-					intensity += tex2D(_MaskTex, i.uvs.xy + float2(k * TX_x, 0)).r;
+
+					intensity += pixelIntensity;
+
 #endif
 				}
 
