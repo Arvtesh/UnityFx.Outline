@@ -27,7 +27,7 @@ namespace UnityFx.Outline
 		#region data
 
 		private readonly int _maskRtId;
-		private readonly int _postProcessRtId;
+		private readonly int _hPassRtId;
 		private readonly RenderTargetIdentifier _renderTarget;
 		private readonly CommandBuffer _commandBuffer;
 
@@ -56,6 +56,21 @@ namespace UnityFx.Outline
 		public const string WidthParamName = "_Width";
 
 		/// <summary>
+		/// Name of the outline mode shader parameter.
+		/// </summary>
+		public const string ModeParamName = "_Mode";
+
+		/// <summary>
+		/// Name of the outline mode shader parameter.
+		/// </summary>
+		public const string ModeBlurredKeyword = "_MODE_BLURRED";
+
+		/// <summary>
+		/// Name of the outline mode shader parameter.
+		/// </summary>
+		public const string ModeSolidKeyword = "_MODE_SOLID";
+
+		/// <summary>
 		/// Minimum value of outline width parameter.
 		/// </summary>
 		public const int MinWidth = 1;
@@ -81,14 +96,14 @@ namespace UnityFx.Outline
 			Debug.Assert(commandBuffer != null);
 
 			_maskRtId = Shader.PropertyToID("_MaskTex");
-			_postProcessRtId = Shader.PropertyToID("_PostProcessTex");
+			_hPassRtId = Shader.PropertyToID("_HPassTex");
 			_renderTarget = dst;
 
 			_commandBuffer = commandBuffer;
 			_commandBuffer.Clear();
 			_commandBuffer.BeginSample(EffectName);
 			_commandBuffer.GetTemporaryRT(_maskRtId, -1, -1, 0, FilterMode.Bilinear, RenderTextureFormat.R8);
-			_commandBuffer.GetTemporaryRT(_postProcessRtId, -1, -1, 0, FilterMode.Bilinear, RenderTextureFormat.R8);
+			_commandBuffer.GetTemporaryRT(_hPassRtId, -1, -1, 0, FilterMode.Bilinear, RenderTextureFormat.R8);
 		}
 
 		/// <summary>
@@ -116,8 +131,28 @@ namespace UnityFx.Outline
 			}
 
 			_commandBuffer.SetGlobalTexture(_maskRtId, _maskRtId);
-			_commandBuffer.Blit(_maskRtId, _postProcessRtId, hPassMaterial);
-			_commandBuffer.Blit(_postProcessRtId, _renderTarget, vPassMaterial);
+			_commandBuffer.Blit(_maskRtId, _hPassRtId, hPassMaterial);
+			_commandBuffer.Blit(_hPassRtId, _renderTarget, vPassMaterial);
+		}
+
+		/// <summary>
+		/// Setups the meterial keywords for the <paramref name="mode"/> passed.
+		/// </summary>
+		public static void SetupMeterialKeywords(Material m, OutlineMode mode)
+		{
+			if (m)
+			{
+				if (mode == OutlineMode.Solid)
+				{
+					m.EnableKeyword(ModeSolidKeyword);
+					m.DisableKeyword(ModeBlurredKeyword);
+				}
+				else
+				{
+					m.EnableKeyword(ModeBlurredKeyword);
+					m.DisableKeyword(ModeSolidKeyword);
+				}
+			}
 		}
 
 		#endregion
@@ -127,7 +162,7 @@ namespace UnityFx.Outline
 		/// <inheritdoc/>
 		public void Dispose()
 		{
-			_commandBuffer.ReleaseTemporaryRT(_postProcessRtId);
+			_commandBuffer.ReleaseTemporaryRT(_hPassRtId);
 			_commandBuffer.ReleaseTemporaryRT(_maskRtId);
 			_commandBuffer.EndSample(EffectName);
 		}

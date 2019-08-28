@@ -14,7 +14,7 @@ namespace UnityFx.Outline
 	/// <seealso cref="OutlineEffect"/>
 	[ExecuteInEditMode]
 	[DisallowMultipleComponent]
-	public sealed class OutlineBehaviour : MonoBehaviour
+	public sealed class OutlineBehaviour : MonoBehaviour, IOutlineSettings
 	{
 		#region data
 
@@ -27,6 +27,8 @@ namespace UnityFx.Outline
 		[SerializeField]
 		[Range(OutlineRenderer.MinWidth, OutlineRenderer.MaxWidth)]
 		private int _outlineWidth = 5;
+		[SerializeField]
+		private OutlineMode _outlineMode;
 
 #pragma warning restore 0649
 
@@ -78,63 +80,6 @@ namespace UnityFx.Outline
 					if (_vPassMaterial)
 					{
 						_vPassMaterial.shader = value.VPassBlendShader;
-					}
-				}
-			}
-		}
-
-		/// <summary>
-		/// Gets or sets outline color for the layer.
-		/// </summary>
-		/// <seealso cref="OutlineWidth"/>
-		public Color OutlineColor
-		{
-			get
-			{
-				return _outlineColor;
-			}
-			set
-			{
-				if (_outlineColor != value)
-				{
-					_outlineColor = value;
-					_changed = true;
-
-					if (_vPassMaterial)
-					{
-						_vPassMaterial.SetColor(OutlineRenderer.ColorParamName, value);
-					}
-				}
-			}
-		}
-
-		/// <summary>
-		/// Gets or sets outline width in pixels. Only positive values are allowed.
-		/// </summary>
-		/// <seealso cref="OutlineColor"/>
-		public int OutlineWidth
-		{
-			get
-			{
-				return _outlineWidth;
-			}
-			set
-			{
-				value = Mathf.Clamp(value, OutlineRenderer.MinWidth, OutlineRenderer.MaxWidth);
-
-				if (_outlineWidth != value)
-				{
-					_outlineWidth = value;
-					_changed = true;
-
-					if (_hPassMaterial)
-					{
-						_hPassMaterial.SetInt(OutlineRenderer.WidthParamName, value);
-					}
-
-					if (_vPassMaterial)
-					{
-						_vPassMaterial.SetInt(OutlineRenderer.WidthParamName, value);
 					}
 				}
 			}
@@ -220,6 +165,9 @@ namespace UnityFx.Outline
 				_vPassMaterial.SetColor(OutlineRenderer.ColorParamName, _outlineColor);
 				_changed = true;
 			}
+
+			OutlineRenderer.SetupMeterialKeywords(_hPassMaterial, _outlineMode);
+			OutlineRenderer.SetupMeterialKeywords(_vPassMaterial, _outlineMode);
 		}
 
 		private void Update()
@@ -251,6 +199,81 @@ namespace UnityFx.Outline
 						camera.AddCommandBuffer(OutlineRenderer.RenderEvent, _commandBuffer);
 						_cameraMap.Add(camera, _commandBuffer);
 					}
+				}
+			}
+		}
+
+		#endregion
+
+		#region IOutlineSettings
+
+		/// <inheritdoc/>
+		public Color OutlineColor
+		{
+			get
+			{
+				return _outlineColor;
+			}
+			set
+			{
+				if (_outlineColor != value)
+				{
+					_outlineColor = value;
+					_changed = true;
+
+					if (_vPassMaterial)
+					{
+						_vPassMaterial.SetColor(OutlineRenderer.ColorParamName, value);
+					}
+				}
+			}
+		}
+
+		/// <inheritdoc/>
+		public int OutlineWidth
+		{
+			get
+			{
+				return _outlineWidth;
+			}
+			set
+			{
+				value = Mathf.Clamp(value, OutlineRenderer.MinWidth, OutlineRenderer.MaxWidth);
+
+				if (_outlineWidth != value)
+				{
+					_outlineWidth = value;
+					_changed = true;
+
+					if (_hPassMaterial)
+					{
+						_hPassMaterial.SetInt(OutlineRenderer.WidthParamName, value);
+					}
+
+					if (_vPassMaterial)
+					{
+						_vPassMaterial.SetInt(OutlineRenderer.WidthParamName, value);
+					}
+				}
+			}
+		}
+
+		/// <inheritdoc/>
+		public OutlineMode OutlineMode
+		{
+			get
+			{
+				return _outlineMode;
+			}
+			set
+			{
+				if (_outlineMode != value)
+				{
+					_outlineMode = value;
+					_changed = true;
+
+					OutlineRenderer.SetupMeterialKeywords(_hPassMaterial, value);
+					OutlineRenderer.SetupMeterialKeywords(_vPassMaterial, value);
 				}
 			}
 		}
@@ -308,6 +331,9 @@ namespace UnityFx.Outline
 					_vPassMaterial.SetInt(OutlineRenderer.WidthParamName, _outlineWidth);
 					_vPassMaterial.SetColor(OutlineRenderer.ColorParamName, _outlineColor);
 				}
+
+				OutlineRenderer.SetupMeterialKeywords(_hPassMaterial, _outlineMode);
+				OutlineRenderer.SetupMeterialKeywords(_vPassMaterial, _outlineMode);
 
 				if (_renderMaterial && _hPassMaterial && _vPassMaterial)
 				{

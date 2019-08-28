@@ -7,8 +7,8 @@ Shader "UnityFx/Outline/HPass"
 {
 	Properties
 	{
-		_Width("Outline Thickness", Range(1, 32)) = 5
-		_MainTex("Mask Texture", 2D) = "white"{}
+		_Width("Outline thickness (in pixels)", Range(1, 32)) = 5
+		[KeywordEnum(Solid, Blurred)] _Mode("Outline rendering mode", Float) = 0
 	}
 
 	SubShader
@@ -21,14 +21,13 @@ Shader "UnityFx/Outline/HPass"
 		{
 			CGPROGRAM
 
+			#pragma multi_compile _MODE_SOLID _MODE_BLURRED
 			#pragma vertex vert
 			#pragma fragment frag
 			#include "UnityCG.cginc"
 
-			sampler2D _MainTex;
-
-			// <SamplerName>_TexelSize is a float2 that says how much screen space a texel occupies.
-			float2 _MainTex_TexelSize;
+			sampler2D _MaskTex;
+			float2 _MaskTex_TexelSize;
 			int _Width;
 
 			struct v2f
@@ -41,10 +40,7 @@ Shader "UnityFx/Outline/HPass"
 			{
 				v2f o;
 
-				// Despite the fact that we are only drawing a quad to the screen, Unity requires us to multiply vertices by our MVP matrix, presumably to keep things working when inexperienced people try copying code from other shaders.
 				o.pos = UnityObjectToClipPos(v.vertex);
-
-				// Also, we need to fix the UVs to match our screen space coordinates.
 				o.uvs = ComputeScreenPos(o.pos);
 
 				return o;
@@ -52,17 +48,22 @@ Shader "UnityFx/Outline/HPass"
 
 			half frag(v2f i) : COLOR
 			{
-				float TX_x = _MainTex_TexelSize.x;
-				float colorIntensityInRadius;
 				int n = _Width;
+
+				float TX_x = _MaskTex_TexelSize.x;
+				float intensity;
 				float n2 = (float)n / 2;
 
 				for (int k = 0; k < n; k += 1)
 				{
-					colorIntensityInRadius += tex2D(_MainTex, i.uvs.xy + float2((k - n2) * TX_x, 0)).r / n;
+#if _MODE_BLURRED
+					intensity += tex2D(_MaskTex, i.uvs.xy + float2((k - n2) * TX_x, 0)).r / n;
+#else
+					intensity += tex2D(_MaskTex, i.uvs.xy + float2((k - n2) * TX_x, 0)).r;
+#endif
 				}
 
-				return colorIntensityInRadius;
+				return intensity;
 			}
 
 			ENDCG

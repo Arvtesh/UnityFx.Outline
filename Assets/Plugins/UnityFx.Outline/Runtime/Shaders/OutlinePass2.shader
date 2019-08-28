@@ -7,8 +7,9 @@ Shader "UnityFx/Outline/VPassBlend"
 {
 	Properties
 	{
-		_Color("Outline Color", Color) = (1, 0, 0, 1)
-		_Width("Outline Thickness", Range(1, 32)) = 5
+		_Color("Outline color", Color) = (1, 0, 0, 1)
+		_Width("Outline thickness (in pixels)", Range(1, 32)) = 5
+		[KeywordEnum(Solid, Blurred)] _Mode("Outline rendering mode", Float) = 0
 	}
 
 	SubShader
@@ -19,16 +20,15 @@ Shader "UnityFx/Outline/VPassBlend"
 		{
 			CGPROGRAM
 
+			#pragma multi_compile _MODE_SOLID _MODE_BLURRED
 			#pragma vertex vert
 			#pragma fragment frag
 			#include "UnityCG.cginc"
 
 			sampler2D _MaskTex;
-			sampler2D _PostProcessTex;
-
-			// <SamplerName>_TexelSize is a float2 that says how much screen space a texel occupies.
 			float2 _MaskTex_TexelSize;
-			float2 _PostProcessTex_TexelSize;
+			sampler2D _HPassTex;
+			float2 _HPassTex_TexelSize;
 			float4 _Color;
 			int _Width;
 
@@ -42,10 +42,7 @@ Shader "UnityFx/Outline/VPassBlend"
 			{
 				v2f o;
 
-				// Despite the fact that we are only drawing a quad to the screen, Unity requires us to multiply vertices by our MVP matrix, presumably to keep things working when inexperienced people try copying code from other shaders.
 				o.pos = UnityObjectToClipPos(v.vertex);
-
-				// Also, we need to fix the UVs to match our screen space coordinates.
 				o.uvs = ComputeScreenPos(o.pos);
 
 				return o;
@@ -53,23 +50,31 @@ Shader "UnityFx/Outline/VPassBlend"
 
 			half4 frag(v2f i) : COLOR
 			{
-				// If something already exists underneath the fragment, discard the fragment.
 				if (tex2D(_MaskTex, i.uvs.xy).r > 0)
 				{
 					discard;
 				}
 
-				float TX_y = _PostProcessTex_TexelSize.y;
-				float colorIntensityInRadius;
 				int n = _Width;
+
+				float TX_y = _HPassTex_TexelSize.y;
+				float intensity;
 				float n2 = (float)n / 2;
 
 				for (int k = 0; k < n; k += 1)
 				{
-					colorIntensityInRadius += tex2D(_PostProcessTex, i.uvs.xy + float2(0, (k - n2) * TX_y)).r / n;
+#if _MODE_BLURRED
+					intensity += tex2D(_HPassTex, i.uvs.xy + float2(0, (k - n2) * TX_y)).r / n;
+#else
+					intensity += tex2D(_HPassTex, i.uvs.xy + float2(0, (k - n2) * TX_y)).r;
+#endif
 				}
 
-				return half4(_Color.rgb, _Color.a * colorIntensityInRadius * 2);
+#if _MODE_BLURRED
+				return half4(_Color.rgb, _Color.a * intensity * 2);
+#else
+				return _Color * intensity;
+#endif
 			}
 
 			ENDCG

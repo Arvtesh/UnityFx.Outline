@@ -30,7 +30,7 @@ namespace UnityFx.Outline
 			}
 		}
 
-		public Material GetRenderMaterial(object obj)
+		public Material GetRenderMaterial(IOutlineSettings obj)
 		{
 			Debug.Assert(obj != null);
 			Debug.Assert(_outlineResources != null);
@@ -43,7 +43,7 @@ namespace UnityFx.Outline
 			return _renderMaterial;
 		}
 
-		public Material GetHPassMaterial(object obj)
+		public Material GetHPassMaterial(IOutlineSettings obj)
 		{
 			Debug.Assert(obj != null);
 			Debug.Assert(_outlineResources != null);
@@ -64,7 +64,7 @@ namespace UnityFx.Outline
 			return mat;
 		}
 
-		public Material GetVPassMaterial(object obj)
+		public Material GetVPassMaterial(IOutlineSettings obj)
 		{
 			Debug.Assert(obj != null);
 			Debug.Assert(_outlineResources != null);

@@ -13,7 +13,7 @@ namespace UnityFx.Outline
 	/// </summary>
 	/// <seealso cref="OutlineEffect"/>
 	[Serializable]
-	public sealed class OutlineLayer : ICollection<GameObject>, ISerializationCallbackReceiver
+	public sealed class OutlineLayer : ICollection<GameObject>, IOutlineSettings, ISerializationCallbackReceiver
 	{
 		#region data
 
@@ -29,54 +29,14 @@ namespace UnityFx.Outline
 		[SerializeField]
 		[Range(OutlineRenderer.MinWidth, OutlineRenderer.MaxWidth)]
 		private int _outlineWidth = 4;
+		[SerializeField]
+		private OutlineMode _outlineMode;
 
 		private bool _changed;
 
 		#endregion
 
 		#region interface
-
-		/// <summary>
-		/// Gets or sets outline color for the layer.
-		/// </summary>
-		/// <seealso cref="OutlineWidth"/>
-		public Color OutlineColor
-		{
-			get
-			{
-				return _outlineColor;
-			}
-			set
-			{
-				if (_outlineColor != value)
-				{
-					_outlineColor = value;
-					_changed = true;
-				}
-			}
-		}
-
-		/// <summary>
-		/// Gets or sets outline width in pixels. Only positive values are allowed.
-		/// </summary>
-		/// <seealso cref="OutlineColor"/>
-		public int OutlineWidth
-		{
-			get
-			{
-				return _outlineWidth;
-			}
-			set
-			{
-				value = Mathf.Clamp(value, OutlineRenderer.MinWidth, OutlineRenderer.MaxWidth);
-
-				if (_outlineWidth != value)
-				{
-					_outlineWidth = value;
-					_changed = true;
-				}
-			}
-		}
 
 		/// <summary>
 		/// Gets a value indicating whether the layer contains unapplied changes.
@@ -137,9 +97,6 @@ namespace UnityFx.Outline
 			}
 		}
 
-		/// <summary>
-		/// Renders the layer with the <paramref name="renderer"/> passed.
-		/// </summary>
 		internal void Render(OutlineRenderer renderer, OutlineResourceCache resources)
 		{
 			var renderMaterial = resources.GetRenderMaterial(this);
@@ -150,6 +107,9 @@ namespace UnityFx.Outline
 			vPassMaterial.SetInt(_widthNameId, _outlineWidth);
 			vPassMaterial.SetColor(_colorNameId, _outlineColor);
 
+			OutlineRenderer.SetupMeterialKeywords(hPassMaterial, _outlineMode);
+			OutlineRenderer.SetupMeterialKeywords(vPassMaterial, _outlineMode);
+
 			foreach (var kvp in _outlineObjects)
 			{
 				if (kvp.Key)
@@ -159,6 +119,63 @@ namespace UnityFx.Outline
 			}
 
 			_changed = false;
+		}
+
+		#endregion
+
+		#region IOutlineSettings
+
+		/// <inheritdoc/>
+		public Color OutlineColor
+		{
+			get
+			{
+				return _outlineColor;
+			}
+			set
+			{
+				if (_outlineColor != value)
+				{
+					_outlineColor = value;
+					_changed = true;
+				}
+			}
+		}
+
+		/// <inheritdoc/>
+		public int OutlineWidth
+		{
+			get
+			{
+				return _outlineWidth;
+			}
+			set
+			{
+				value = Mathf.Clamp(value, OutlineRenderer.MinWidth, OutlineRenderer.MaxWidth);
+
+				if (_outlineWidth != value)
+				{
+					_outlineWidth = value;
+					_changed = true;
+				}
+			}
+		}
+
+		/// <inheritdoc/>
+		public OutlineMode OutlineMode
+		{
+			get
+			{
+				return _outlineMode;
+			}
+			set
+			{
+				if (_outlineMode != value)
+				{
+					_outlineMode = value;
+					_changed = true;
+				}
+			}
 		}
 
 		#endregion
