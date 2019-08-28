@@ -40,6 +40,21 @@ namespace UnityFx.Outline
 
 		#endregion
 
+		#region ScriptableObject
+
+		private void OnValidate()
+		{
+			if (_layers != null)
+			{
+				foreach (var layer in _layers)
+				{
+					layer.Invalidate();
+				}
+			}
+		}
+
+		#endregion
+
 		#region IList
 
 		public OutlineLayer this[int index]

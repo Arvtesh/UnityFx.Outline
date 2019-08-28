@@ -93,16 +93,27 @@ namespace UnityFx.Outline
 			}
 		}
 
+		internal void Invalidate()
+		{
+			if (_materials != null)
+			{
+				_materials.SetWidth(_outlineWidth);
+				_materials.SetColor(_outlineColor);
+				_materials.SetMode(_outlineMode);
+			}
+
+			_changed = true;
+		}
+
 		internal void Render(OutlineRenderer renderer, OutlineResources resources)
 		{
 			if (_materials == null || _materials.OutlineResources != resources)
 			{
 				_materials = new OutlineMaterialSet(resources);
+				_materials.SetWidth(_outlineWidth);
+				_materials.SetColor(_outlineColor);
+				_materials.SetMode(_outlineMode);
 			}
-
-			_materials.SetWidth(_outlineWidth);
-			_materials.SetColor(_outlineColor);
-			_materials.SetMode(_outlineMode);
 
 			foreach (var kvp in _outlineObjects)
 			{
@@ -132,6 +143,11 @@ namespace UnityFx.Outline
 				{
 					_outlineColor = value;
 					_changed = true;
+
+					if (_materials != null)
+					{
+						_materials.SetColor(value);
+					}
 				}
 			}
 		}
@@ -151,6 +167,11 @@ namespace UnityFx.Outline
 				{
 					_outlineWidth = value;
 					_changed = true;
+
+					if (_materials != null)
+					{
+						_materials.SetWidth(value);
+					}
 				}
 			}
 		}
@@ -168,6 +189,11 @@ namespace UnityFx.Outline
 				{
 					_outlineMode = value;
 					_changed = true;
+
+					if (_materials != null)
+					{
+						_materials.SetMode(value);
+					}
 				}
 			}
 		}
