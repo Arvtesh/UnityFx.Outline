@@ -7,9 +7,8 @@ Shader "UnityFx/Outline/VPassBlend"
 {
 	Properties
 	{
-		_Color("Outline color", Color) = (1, 0, 0, 1)
 		_Width("Outline thickness (in pixels)", Range(1, 32)) = 5
-		[KeywordEnum(Solid, Blurred)] _Mode("Outline rendering mode", Float) = 0
+		_Color("Outline color", Color) = (1, 0, 0, 1)
 	}
 
 	SubShader
@@ -71,9 +70,18 @@ Shader "UnityFx/Outline/VPassBlend"
 				}
 
 #if _MODE_BLURRED
+
 				return half4(_Color.rgb, _Color.a * intensity * 2);
+
 #else
-				return _Color * intensity;
+				if (intensity > 0)
+				{
+					return _Color;
+				}
+				else
+				{
+					return 0;
+				}
 #endif
 			}
 

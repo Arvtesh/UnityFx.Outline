@@ -11,8 +11,7 @@ namespace UnityFx.Outline
 	{
 		private OutlineResources _outlineResources;
 		private Material _renderMaterial;
-		private Dictionary<object, Material> _hPassMeterials;
-		private Dictionary<object, Material> _vPassMeterials;
+		private Dictionary<object, OutlineMaterialSet> _materialsMap;
 
 		public OutlineResources OutlineResources
 		{
@@ -22,131 +21,47 @@ namespace UnityFx.Outline
 			}
 			set
 			{
+				Debug.Assert(value != null);
+
 				if (_outlineResources != value)
 				{
 					_outlineResources = value;
-					UpdateResources();
+					Clear();
 				}
 			}
 		}
 
-		public Material GetRenderMaterial(IOutlineSettings obj)
+		public OutlineMaterialSet GetMaterials(IOutlineSettings obj)
 		{
 			Debug.Assert(obj != null);
 			Debug.Assert(_outlineResources != null);
 
-			if (_renderMaterial == null)
+			OutlineMaterialSet result;
+
+			if (_materialsMap == null)
 			{
-				_renderMaterial = new Material(_outlineResources.RenderShader);
+				_materialsMap = new Dictionary<object, OutlineMaterialSet>();
 			}
 
-			return _renderMaterial;
-		}
-
-		public Material GetHPassMaterial(IOutlineSettings obj)
-		{
-			Debug.Assert(obj != null);
-			Debug.Assert(_outlineResources != null);
-
-			Material mat;
-
-			if (_hPassMeterials == null)
+			if (!_materialsMap.TryGetValue(obj, out result))
 			{
-				_hPassMeterials = new Dictionary<object, Material>();
-			}
-
-			if (!_hPassMeterials.TryGetValue(obj, out mat))
-			{
-				mat = new Material(_outlineResources.HPassShader);
-				_hPassMeterials.Add(obj, mat);
-			}
-
-			return mat;
-		}
-
-		public Material GetVPassMaterial(IOutlineSettings obj)
-		{
-			Debug.Assert(obj != null);
-			Debug.Assert(_outlineResources != null);
-
-			Material mat;
-
-			if (_vPassMeterials == null)
-			{
-				_vPassMeterials = new Dictionary<object, Material>();
-			}
-
-			if (!_vPassMeterials.TryGetValue(obj, out mat))
-			{
-				mat = new Material(_outlineResources.VPassBlendShader);
-				_vPassMeterials.Add(obj, mat);
-			}
-
-			return mat;
-		}
-
-		public void UpdateResources()
-		{
-			if (_outlineResources)
-			{
-				if (_renderMaterial != null)
+				if (_renderMaterial == null)
 				{
-					if (_outlineResources.RenderShader)
-					{
-						_renderMaterial.shader = _outlineResources.RenderShader;
-					}
-					else
-					{
-						_renderMaterial = null;
-					}
+					_renderMaterial = new Material(_outlineResources.RenderShader);
 				}
 
-				if (_hPassMeterials != null)
-				{
-					if (_outlineResources.HPassShader)
-					{
-						foreach (var m in _hPassMeterials.Values)
-						{
-							m.shader = _outlineResources.HPassShader;
-						}
-					}
-					else
-					{
-						_hPassMeterials.Clear();
-					}
-				}
+				result = new OutlineMaterialSet(_outlineResources, _renderMaterial);
+				_materialsMap.Add(obj, result);
+			}
 
-				if (_vPassMeterials != null)
-				{
-					if (_outlineResources.VPassBlendShader)
-					{
-						foreach (var m in _vPassMeterials.Values)
-						{
-							m.shader = _outlineResources.VPassBlendShader;
-						}
-					}
-					else
-					{
-						_vPassMeterials.Clear();
-					}
-				}
-			}
-			else
-			{
-				Clear();
-			}
+			return result;
 		}
 
 		public void Clear()
 		{
-			if (_hPassMeterials != null)
+			if (_materialsMap != null)
 			{
-				_hPassMeterials.Clear();
-			}
-
-			if (_vPassMeterials != null)
-			{
-				_vPassMeterials.Clear();
+				_materialsMap.Clear();
 			}
 
 			_renderMaterial = null;

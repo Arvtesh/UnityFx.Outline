@@ -32,10 +32,8 @@ namespace UnityFx.Outline
 
 #pragma warning restore 0649
 
-		private Material _renderMaterial;
-		private Material _hPassMaterial;
-		private Material _vPassMaterial;
 		private Renderer[] _renderers;
+		private OutlineMaterialSet _materials;
 		private CommandBuffer _commandBuffer;
 
 		private Dictionary<Camera, CommandBuffer> _cameraMap = new Dictionary<Camera, CommandBuffer>();
@@ -65,22 +63,8 @@ namespace UnityFx.Outline
 				if (_outlineResources != value)
 				{
 					_outlineResources = value;
+					_materials = new OutlineMaterialSet(value);
 					_changed = true;
-
-					if (_renderMaterial)
-					{
-						_renderMaterial.shader = value.RenderShader;
-					}
-
-					if (_hPassMaterial)
-					{
-						_hPassMaterial.shader = value.HPassShader;
-					}
-
-					if (_vPassMaterial)
-					{
-						_vPassMaterial.shader = value.VPassBlendShader;
-					}
 				}
 			}
 		}
@@ -144,30 +128,26 @@ namespace UnityFx.Outline
 			{
 				_commandBuffer = new CommandBuffer();
 				_commandBuffer.name = OutlineRenderer.EffectName;
-				_changed = true;
 			}
 
 			if (_renderers == null)
 			{
 				_renderers = GetComponentsInChildren<Renderer>();
-				_changed = true;
 			}
 
-			if (_hPassMaterial)
+			if (_outlineResources && (_materials == null || _materials.OutlineResources != _outlineResources))
 			{
-				_hPassMaterial.SetInt(OutlineRenderer.WidthParamName, _outlineWidth);
-				_changed = true;
+				_materials = new OutlineMaterialSet(_outlineResources);
 			}
 
-			if (_vPassMaterial)
+			if (_materials != null)
 			{
-				_vPassMaterial.SetInt(OutlineRenderer.WidthParamName, _outlineWidth);
-				_vPassMaterial.SetColor(OutlineRenderer.ColorParamName, _outlineColor);
-				_changed = true;
+				_materials.SetColor(_outlineColor);
+				_materials.SetWidth(_outlineWidth);
+				_materials.SetMode(_outlineMode);
 			}
 
-			OutlineRenderer.SetupMeterialKeywords(_hPassMaterial, _outlineMode);
-			OutlineRenderer.SetupMeterialKeywords(_vPassMaterial, _outlineMode);
+			_changed = true;
 		}
 
 		private void Update()
@@ -221,9 +201,9 @@ namespace UnityFx.Outline
 					_outlineColor = value;
 					_changed = true;
 
-					if (_vPassMaterial)
+					if (_materials != null)
 					{
-						_vPassMaterial.SetColor(OutlineRenderer.ColorParamName, value);
+						_materials.SetColor(value);
 					}
 				}
 			}
@@ -245,14 +225,9 @@ namespace UnityFx.Outline
 					_outlineWidth = value;
 					_changed = true;
 
-					if (_hPassMaterial)
+					if (_materials != null)
 					{
-						_hPassMaterial.SetInt(OutlineRenderer.WidthParamName, value);
-					}
-
-					if (_vPassMaterial)
-					{
-						_vPassMaterial.SetInt(OutlineRenderer.WidthParamName, value);
+						_materials.SetWidth(value);
 					}
 				}
 			}
@@ -272,8 +247,10 @@ namespace UnityFx.Outline
 					_outlineMode = value;
 					_changed = true;
 
-					OutlineRenderer.SetupMeterialKeywords(_hPassMaterial, value);
-					OutlineRenderer.SetupMeterialKeywords(_vPassMaterial, value);
+					if (_materials != null)
+					{
+						_materials.SetMode(value);
+					}
 				}
 			}
 		}
@@ -314,36 +291,20 @@ namespace UnityFx.Outline
 		{
 			if (_outlineResources != null && _renderers != null)
 			{
-				if (_renderMaterial == null && _outlineResources.RenderShader)
+				if (_materials == null)
 				{
-					_renderMaterial = new Material(_outlineResources.RenderShader);
+					_materials = new OutlineMaterialSet(_outlineResources);
+					_materials.SetColor(_outlineColor);
+					_materials.SetWidth(_outlineWidth);
+					_materials.SetMode(_outlineMode);
 				}
 
-				if (_hPassMaterial == null && _outlineResources.HPassShader)
+				using (var renderer = new OutlineRenderer(_commandBuffer, BuiltinRenderTextureType.CameraTarget))
 				{
-					_hPassMaterial = new Material(_outlineResources.HPassShader);
-					_hPassMaterial.SetInt(OutlineRenderer.WidthParamName, _outlineWidth);
+					renderer.RenderSingleObject(_renderers, _materials);
 				}
 
-				if (_vPassMaterial == null && _outlineResources.VPassBlendShader)
-				{
-					_vPassMaterial = new Material(_outlineResources.VPassBlendShader);
-					_vPassMaterial.SetInt(OutlineRenderer.WidthParamName, _outlineWidth);
-					_vPassMaterial.SetColor(OutlineRenderer.ColorParamName, _outlineColor);
-				}
-
-				OutlineRenderer.SetupMeterialKeywords(_hPassMaterial, _outlineMode);
-				OutlineRenderer.SetupMeterialKeywords(_vPassMaterial, _outlineMode);
-
-				if (_renderMaterial && _hPassMaterial && _vPassMaterial)
-				{
-					using (var renderer = new OutlineRenderer(_commandBuffer, BuiltinRenderTextureType.CameraTarget))
-					{
-						renderer.RenderSingleObject(_renderers, _renderMaterial, _hPassMaterial, _vPassMaterial);
-					}
-
-					_changed = false;
-				}
+				_changed = false;
 			}
 		}
 

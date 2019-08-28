@@ -56,9 +56,9 @@ namespace UnityFx.Outline
 		public const string WidthParamName = "_Width";
 
 		/// <summary>
-		/// Name of the outline mode shader parameter.
+		/// Name of the outline gauss kernel table parameter.
 		/// </summary>
-		public const string ModeParamName = "_Mode";
+		public const string GaussKernelParamName = "_GaussKernel";
 
 		/// <summary>
 		/// Name of the outline mode shader parameter.
@@ -109,12 +109,10 @@ namespace UnityFx.Outline
 		/// <summary>
 		/// Adds commands for rendering single outline object.
 		/// </summary>
-		public void RenderSingleObject(Renderer[] renderers, Material renderMaterial, Material hPassMaterial, Material vPassMaterial)
+		public void RenderSingleObject(Renderer[] renderers, OutlineMaterialSet materials)
 		{
 			Debug.Assert(renderers != null);
-			Debug.Assert(renderMaterial != null);
-			Debug.Assert(hPassMaterial != null);
-			Debug.Assert(vPassMaterial != null);
+			Debug.Assert(materials != null);
 
 			_commandBuffer.SetRenderTarget(_maskRtId);
 			_commandBuffer.ClearRenderTarget(false, true, Color.black);
@@ -125,14 +123,14 @@ namespace UnityFx.Outline
 				{
 					for (var i = 0; i < renderer.sharedMaterials.Length; ++i)
 					{
-						_commandBuffer.DrawRenderer(renderer, renderMaterial, i);
+						_commandBuffer.DrawRenderer(renderer, materials.RenderMaterial, i);
 					}
 				}
 			}
 
 			_commandBuffer.SetGlobalTexture(_maskRtId, _maskRtId);
-			_commandBuffer.Blit(_maskRtId, _hPassRtId, hPassMaterial);
-			_commandBuffer.Blit(_hPassRtId, _renderTarget, vPassMaterial);
+			_commandBuffer.Blit(_maskRtId, _hPassRtId, materials.HPassMaterial);
+			_commandBuffer.Blit(_hPassRtId, _renderTarget, materials.VPassBlendMaterial);
 		}
 
 		/// <summary>
@@ -153,6 +151,18 @@ namespace UnityFx.Outline
 					m.DisableKeyword(ModeSolidKeyword);
 				}
 			}
+		}
+
+		/// <summary>
+		/// Calculates value of Gauss function for the specified <paramref name="x"/> and <paramref name="stdDev"/> values.
+		/// </summary>
+		public static float Gauss(float x, float stdDev)
+		{
+			var stdDev2 = stdDev * stdDev * 2;
+			var a = 1 / Mathf.Sqrt((float)Math.PI * stdDev2);
+			var gauss = a * Mathf.Pow((float)Math.E, -x * x / stdDev2);
+
+			return gauss;
 		}
 
 		#endregion

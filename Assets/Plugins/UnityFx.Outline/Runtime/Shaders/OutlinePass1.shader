@@ -8,7 +8,6 @@ Shader "UnityFx/Outline/HPass"
 	Properties
 	{
 		_Width("Outline thickness (in pixels)", Range(1, 32)) = 5
-		[KeywordEnum(Solid, Blurred)] _Mode("Outline rendering mode", Float) = 0
 	}
 
 	SubShader

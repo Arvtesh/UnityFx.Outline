@@ -17,9 +17,6 @@ namespace UnityFx.Outline
 	{
 		#region data
 
-		private readonly int _colorNameId = Shader.PropertyToID(OutlineRenderer.ColorParamName);
-		private readonly int _widthNameId = Shader.PropertyToID(OutlineRenderer.WidthParamName);
-
 		private Dictionary<GameObject, Renderer[]> _outlineObjects = new Dictionary<GameObject, Renderer[]>();
 		private Dictionary<OutlineResources, Material> _renderMaterials;
 		private Dictionary<OutlineResources, Material> _postProcessMaterials;
@@ -99,22 +96,17 @@ namespace UnityFx.Outline
 
 		internal void Render(OutlineRenderer renderer, OutlineResourceCache resources)
 		{
-			var renderMaterial = resources.GetRenderMaterial(this);
-			var hPassMaterial = resources.GetHPassMaterial(this);
-			var vPassMaterial = resources.GetVPassMaterial(this);
+			var materials = resources.GetMaterials(this);
 
-			hPassMaterial.SetInt(_widthNameId, _outlineWidth);
-			vPassMaterial.SetInt(_widthNameId, _outlineWidth);
-			vPassMaterial.SetColor(_colorNameId, _outlineColor);
-
-			OutlineRenderer.SetupMeterialKeywords(hPassMaterial, _outlineMode);
-			OutlineRenderer.SetupMeterialKeywords(vPassMaterial, _outlineMode);
+			materials.SetWidth(_outlineWidth);
+			materials.SetColor(_outlineColor);
+			materials.SetMode(_outlineMode);
 
 			foreach (var kvp in _outlineObjects)
 			{
 				if (kvp.Key)
 				{
-					renderer.RenderSingleObject(kvp.Value, renderMaterial, hPassMaterial, vPassMaterial);
+					renderer.RenderSingleObject(kvp.Value, materials);
 				}
 			}
 
