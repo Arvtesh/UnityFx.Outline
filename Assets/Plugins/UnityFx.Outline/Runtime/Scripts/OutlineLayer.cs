@@ -18,8 +18,7 @@ namespace UnityFx.Outline
 		#region data
 
 		private Dictionary<GameObject, Renderer[]> _outlineObjects = new Dictionary<GameObject, Renderer[]>();
-		private Dictionary<OutlineResources, Material> _renderMaterials;
-		private Dictionary<OutlineResources, Material> _postProcessMaterials;
+		private OutlineMaterialSet _materials;
 
 		[SerializeField]
 		private Color _outlineColor = Color.red;
@@ -94,19 +93,22 @@ namespace UnityFx.Outline
 			}
 		}
 
-		internal void Render(OutlineRenderer renderer, OutlineResourceCache resources)
+		internal void Render(OutlineRenderer renderer, OutlineResources resources)
 		{
-			var materials = resources.GetMaterials(this);
+			if (_materials == null || _materials.OutlineResources != resources)
+			{
+				_materials = new OutlineMaterialSet(resources);
+			}
 
-			materials.SetWidth(_outlineWidth);
-			materials.SetColor(_outlineColor);
-			materials.SetMode(_outlineMode);
+			_materials.SetWidth(_outlineWidth);
+			_materials.SetColor(_outlineColor);
+			_materials.SetMode(_outlineMode);
 
 			foreach (var kvp in _outlineObjects)
 			{
 				if (kvp.Key)
 				{
-					renderer.RenderSingleObject(kvp.Value, materials);
+					renderer.RenderSingleObject(kvp.Value, _materials);
 				}
 			}
 

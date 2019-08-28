@@ -26,7 +26,6 @@ namespace UnityFx.Outline
 		private OutlineLayerCollection _outlineLayers;
 
 		private IList<OutlineLayer> _layers;
-		private OutlineResourceCache _resourceCache;
 		private CommandBuffer _commandBuffer;
 		private bool _changed;
 
@@ -54,11 +53,6 @@ namespace UnityFx.Outline
 				{
 					_outlineResources = value;
 					_changed = true;
-
-					if (_resourceCache != null)
-					{
-						_resourceCache.OutlineResources = _outlineResources;
-					}
 				}
 			}
 		}
@@ -108,12 +102,6 @@ namespace UnityFx.Outline
 
 		private void Awake()
 		{
-			if (_resourceCache == null)
-			{
-				_resourceCache = new OutlineResourceCache();
-				_resourceCache.OutlineResources = _outlineResources;
-			}
-
 			if (_outlineLayers)
 			{
 				_layers = _outlineLayers.Layers;
@@ -122,11 +110,6 @@ namespace UnityFx.Outline
 
 		private void OnValidate()
 		{
-			if (_resourceCache != null)
-			{
-				_resourceCache.OutlineResources = _outlineResources;
-			}
-
 			if (_outlineLayers)
 			{
 				_layers = _outlineLayers.Layers;
@@ -174,8 +157,6 @@ namespace UnityFx.Outline
 				_commandBuffer.Dispose();
 				_commandBuffer = null;
 			}
-
-			_resourceCache.Clear();
 		}
 
 		private void Update()
@@ -221,7 +202,7 @@ namespace UnityFx.Outline
 					{
 						if (_layers[i] != null)
 						{
-							_layers[i].Render(renderer, _resourceCache);
+							_layers[i].Render(renderer, _outlineResources);
 						}
 					}
 				}
@@ -231,7 +212,6 @@ namespace UnityFx.Outline
 			else
 			{
 				_commandBuffer.Clear();
-				_resourceCache.Clear();
 			}
 		}
 

@@ -63,8 +63,12 @@ namespace UnityFx.Outline
 				if (_outlineResources != value)
 				{
 					_outlineResources = value;
-					_materials = new OutlineMaterialSet(value);
 					_changed = true;
+
+					_materials = new OutlineMaterialSet(value);
+					_materials.SetColor(_outlineColor);
+					_materials.SetWidth(_outlineWidth);
+					_materials.SetMode(_outlineMode);
 				}
 			}
 		}
