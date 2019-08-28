@@ -31,6 +31,10 @@ Shader "UnityFx/Outline/VPassBlend"
 			float4 _Color;
 			int _Width;
 
+#if _MODE_BLURRED
+			float _GaussSamples[32];
+#endif
+
 			struct v2f
 			{
 				float4 pos : POSITION;
@@ -54,18 +58,18 @@ Shader "UnityFx/Outline/VPassBlend"
 					discard;
 				}
 
-				int n = _Width;
+				int n = _Width * 2 - 1;
 
-				float TX_y = _HPassTex_TexelSize.y;
+				float TX_y = _MaskTex_TexelSize.y;
 				float intensity;
-				float n2 = (float)n / 2;
+				float n2 = _Width;
 
-				for (int k = 0; k < n; k += 1)
+				for (int k = -n2; k <= n2; k += 1)
 				{
 #if _MODE_BLURRED
-					intensity += tex2D(_HPassTex, i.uvs.xy + float2(0, (k - n2) * TX_y)).r / n;
+					intensity += tex2D(_HPassTex, i.uvs.xy + float2(0, k * TX_y)).r * _GaussSamples[abs(k)];
 #else
-					intensity += tex2D(_HPassTex, i.uvs.xy + float2(0, (k - n2) * TX_y)).r;
+					intensity += tex2D(_HPassTex, i.uvs.xy + float2(0, k * TX_y)).r;
 #endif
 				}
 

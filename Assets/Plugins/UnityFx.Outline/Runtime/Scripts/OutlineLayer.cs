@@ -28,6 +28,7 @@ namespace UnityFx.Outline
 		[SerializeField]
 		private OutlineMode _outlineMode;
 
+		private float[] _gaussSamples;
 		private bool _changed;
 
 		#endregion
@@ -97,7 +98,7 @@ namespace UnityFx.Outline
 		{
 			if (_materials != null)
 			{
-				_materials.SetWidth(_outlineWidth);
+				_materials.SetWidth(_outlineWidth, _gaussSamples);
 				_materials.SetColor(_outlineColor);
 				_materials.SetMode(_outlineMode);
 			}
@@ -109,8 +110,8 @@ namespace UnityFx.Outline
 		{
 			if (_materials == null || _materials.OutlineResources != resources)
 			{
-				_materials = new OutlineMaterialSet(resources);
-				_materials.SetWidth(_outlineWidth);
+				_materials = resources.CreateMaterialSet();
+				_materials.SetWidth(_outlineWidth, _gaussSamples);
 				_materials.SetColor(_outlineColor);
 				_materials.SetMode(_outlineMode);
 			}
@@ -166,11 +167,12 @@ namespace UnityFx.Outline
 				if (_outlineWidth != value)
 				{
 					_outlineWidth = value;
+					_gaussSamples = OutlineRenderer.GetGaussSamples(value);
 					_changed = true;
 
 					if (_materials != null)
 					{
-						_materials.SetWidth(value);
+						_materials.SetWidth(value, _gaussSamples);
 					}
 				}
 			}
@@ -205,6 +207,7 @@ namespace UnityFx.Outline
 		void ISerializationCallbackReceiver.OnAfterDeserialize()
 		{
 			_outlineWidth = Mathf.Clamp(_outlineWidth, OutlineRenderer.MinWidth, OutlineRenderer.MaxWidth);
+			_gaussSamples = OutlineRenderer.GetGaussSamples(_outlineWidth);
 
 			if (_outlineColor == Color.clear)
 			{

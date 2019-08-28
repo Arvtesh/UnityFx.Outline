@@ -8,7 +8,7 @@ using UnityEngine;
 namespace UnityFx.Outline
 {
 	/// <summary>
-	/// A set of materials needed to render outline.
+	/// A set of materials needed to render outlines.
 	/// </summary>
 	public class OutlineMaterialSet
 	{
@@ -16,6 +16,7 @@ namespace UnityFx.Outline
 
 		private readonly int _colorNameId = Shader.PropertyToID(OutlineRenderer.ColorParamName);
 		private readonly int _widthNameId = Shader.PropertyToID(OutlineRenderer.WidthParamName);
+		private readonly int _gaussSmaplesId = Shader.PropertyToID(OutlineRenderer.GaussSamplesParamName);
 
 		private readonly OutlineResources _outlineResources;
 		private readonly Material _renderMaterial;
@@ -40,6 +41,8 @@ namespace UnityFx.Outline
 		/// <summary>
 		/// Gets material for <see cref="OutlineResources.RenderShader"/>.
 		/// </summary>
+		/// <seealso cref="HPassMaterial"/>
+		/// <seealso cref="VPassBlendMaterial"/>
 		public Material RenderMaterial
 		{
 			get
@@ -51,6 +54,8 @@ namespace UnityFx.Outline
 		/// <summary>
 		/// Gets material for <see cref="OutlineResources.HPassShader"/>.
 		/// </summary>
+		/// <seealso cref="VPassBlendMaterial"/>
+		/// <seealso cref="RenderMaterial"/>
 		public Material HPassMaterial
 		{
 			get
@@ -62,6 +67,8 @@ namespace UnityFx.Outline
 		/// <summary>
 		/// Gets material for <see cref="OutlineResources.VPassBlendShader"/>.
 		/// </summary>
+		/// <seealso cref="HPassMaterial"/>
+		/// <seealso cref="RenderMaterial"/>
 		public Material VPassBlendMaterial
 		{
 			get
@@ -73,6 +80,9 @@ namespace UnityFx.Outline
 		/// <summary>
 		/// Initializes a new instance of the <see cref="OutlineMaterialSet"/> class.
 		/// </summary>
+		/// <remarks>
+		/// The preferred way of creating instances of <see cref="OutlineMaterialSet"/> is calling <see cref="OutlineResources.CreateMaterialSet"/> method.
+		/// </remarks>
 		public OutlineMaterialSet(OutlineResources resources)
 		{
 			_outlineResources = resources;
@@ -84,7 +94,7 @@ namespace UnityFx.Outline
 		/// <summary>
 		/// Initializes a new instance of the <see cref="OutlineMaterialSet"/> class.
 		/// </summary>
-		public OutlineMaterialSet(OutlineResources resources, Material renderMaterial)
+		internal OutlineMaterialSet(OutlineResources resources, Material renderMaterial)
 		{
 			_outlineResources = resources;
 			_renderMaterial = renderMaterial;
@@ -95,6 +105,8 @@ namespace UnityFx.Outline
 		/// <summary>
 		/// Sets outline color value.
 		/// </summary>
+		/// <seealso cref="SetWidth(int)"/>
+		/// <seealso cref="SetMode(OutlineMode)"/>
 		public void SetColor(Color color)
 		{
 			_vPassMaterial.SetColor(_colorNameId, color);
@@ -103,19 +115,29 @@ namespace UnityFx.Outline
 		/// <summary>
 		/// Sets outline width value.
 		/// </summary>
-		public void SetWidth(int width)
+		/// <seealso cref="SetColor(Color)"/>
+		/// <seealso cref="SetMode(OutlineMode)"/>
+		public void SetWidth(int width, float[] gaussSamples)
 		{
 			_hPassMaterial.SetInt(_widthNameId, width);
 			_vPassMaterial.SetInt(_widthNameId, width);
+
+			if (gaussSamples != null)
+			{
+				_hPassMaterial.SetFloatArray(_gaussSmaplesId, gaussSamples);
+				_hPassMaterial.SetFloatArray(_gaussSmaplesId, gaussSamples);
+			}
 		}
 
 		/// <summary>
 		/// Sets outline mode value.
 		/// </summary>
+		/// <seealso cref="SetWidth(int)"/>
+		/// <seealso cref="SetColor(Color)"/>
 		public void SetMode(OutlineMode mode)
 		{
-			OutlineRenderer.SetupMeterialKeywords(_hPassMaterial, mode);
-			OutlineRenderer.SetupMeterialKeywords(_vPassMaterial, mode);
+			OutlineRenderer.SetupMaterialKeywords(_hPassMaterial, mode);
+			OutlineRenderer.SetupMaterialKeywords(_vPassMaterial, mode);
 		}
 
 		#endregion

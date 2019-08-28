@@ -12,6 +12,8 @@ namespace UnityFx.Outline
 	[CreateAssetMenu(fileName = "OutlineResources", menuName = "UnityFx/Outline Resources")]
 	public class OutlineResources : ScriptableObject
 	{
+		private Material _renderMaterial;
+
 		/// <summary>
 		/// Gets or sets a <see cref="Shader"/> that renders objects outlined with a solid while color.
 		/// </summary>
@@ -46,6 +48,19 @@ namespace UnityFx.Outline
 			RenderShader = Shader.Find("UnityFx/Outline/RenderColor");
 			HPassShader = Shader.Find("UnityFx/Outline/HPass");
 			VPassBlendShader = Shader.Find("UnityFx/Outline/VPassBlend");
+		}
+
+		/// <summary>
+		/// Gets a new <see cref="OutlineMaterialSet"/> instance for the resources.
+		/// </summary>
+		public OutlineMaterialSet CreateMaterialSet()
+		{
+			if (_renderMaterial == null)
+			{
+				_renderMaterial = new Material(RenderShader);
+			}
+
+			return new OutlineMaterialSet(this, _renderMaterial);
 		}
 	}
 }

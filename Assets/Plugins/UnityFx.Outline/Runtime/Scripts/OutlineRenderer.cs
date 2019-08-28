@@ -58,7 +58,7 @@ namespace UnityFx.Outline
 		/// <summary>
 		/// Name of the outline gauss kernel table parameter.
 		/// </summary>
-		public const string GaussKernelParamName = "_GaussKernel";
+		public const string GaussSamplesParamName = "_GaussSamples";
 
 		/// <summary>
 		/// Name of the outline mode shader parameter.
@@ -136,7 +136,7 @@ namespace UnityFx.Outline
 		/// <summary>
 		/// Setups the meterial keywords for the <paramref name="mode"/> passed.
 		/// </summary>
-		public static void SetupMeterialKeywords(Material m, OutlineMode mode)
+		public static void SetupMaterialKeywords(Material m, OutlineMode mode)
 		{
 			if (m)
 			{
@@ -156,6 +156,7 @@ namespace UnityFx.Outline
 		/// <summary>
 		/// Calculates value of Gauss function for the specified <paramref name="x"/> and <paramref name="stdDev"/> values.
 		/// </summary>
+		/// <seealso href="https://en.wikipedia.org/wiki/Gaussian_blur"/>
 		public static float Gauss(float x, float stdDev)
 		{
 			var stdDev2 = stdDev * stdDev * 2;
@@ -163,6 +164,22 @@ namespace UnityFx.Outline
 			var gauss = a * Mathf.Pow((float)Math.E, -x * x / stdDev2);
 
 			return gauss;
+		}
+
+		/// <summary>
+		/// Samples Gauss function for the specified <paramref name="width"/>.
+		/// </summary>
+		public static float[] GetGaussSamples(int width)
+		{
+			var result = new float[MaxWidth];
+			var stdDev = width / 2f;
+
+			for (var i = 0; i < width; i++)
+			{
+				result[i] = Gauss(i, stdDev);
+			}
+
+			return result;
 		}
 
 		#endregion
