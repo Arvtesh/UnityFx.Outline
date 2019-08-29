@@ -136,7 +136,7 @@ namespace UnityFx.Outline
 			if (camera)
 			{
 				_commandBuffer = new CommandBuffer();
-				_commandBuffer.name = OutlineRenderer.EffectName;
+				_commandBuffer.name = string.Format("{0} - {1}", OutlineRenderer.EffectName, name);
 				_changed = true;
 
 				camera.AddCommandBuffer(OutlineRenderer.RenderEvent, _commandBuffer);

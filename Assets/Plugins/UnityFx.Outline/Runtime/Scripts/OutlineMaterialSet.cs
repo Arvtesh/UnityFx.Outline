@@ -16,7 +16,7 @@ namespace UnityFx.Outline
 
 		private readonly int _colorNameId = Shader.PropertyToID(OutlineRenderer.ColorParamName);
 		private readonly int _widthNameId = Shader.PropertyToID(OutlineRenderer.WidthParamName);
-		private readonly int _gaussSmaplesId = Shader.PropertyToID(OutlineRenderer.GaussSamplesParamName);
+		private readonly int _gaussSamplesId = Shader.PropertyToID(OutlineRenderer.GaussSamplesParamName);
 
 		private readonly OutlineResources _outlineResources;
 		private readonly Material _renderMaterial;
@@ -114,8 +114,8 @@ namespace UnityFx.Outline
 		public void Reset(IOutlineSettings settings)
 		{
 			SetColor(settings.OutlineColor);
-			SetWidth(settings.OutlineWidth);
 			SetMode(settings.OutlineMode);
+			SetWidthInternal(settings.OutlineWidth);
 		}
 
 		/// <summary>
@@ -135,21 +135,10 @@ namespace UnityFx.Outline
 		/// <seealso cref="SetMode(OutlineMode)"/>
 		public void SetWidth(int width)
 		{
-			Debug.Assert(width >= OutlineRenderer.MinWidth);
-			Debug.Assert(width <= OutlineRenderer.MaxWidth);
-
-			if (width != _width)
+			if (_width != width)
 			{
-				_width = width;
-				_gaussSamples = OutlineRenderer.GetGaussSamples(width, _gaussSamples);
-
-				_hPassMaterial.SetInt(_widthNameId, width);
-				_vPassMaterial.SetInt(_widthNameId, width);
-
-				_hPassMaterial.SetFloatArray(_gaussSmaplesId, _gaussSamples);
-				_vPassMaterial.SetFloatArray(_gaussSmaplesId, _gaussSamples);
+				SetWidthInternal(width);
 			}
-			
 		}
 
 		/// <summary>
@@ -175,6 +164,25 @@ namespace UnityFx.Outline
 				_hPassMaterial.DisableKeyword(OutlineRenderer.ModeSolidKeyword);
 				_vPassMaterial.DisableKeyword(OutlineRenderer.ModeSolidKeyword);
 			}
+		}
+
+		#endregion
+
+		#region implementation
+
+		private void SetWidthInternal(int width)
+		{
+			Debug.Assert(width >= OutlineRenderer.MinWidth);
+			Debug.Assert(width <= OutlineRenderer.MaxWidth);
+
+			_width = width;
+			_gaussSamples = OutlineRenderer.GetGaussSamples(width, _gaussSamples);
+
+			_hPassMaterial.SetInt(_widthNameId, width);
+			_vPassMaterial.SetInt(_widthNameId, width);
+
+			_hPassMaterial.SetFloatArray(_gaussSamplesId, _gaussSamples);
+			_vPassMaterial.SetFloatArray(_gaussSamplesId, _gaussSamples);
 		}
 
 		#endregion

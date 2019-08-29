@@ -141,8 +141,8 @@ namespace UnityFx.Outline
 
 		private void OnValidate()
 		{
-			CreateCommandBufferIfNeeded();
 			SetRenderersIfNeeded();
+			CreateCommandBufferIfNeeded();
 
 			if (_outlineResources && (_materials == null || _materials.OutlineResources != _outlineResources))
 			{
