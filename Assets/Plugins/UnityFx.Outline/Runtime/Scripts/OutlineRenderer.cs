@@ -134,26 +134,6 @@ namespace UnityFx.Outline
 		}
 
 		/// <summary>
-		/// Setups the meterial keywords for the <paramref name="mode"/> passed.
-		/// </summary>
-		public static void SetupMaterialKeywords(Material m, OutlineMode mode)
-		{
-			if (m)
-			{
-				if (mode == OutlineMode.Solid)
-				{
-					m.EnableKeyword(ModeSolidKeyword);
-					m.DisableKeyword(ModeBlurredKeyword);
-				}
-				else
-				{
-					m.EnableKeyword(ModeBlurredKeyword);
-					m.DisableKeyword(ModeSolidKeyword);
-				}
-			}
-		}
-
-		/// <summary>
 		/// Calculates value of Gauss function for the specified <paramref name="x"/> and <paramref name="stdDev"/> values.
 		/// </summary>
 		/// <seealso href="https://en.wikipedia.org/wiki/Gaussian_blur"/>
@@ -169,17 +149,21 @@ namespace UnityFx.Outline
 		/// <summary>
 		/// Samples Gauss function for the specified <paramref name="width"/>.
 		/// </summary>
-		public static float[] GetGaussSamples(int width)
+		public static float[] GetGaussSamples(int width, float[] samples)
 		{
-			var result = new float[MaxWidth];
 			var stdDev = width / 2f;
+
+			if (samples == null)
+			{
+				samples = new float[MaxWidth];
+			}
 
 			for (var i = 0; i < width; i++)
 			{
-				result[i] = Gauss(i, stdDev);
+				samples[i] = Gauss(i, stdDev);
 			}
 
-			return result;
+			return samples;
 		}
 
 		#endregion

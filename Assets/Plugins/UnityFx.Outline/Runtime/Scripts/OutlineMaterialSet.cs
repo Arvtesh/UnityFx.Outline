@@ -23,6 +23,9 @@ namespace UnityFx.Outline
 		private readonly Material _hPassMaterial;
 		private readonly Material _vPassMaterial;
 
+		private int _width;
+		private float[] _gaussSamples;
+
 		#endregion
 
 		#region interface
@@ -103,6 +106,19 @@ namespace UnityFx.Outline
 		}
 
 		/// <summary>
+		/// Resets materials state.
+		/// </summary>
+		/// <seealso cref="SetColor(Color)"/>
+		/// <seealso cref="SetWidth(int)"/>
+		/// <seealso cref="SetMode(OutlineMode)"/>
+		public void Reset(IOutlineSettings settings)
+		{
+			SetColor(settings.OutlineColor);
+			SetWidth(settings.OutlineWidth);
+			SetMode(settings.OutlineMode);
+		}
+
+		/// <summary>
 		/// Sets outline color value.
 		/// </summary>
 		/// <seealso cref="SetWidth(int)"/>
@@ -117,16 +133,23 @@ namespace UnityFx.Outline
 		/// </summary>
 		/// <seealso cref="SetColor(Color)"/>
 		/// <seealso cref="SetMode(OutlineMode)"/>
-		public void SetWidth(int width, float[] gaussSamples)
+		public void SetWidth(int width)
 		{
-			_hPassMaterial.SetInt(_widthNameId, width);
-			_vPassMaterial.SetInt(_widthNameId, width);
+			Debug.Assert(width >= OutlineRenderer.MinWidth);
+			Debug.Assert(width <= OutlineRenderer.MaxWidth);
 
-			if (gaussSamples != null)
+			if (width != _width)
 			{
-				_hPassMaterial.SetFloatArray(_gaussSmaplesId, gaussSamples);
-				_hPassMaterial.SetFloatArray(_gaussSmaplesId, gaussSamples);
+				_width = width;
+				_gaussSamples = OutlineRenderer.GetGaussSamples(width, _gaussSamples);
+
+				_hPassMaterial.SetInt(_widthNameId, width);
+				_vPassMaterial.SetInt(_widthNameId, width);
+
+				_hPassMaterial.SetFloatArray(_gaussSmaplesId, _gaussSamples);
+				_vPassMaterial.SetFloatArray(_gaussSmaplesId, _gaussSamples);
 			}
+			
 		}
 
 		/// <summary>
@@ -136,8 +159,22 @@ namespace UnityFx.Outline
 		/// <seealso cref="SetColor(Color)"/>
 		public void SetMode(OutlineMode mode)
 		{
-			OutlineRenderer.SetupMaterialKeywords(_hPassMaterial, mode);
-			OutlineRenderer.SetupMaterialKeywords(_vPassMaterial, mode);
+			if (mode == OutlineMode.Solid)
+			{
+				_hPassMaterial.EnableKeyword(OutlineRenderer.ModeSolidKeyword);
+				_vPassMaterial.EnableKeyword(OutlineRenderer.ModeSolidKeyword);
+
+				_hPassMaterial.DisableKeyword(OutlineRenderer.ModeBlurredKeyword);
+				_vPassMaterial.DisableKeyword(OutlineRenderer.ModeBlurredKeyword);
+			}
+			else
+			{
+				_hPassMaterial.EnableKeyword(OutlineRenderer.ModeBlurredKeyword);
+				_vPassMaterial.EnableKeyword(OutlineRenderer.ModeBlurredKeyword);
+
+				_hPassMaterial.DisableKeyword(OutlineRenderer.ModeSolidKeyword);
+				_vPassMaterial.DisableKeyword(OutlineRenderer.ModeSolidKeyword);
+			}
 		}
 
 		#endregion

@@ -85,14 +85,7 @@ Shader "UnityFx/Outline/VPassBlend"
 
 #else
 
-				if (intensity > 0)
-				{
-					return _Color;
-				}
-				else
-				{
-					return 0;
-				}
+				return _Color * step(0.01, intensity);
 
 #endif
 			}

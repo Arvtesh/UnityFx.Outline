@@ -35,7 +35,6 @@ namespace UnityFx.Outline
 		private Renderer[] _renderers;
 		private OutlineMaterialSet _materials;
 		private CommandBuffer _commandBuffer;
-		private float[] _gaussSamples;
 
 		private Dictionary<Camera, CommandBuffer> _cameraMap = new Dictionary<Camera, CommandBuffer>();
 		private float _cameraMapUpdateTimer;
@@ -67,9 +66,7 @@ namespace UnityFx.Outline
 					_changed = true;
 
 					_materials = _outlineResources.CreateMaterialSet();
-					_materials.SetColor(_outlineColor);
-					_materials.SetWidth(_outlineWidth, _gaussSamples);
-					_materials.SetMode(_outlineMode);
+					_materials.Reset(this);
 				}
 			}
 		}
@@ -96,8 +93,6 @@ namespace UnityFx.Outline
 				_renderers = GetComponentsInChildren<Renderer>();
 				_changed = true;
 			}
-
-			_gaussSamples = OutlineRenderer.GetGaussSamples(_outlineWidth);
 		}
 
 		private void OnEnable()
@@ -149,12 +144,9 @@ namespace UnityFx.Outline
 
 			if (_materials != null)
 			{
-				_materials.SetColor(_outlineColor);
-				_materials.SetWidth(_outlineWidth, _gaussSamples);
-				_materials.SetMode(_outlineMode);
+				_materials.Reset(this);
 			}
 
-			_gaussSamples = OutlineRenderer.GetGaussSamples(_outlineWidth);
 			_changed = true;
 		}
 
@@ -231,12 +223,11 @@ namespace UnityFx.Outline
 				if (_outlineWidth != value)
 				{
 					_outlineWidth = value;
-					_gaussSamples = OutlineRenderer.GetGaussSamples(value);
 					_changed = true;
 
 					if (_materials != null)
 					{
-						_materials.SetWidth(value, _gaussSamples);
+						_materials.SetWidth(value);
 					}
 				}
 			}
@@ -303,9 +294,7 @@ namespace UnityFx.Outline
 				if (_materials == null)
 				{
 					_materials = _outlineResources.CreateMaterialSet();
-					_materials.SetColor(_outlineColor);
-					_materials.SetWidth(_outlineWidth, _gaussSamples);
-					_materials.SetMode(_outlineMode);
+					_materials.Reset(this);
 				}
 
 				using (var renderer = new OutlineRenderer(_commandBuffer, BuiltinRenderTextureType.CameraTarget))
