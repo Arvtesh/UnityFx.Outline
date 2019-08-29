@@ -33,5 +33,10 @@ namespace UnityFx.Outline
 		/// <seealso cref="OutlineWidth"/>
 		/// <seealso cref="OutlineColor"/>
 		OutlineMode OutlineMode { get; set; }
+
+		/// <summary>
+		/// Forces the settings to be re-applied and the outline to be re-rendered.
+		/// </summary>
+		void Invalidate();
 	}
 }

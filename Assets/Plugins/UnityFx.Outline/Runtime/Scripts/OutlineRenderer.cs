@@ -119,7 +119,7 @@ namespace UnityFx.Outline
 
 			foreach (var renderer in renderers)
 			{
-				if (renderer)
+				if (renderer && renderer.isVisible)
 				{
 					for (var i = 0; i < renderer.sharedMaterials.Length; ++i)
 					{

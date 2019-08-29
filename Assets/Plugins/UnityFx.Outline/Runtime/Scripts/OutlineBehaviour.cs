@@ -72,6 +72,30 @@ namespace UnityFx.Outline
 		}
 
 		/// <summary>
+		/// Gets or sets outline renderers. By default all child <see cref="Renderer"/> components are used for outlining.
+		/// </summary>
+		public Renderer[] OutlineRenderers
+		{
+			get
+			{
+				return _renderers;
+			}
+			set
+			{
+				if (value == null)
+				{
+					throw new ArgumentNullException("OutlineRenderers");
+				}
+
+				if (_renderers != value)
+				{
+					_renderers = value;
+					_changed = true;
+				}
+			}
+		}
+
+		/// <summary>
 		/// Gets all cameras outline data is rendered to.
 		/// </summary>
 		public IEnumerable<Camera> Cameras
@@ -88,21 +112,12 @@ namespace UnityFx.Outline
 
 		private void Awake()
 		{
-			if (_renderers == null)
-			{
-				_renderers = GetComponentsInChildren<Renderer>();
-				_changed = true;
-			}
+			SetRenderersIfNeeded();
 		}
 
 		private void OnEnable()
 		{
-			if (_commandBuffer == null)
-			{
-				_commandBuffer = new CommandBuffer();
-				_commandBuffer.name = OutlineRenderer.EffectName;
-				_changed = true;
-			}
+			CreateCommandBufferIfNeeded();
 		}
 
 		private void OnDisable()
@@ -126,16 +141,8 @@ namespace UnityFx.Outline
 
 		private void OnValidate()
 		{
-			if (_commandBuffer == null)
-			{
-				_commandBuffer = new CommandBuffer();
-				_commandBuffer.name = OutlineRenderer.EffectName;
-			}
-
-			if (_renderers == null)
-			{
-				_renderers = GetComponentsInChildren<Renderer>();
-			}
+			CreateCommandBufferIfNeeded();
+			SetRenderersIfNeeded();
 
 			if (_outlineResources && (_materials == null || _materials.OutlineResources != _outlineResources))
 			{
@@ -255,6 +262,17 @@ namespace UnityFx.Outline
 			}
 		}
 
+		/// <inheritdoc/>
+		public void Invalidate()
+		{
+			if (_materials != null)
+			{
+				_materials.Reset(this);
+			}
+
+			_changed = true;
+		}
+
 		#endregion
 
 		#region implementation
@@ -287,6 +305,16 @@ namespace UnityFx.Outline
 			}
 		}
 
+		private void CreateCommandBufferIfNeeded()
+		{
+			if (_commandBuffer == null)
+			{
+				_commandBuffer = new CommandBuffer();
+				_commandBuffer.name = string.Format("{0} - {1}", OutlineRenderer.EffectName, name);
+				_changed = true;
+			}
+		}
+
 		private void UpdateCommandBuffer()
 		{
 			if (_outlineResources != null && _renderers != null)
@@ -303,6 +331,15 @@ namespace UnityFx.Outline
 				}
 
 				_changed = false;
+			}
+		}
+
+		private void SetRenderersIfNeeded()
+		{
+			if (_renderers == null)
+			{
+				_renderers = GetComponentsInChildren<Renderer>();
+				_changed = true;
 			}
 		}
 

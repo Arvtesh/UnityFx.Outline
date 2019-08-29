@@ -93,16 +93,6 @@ namespace UnityFx.Outline
 			}
 		}
 
-		internal void Invalidate()
-		{
-			if (_materials != null)
-			{
-				_materials.Reset(this);
-			}
-
-			_changed = true;
-		}
-
 		internal void Render(OutlineRenderer renderer, OutlineResources resources)
 		{
 			if (_materials == null || _materials.OutlineResources != resources)
@@ -192,6 +182,17 @@ namespace UnityFx.Outline
 					}
 				}
 			}
+		}
+
+		/// <inheritdoc/>
+		public void Invalidate()
+		{
+			if (_materials != null)
+			{
+				_materials.Reset(this);
+			}
+
+			_changed = true;
 		}
 
 		#endregion
