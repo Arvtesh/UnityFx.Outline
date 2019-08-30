@@ -85,18 +85,20 @@ Shader "UnityFx/Outline/VPassBlend"
 
 				if (_Intensity > 99)
 				{
-					return _Color * step(0.01, intensity);
+					intensity = step(0.01, intensity);
 				}
 				else
 				{
-					return float4(_Color.rgb, clamp(_Color.a * intensity * _Intensity, 0, 1));
+					intensity = intensity * _Intensity;
 				}
 
 #else
 
-				return _Color * step(0.01, intensity);
+				intensity = step(0.01, intensity);
 
 #endif
+
+				return float4(_Color.rgb, saturate(_Color.a * intensity));
 			}
 
 			ENDCG
