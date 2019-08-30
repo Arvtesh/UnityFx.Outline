@@ -26,6 +26,9 @@ namespace UnityFx.Outline
 		[Range(OutlineRenderer.MinWidth, OutlineRenderer.MaxWidth)]
 		private int _outlineWidth = 4;
 		[SerializeField]
+		[Range(OutlineRenderer.MinIntensity, OutlineRenderer.MaxIntensity)]
+		private float _outlineIntensity = 2;
+		[SerializeField]
 		private OutlineMode _outlineMode;
 
 		private bool _changed;
@@ -157,6 +160,30 @@ namespace UnityFx.Outline
 					if (_materials != null)
 					{
 						_materials.OutlineWidth = value;
+					}
+				}
+			}
+		}
+
+		/// <inheritdoc/>
+		public float OutlineIntensity
+		{
+			get
+			{
+				return _outlineIntensity;
+			}
+			set
+			{
+				value = Mathf.Clamp(value, OutlineRenderer.MinIntensity, OutlineRenderer.MaxIntensity);
+
+				if (_outlineIntensity != value)
+				{
+					_outlineIntensity = value;
+					_changed = true;
+
+					if (_materials != null)
+					{
+						_materials.OutlineIntensity = value;
 					}
 				}
 			}

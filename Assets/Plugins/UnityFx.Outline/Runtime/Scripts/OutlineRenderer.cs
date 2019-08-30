@@ -56,6 +56,16 @@ namespace UnityFx.Outline
 		public const int MaxWidth = 32;
 
 		/// <summary>
+		/// Minimum value of outline intensity parameter.
+		/// </summary>
+		public const int MinIntensity = 1;
+
+		/// <summary>
+		/// Maximum value of outline intensity parameter.
+		/// </summary>
+		public const int MaxIntensity = 8;
+
+		/// <summary>
 		/// Initializes a new instance of the <see cref="OutlineRenderer"/> struct.
 		/// </summary>
 		public OutlineRenderer(CommandBuffer commandBuffer, BuiltinRenderTextureType dst)

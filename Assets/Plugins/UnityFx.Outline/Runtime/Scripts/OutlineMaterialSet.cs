@@ -22,6 +22,7 @@ namespace UnityFx.Outline
 
 		private Color _color;
 		private int _width;
+		private float _intensity;
 		private OutlineMode _mode;
 
 		#endregion
@@ -47,6 +48,11 @@ namespace UnityFx.Outline
 		/// NameID of the outline width shader parameter.
 		/// </summary>
 		public readonly int WidthNameId = Shader.PropertyToID("_Width");
+
+		/// <summary>
+		/// NameID of the outline intensity shader parameter.
+		/// </summary>
+		public readonly int IntensityNameId = Shader.PropertyToID("_Intensity");
 
 		/// <summary>
 		/// NameID of the outline width shader parameter.
@@ -148,8 +154,9 @@ namespace UnityFx.Outline
 		public void Reset(IOutlineSettings settings)
 		{
 			SetColor(settings.OutlineColor);
-			SetMode(settings.OutlineMode);
+			SetIntensity(settings.OutlineIntensity);
 			SetWidth(settings.OutlineWidth);
+			SetMode(settings.OutlineMode);
 			UpdateGaussSamples();
 		}
 
@@ -186,6 +193,25 @@ namespace UnityFx.Outline
 				{
 					SetWidth(value);
 					UpdateGaussSamples();
+				}
+			}
+		}
+
+		/// <inheritdoc/>
+		public float OutlineIntensity
+		{
+			get
+			{
+				return _intensity;
+			}
+			set
+			{
+				Debug.Assert(value >= OutlineRenderer.MinIntensity);
+				Debug.Assert(value <= OutlineRenderer.MaxIntensity);
+
+				if (_intensity != value)
+				{
+					SetIntensity(value);
 				}
 			}
 		}
@@ -229,6 +255,12 @@ namespace UnityFx.Outline
 
 			_hPassMaterial.SetInt(WidthNameId, width);
 			_vPassMaterial.SetInt(WidthNameId, width);
+		}
+
+		private void SetIntensity(float intensity)
+		{
+			_intensity = intensity;
+			_vPassMaterial.SetFloat(IntensityNameId, intensity);
 		}
 
 		private void SetMode(OutlineMode mode)

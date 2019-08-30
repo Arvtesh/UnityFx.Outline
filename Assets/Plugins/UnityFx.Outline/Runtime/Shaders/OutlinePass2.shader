@@ -8,6 +8,7 @@ Shader "UnityFx/Outline/VPassBlend"
 	Properties
 	{
 		_Width("Outline thickness (in pixels)", Range(1, 32)) = 5
+		_Intensity("Outline intensity", Range(0.1, 100)) = 2
 		_Color("Outline color", Color) = (1, 0, 0, 1)
 	}
 
@@ -29,6 +30,7 @@ Shader "UnityFx/Outline/VPassBlend"
 			sampler2D _HPassTex;
 			float2 _HPassTex_TexelSize;
 			float4 _Color;
+			float _Intensity;
 			int _Width;
 
 #if _MODE_BLURRED
@@ -53,7 +55,7 @@ Shader "UnityFx/Outline/VPassBlend"
 				return o;
 			}
 
-			half4 frag(v2f i) : COLOR
+			float4 frag(v2f i) : COLOR
 			{
 				if (tex2D(_MaskTex, i.uvs.xy).r > 0)
 				{
@@ -66,7 +68,7 @@ Shader "UnityFx/Outline/VPassBlend"
 
 				for (int k = -n; k <= _Width; k += 1)
 				{
-					half pixelIntensity = tex2D(_HPassTex, i.uvs.xy + float2(0, k * TX_y)).r;
+					float pixelIntensity = tex2D(_HPassTex, i.uvs.xy + float2(0, k * TX_y)).r;
 
 #if _MODE_BLURRED
 
@@ -81,7 +83,14 @@ Shader "UnityFx/Outline/VPassBlend"
 
 #if _MODE_BLURRED
 
-				return half4(_Color.rgb, _Color.a * intensity * 2);
+				if (_Intensity > 99)
+				{
+					return _Color * step(0.01, intensity);
+				}
+				else
+				{
+					return float4(_Color.rgb, clamp(_Color.a * intensity * _Intensity, 0, 1));
+				}
 
 #else
 

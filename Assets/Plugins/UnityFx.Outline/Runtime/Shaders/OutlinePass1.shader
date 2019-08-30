@@ -51,7 +51,7 @@ Shader "UnityFx/Outline/HPass"
 				return o;
 			}
 
-			half frag(v2f i) : COLOR
+			float frag(v2f i) : COLOR
 			{
 				float TX_x = _MaskTex_TexelSize.x;
 				float intensity;
@@ -59,7 +59,7 @@ Shader "UnityFx/Outline/HPass"
 
 				for (int k = -n; k <= n; k += 1)
 				{
-					half pixelIntensity = tex2D(_MaskTex, i.uvs.xy + float2(k * TX_x, 0)).r;
+					float pixelIntensity = tex2D(_MaskTex, i.uvs.xy + float2(k * TX_x, 0)).r;
 
 #if _MODE_BLURRED
 

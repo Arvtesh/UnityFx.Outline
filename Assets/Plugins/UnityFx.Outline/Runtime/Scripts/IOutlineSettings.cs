@@ -28,6 +28,11 @@ namespace UnityFx.Outline
 		int OutlineWidth { get; set; }
 
 		/// <summary>
+		/// Gets or sets outline intensity value. Allowed range is [<see cref="OutlineRenderer.MinIntensity"/>, <see cref="OutlineRenderer.MaxIntensity"/>].
+		/// </summary>
+		float OutlineIntensity { get; set; }
+
+		/// <summary>
 		/// Gets or sets outline mode.
 		/// </summary>
 		/// <seealso cref="OutlineWidth"/>
