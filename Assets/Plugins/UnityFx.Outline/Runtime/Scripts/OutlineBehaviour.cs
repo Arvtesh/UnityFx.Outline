@@ -92,8 +92,7 @@ namespace UnityFx.Outline
 
 				if (_renderers != value)
 				{
-					_renderers = value;
-					_changed = true;
+					SetRenderers(value);
 				}
 			}
 		}
@@ -109,6 +108,11 @@ namespace UnityFx.Outline
 			}
 		}
 
+		internal void OnWillRenderObjectRt()
+		{
+			OnWillRenderObject();
+		}
+
 		#endregion
 
 		#region MonoBehaviour
@@ -116,6 +120,7 @@ namespace UnityFx.Outline
 		private void Awake()
 		{
 			SetRenderers();
+			CreateMaterialsIfNeeded();
 		}
 
 		private void Reset()
@@ -347,16 +352,19 @@ namespace UnityFx.Outline
 			}
 		}
 
+		private void CreateMaterialsIfNeeded()
+		{
+			if (_materials == null && _outlineResources != null)
+			{
+				_materials = _outlineResources.CreateMaterialSet();
+				_materials.Reset(this);
+			}
+		}
+
 		private void UpdateCommandBuffer()
 		{
-			if (_outlineResources != null && _renderers != null)
+			if (_outlineResources != null && _renderers != null && _materials != null)
 			{
-				if (_materials == null)
-				{
-					_materials = _outlineResources.CreateMaterialSet();
-					_materials.Reset(this);
-				}
-
 				using (var renderer = new OutlineRenderer(_commandBuffer, BuiltinRenderTextureType.CameraTarget))
 				{
 					renderer.RenderSingleObject(_renderers, _materials);
@@ -366,12 +374,49 @@ namespace UnityFx.Outline
 			}
 		}
 
+		private void SetRenderers(Renderer[] renderers)
+		{
+			if (_renderers != null)
+			{
+				foreach (var renderer in _renderers)
+				{
+					if (renderer)
+					{
+						var c = renderer.GetComponent<OutlineBehaviourRt>();
+
+						if (c != null)
+						{
+							c.Parent = null;
+						}
+					}
+				}
+			}
+
+			_renderers = renderers;
+			_changed = true;
+
+			// Have to attach a specific behaviour to each renderer to call 
+			foreach (var renderer in _renderers)
+			{
+				if (renderer && renderer.gameObject != gameObject)
+				{
+					var c = renderer.GetComponent<OutlineBehaviourRt>();
+
+					if (c == null)
+					{
+						c = renderer.gameObject.AddComponent<OutlineBehaviourRt>();
+					}
+
+					c.Parent = this;
+				}
+			}
+		}
+
 		private void SetRenderers(bool reset = false)
 		{
 			if (_renderers == null || reset)
 			{
-				_renderers = GetComponentsInChildren<Renderer>();
-				_changed = true;
+				SetRenderers(GetComponentsInChildren<Renderer>());
 			}
 		}
 
