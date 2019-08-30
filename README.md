@@ -10,7 +10,7 @@ Npm | [![Npm release](https://img.shields.io/npm/v/com.unityfx.outline.svg)](htt
 ## Synopsis
 ![Outline demo](OutlineDemo.png "Outline demo")
 
-*UnityFx.Outline* defines tools that can be used to render configurable object outlines for specific cameras. The outlines configuration can be easily customized either through scripts or with Unity editor.
+*UnityFx.Outline* implements configurable per-object and per-camera outlines. Both solid and blurred outline modes are supported (Gauss blur). The outlines can be easily customized either through scripts or with Unity editor (both in edit-time or runtime).
 
 Implementation is based on Unity [command buffers](https://docs.unity3d.com/ScriptReference/Rendering.CommandBuffer.html), does not require putting objects into layers and has no dependencies.
 
@@ -43,7 +43,7 @@ Npm package is available at [npmjs.com](https://www.npmjs.com/package/com.unityf
     }
   ],
   "dependencies": {
-    "com.unityfx.outline": "0.3.0"
+    "com.unityfx.outline": "0.4.0"
   }
 }
 ```
@@ -62,6 +62,7 @@ var layer = new OutlineLayer();
 
 layer.OutlineColor = Color.red;
 layer.OutlineWidth = 7;
+layer.OutlineMode = OutlineMode.Blurred;
 layer.Add(myGo);
 
 outlineEffect.OutlineLayers.Add(layer);
@@ -90,11 +91,31 @@ outlineBehaviour.OutlineResources = myResources;
 
 outlineBehaviour.OutlineColor = Color.green;
 outlineBehaviour.OutlineWidth = 2;
+outlineBehaviour.OutlineIntensity = 10;
 ```
 
-### TODO
-- Make different `OutlineEffect` instances share layers.
-- Blur outline frames.
+### Extensibility
+There are a number of helper classes that can be used for writing highly customized outline implementations (if neither `OutlineBehaviour` nor `OutlineEffect` does not suit your needs).
+All outline implementations use following helpers:
+- `OutlineRenderer` is basically a wrapper around `CommandBuffer` for low-level outline rendering.
+- `OutlineMaterialSet` is a set of materials used by `OutlineRenderer` for rendering.
+
+Using these helpers is quite easy to create new outline tools. For instance, the following code renders a blue outline around object the script is attached to in `myCamera`:
+
+```csharp
+var commandBuffer = new CommandBuffer();
+var renderers = GetComponentsInChildren<Renderer>();
+var materials = outlineResources.CreateMaterialSet();
+
+materials.OutlineColor = Color.blue;
+
+using (var renderer = new OutlineRenderer(commandBuffer, BuiltinRenderTextureType.CameraTarget))
+{
+  renderer.RenderSingleObject(renderers, _materials);
+}
+
+myCamera.AddCommandBuffer(OutlineRenderer.RenderEvent, commandBuffer);
+```
 
 ## Motivation
 The project was initially created to help author with his [Unity3d](https://unity3d.com) projects. There are not many reusable open-source examples of it, so here it is. Hope it will be useful for someone.
