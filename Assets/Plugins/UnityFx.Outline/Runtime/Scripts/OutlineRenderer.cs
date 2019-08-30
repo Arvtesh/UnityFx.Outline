@@ -21,8 +21,7 @@ namespace UnityFx.Outline
 	/// 	renderer.RenderSingleObject(outlineRenderers, renderMaterial, postProcessMaterial);
 	/// }
 	/// </example>
-	/// <seealso cref="OutlineEffect"/>
-	/// <seealso cref="OutlineBehaviour"/>
+	/// <seealso cref="OutlineMaterialSet"/>
 	public struct OutlineRenderer : IDisposable
 	{
 		#region data

@@ -10,7 +10,8 @@ namespace UnityFx.Outline
 	/// <summary>
 	/// A set of materials needed to render outlines.
 	/// </summary>
-	public class OutlineMaterialSet  : IOutlineSettings
+	/// <seealso cref="OutlineRenderer"/>
+	public sealed class OutlineMaterialSet  : IOutlineSettings
 	{
 		#region data
 
@@ -268,10 +269,7 @@ namespace UnityFx.Outline
 
 		private void UpdateGaussSamples()
 		{
-			if (_mode == OutlineMode.Blurred)
-			{
-				OutlineRenderer.GetGaussSamples(_width, _gaussSamples);
-			}
+			OutlineRenderer.GetGaussSamples(_width, _gaussSamples);
 		}
 
 		#endregion

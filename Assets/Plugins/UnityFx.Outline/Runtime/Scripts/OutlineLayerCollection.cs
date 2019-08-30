@@ -14,7 +14,7 @@ namespace UnityFx.Outline
 	/// <seealso cref="OutlineLayer"/>
 	/// <seealso cref="OutlineEffect"/>
 	[CreateAssetMenu(fileName = "OutlineLayerCollection", menuName = "UnityFx/Outline Layer Collection")]
-	public class OutlineLayerCollection : ScriptableObject, IList<OutlineLayer>
+	public sealed class OutlineLayerCollection : ScriptableObject, IList<OutlineLayer>
 	{
 		#region data
 
