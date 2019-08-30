@@ -3,6 +3,22 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/); this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [0.4.0] - unreleased
+
+### Added
+- Added Gauss blurring to outlines.
+- Added outline mode parameter (possible values are `Solid` and `Blurred`).
+- Added outline intensity parameter (for blurred outlines only).
+- Added `IOutlineSettings` interface to make outline settings the same for `OutlineBehaviour` and `OutlineLayer`.
+- Added `OutlineMaterialSet` helper.
+
+### Changed
+- Changed solid outline to use Gauss sampling (to achieve smoother outlines).
+- Changed outline implementation to use different passed for horizontal and vertical sampling (to make algorithm complexity linear instead of quadric).
+
+### Removed
+- Removed `OutlineResourceCache` class.
+
 ## [0.3.0] - 2019.08.27
 
 ### Added
