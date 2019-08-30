@@ -113,6 +113,7 @@ namespace UnityFx.Outline
 		/// Calculates value of Gauss function for the specified <paramref name="x"/> and <paramref name="stdDev"/> values.
 		/// </summary>
 		/// <seealso href="https://en.wikipedia.org/wiki/Gaussian_blur"/>
+		/// <seealso href="https://en.wikipedia.org/wiki/Normal_distribution"/>
 		public static float Gauss(float x, float stdDev)
 		{
 			var stdDev2 = stdDev * stdDev * 2;
@@ -125,9 +126,12 @@ namespace UnityFx.Outline
 		/// <summary>
 		/// Samples Gauss function for the specified <paramref name="width"/>.
 		/// </summary>
+		/// <seealso href="https://en.wikipedia.org/wiki/Normal_distribution"/>
 		public static float[] GetGaussSamples(int width, float[] samples)
 		{
-			var stdDev = width / 2f;
+			// NOTE: According to '3 sigma' rule there is no reason to have StdDev less then width / 3.
+			// In practice blur looks best when StdDev is within range [width / 3,  width / 2].
+			var stdDev = width * 0.5f;
 
 			if (samples == null)
 			{
