@@ -1,6 +1,6 @@
 # UnityFx.Outline
 
-Channel  | UnityFx.Outline |
+Channel | UnityFx.Outline |
 ---------|---------------|
 Github | [![GitHub release](https://img.shields.io/github/release/Arvtesh/UnityFx.Outline.svg?logo=github)](https://github.com/Arvtesh/UnityFx.Outline/releases)
 Npm | [![Npm release](https://img.shields.io/npm/v/com.unityfx.outline.svg)](https://www.npmjs.com/package/com.unityfx.outline) ![npm](https://img.shields.io/npm/dt/com.unityfx.outline)
@@ -8,11 +8,22 @@ Npm | [![Npm release](https://img.shields.io/npm/v/com.unityfx.outline.svg)](htt
 **Requires Unity 2017 or higher.**
 
 ## Synopsis
-![Outline demo](OutlineDemo.png "Outline demo")
+![Outline demo](OutlineSamples.png "Outline demo")
+![Outline demo](MotusOutline.png "Outline demo")
 
 *UnityFx.Outline* implements configurable per-object and per-camera outlines. Both solid and blurred outline modes are supported (Gauss blur). The outlines can be easily customized either through scripts or with Unity editor (both in edit-time or runtime).
 
 Implementation is based on Unity [command buffers](https://docs.unity3d.com/ScriptReference/Rendering.CommandBuffer.html), does not require putting objects into layers and has no dependencies.
+
+Supported outline parameters are:
+- Color;
+- Width (in pixels);
+- Type (solid or blurred);
+- Intensity (for blurred outlines).
+
+Supported platforms:
+- Windows standalone;
+- More platforms to test.
 
 Please see [CHANGELOG](CHANGELOG.md) for information on recent changes.
 
