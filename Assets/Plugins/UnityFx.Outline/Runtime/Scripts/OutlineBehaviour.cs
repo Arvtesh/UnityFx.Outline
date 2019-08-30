@@ -115,7 +115,12 @@ namespace UnityFx.Outline
 
 		private void Awake()
 		{
-			SetRenderersIfNeeded();
+			SetRenderers();
+		}
+
+		private void Reset()
+		{
+			SetRenderers(true);
 		}
 
 		private void OnEnable()
@@ -144,7 +149,7 @@ namespace UnityFx.Outline
 
 		private void OnValidate()
 		{
-			SetRenderersIfNeeded();
+			SetRenderers();
 			CreateCommandBufferIfNeeded();
 
 			if (_outlineResources && (_materials == null || _materials.OutlineResources != _outlineResources))
@@ -361,9 +366,9 @@ namespace UnityFx.Outline
 			}
 		}
 
-		private void SetRenderersIfNeeded()
+		private void SetRenderers(bool reset = false)
 		{
-			if (_renderers == null)
+			if (_renderers == null || reset)
 			{
 				_renderers = GetComponentsInChildren<Renderer>();
 				_changed = true;

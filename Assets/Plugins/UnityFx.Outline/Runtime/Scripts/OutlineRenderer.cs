@@ -2,6 +2,7 @@
 // See the LICENSE.md file in the project root for more information.
 
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Rendering;
 
@@ -99,7 +100,7 @@ namespace UnityFx.Outline
 		/// <summary>
 		/// Adds commands for rendering single outline object.
 		/// </summary>
-		public void RenderSingleObject(Renderer[] renderers, OutlineMaterialSet materials)
+		public void RenderSingleObject(IList<Renderer> renderers, OutlineMaterialSet materials)
 		{
 			Debug.Assert(renderers != null);
 			Debug.Assert(materials != null);
@@ -107,14 +108,41 @@ namespace UnityFx.Outline
 			_commandBuffer.SetRenderTarget(_maskRtId);
 			_commandBuffer.ClearRenderTarget(false, true, Color.black);
 
-			foreach (var renderer in renderers)
+			for (var i = 0; i < renderers.Count; ++i)
 			{
+				var renderer = renderers[i];
+
 				if (renderer && renderer.gameObject.activeInHierarchy && renderer.enabled)
 				{
-					for (var i = 0; i < renderer.sharedMaterials.Length; ++i)
+					for (var j = 0; j < renderer.sharedMaterials.Length; ++j)
 					{
-						_commandBuffer.DrawRenderer(renderer, materials.RenderMaterial, i);
+						_commandBuffer.DrawRenderer(renderer, materials.RenderMaterial, j);
 					}
+				}
+			}
+
+			_commandBuffer.SetGlobalFloatArray(materials.GaussSamplesNameId, materials.GaussSamples);
+			_commandBuffer.SetGlobalTexture(_maskRtId, _maskRtId);
+			_commandBuffer.Blit(_maskRtId, _hPassRtId, materials.HPassMaterial);
+			_commandBuffer.Blit(_hPassRtId, _renderTarget, materials.VPassBlendMaterial);
+		}
+
+		/// <summary>
+		/// Adds commands for rendering single outline object.
+		/// </summary>
+		public void RenderSingleObject(Renderer renderer, OutlineMaterialSet materials)
+		{
+			Debug.Assert(renderer != null);
+			Debug.Assert(materials != null);
+
+			_commandBuffer.SetRenderTarget(_maskRtId);
+			_commandBuffer.ClearRenderTarget(false, true, Color.black);
+
+			if (renderer && renderer.gameObject.activeInHierarchy && renderer.enabled)
+			{
+				for (var i = 0; i < renderer.sharedMaterials.Length; ++i)
+				{
+					_commandBuffer.DrawRenderer(renderer, materials.RenderMaterial, i);
 				}
 			}
 
