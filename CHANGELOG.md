@@ -16,6 +16,9 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/); this proj
 - Changed solid outline to use Gauss sampling (to achieve smoother outlines).
 - Changed outline implementation to use different passed for horizontal and vertical sampling (to make algorithm complexity linear instead of quadric).
 
+### Fixed
+- Fixed an issue with `OutlineBehaviour` not rendering outlines if attached to a `GameObject` with no renderers.
+
 ### Removed
 - Removed `OutlineResourceCache` class.
 
