@@ -132,7 +132,7 @@ namespace UnityFx.Outline
 
 					if (_materials != null)
 					{
-						_materials.SetColor(value);
+						_materials.OutlineColor = value;
 					}
 				}
 			}
@@ -156,7 +156,7 @@ namespace UnityFx.Outline
 
 					if (_materials != null)
 					{
-						_materials.SetWidth(value);
+						_materials.OutlineWidth = value;
 					}
 				}
 			}
@@ -178,7 +178,7 @@ namespace UnityFx.Outline
 
 					if (_materials != null)
 					{
-						_materials.SetMode(value);
+						_materials.OutlineMode = value;
 					}
 				}
 			}

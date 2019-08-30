@@ -10,25 +10,48 @@ namespace UnityFx.Outline
 	/// <summary>
 	/// A set of materials needed to render outlines.
 	/// </summary>
-	public class OutlineMaterialSet
+	public class OutlineMaterialSet  : IOutlineSettings
 	{
 		#region data
-
-		private readonly int _colorNameId = Shader.PropertyToID(OutlineRenderer.ColorParamName);
-		private readonly int _widthNameId = Shader.PropertyToID(OutlineRenderer.WidthParamName);
-		private readonly int _gaussSamplesId = Shader.PropertyToID(OutlineRenderer.GaussSamplesParamName);
 
 		private readonly OutlineResources _outlineResources;
 		private readonly Material _renderMaterial;
 		private readonly Material _hPassMaterial;
 		private readonly Material _vPassMaterial;
+		private readonly float[] _gaussSamples = new float[OutlineRenderer.MaxWidth];
 
+		private Color _color;
 		private int _width;
-		private float[] _gaussSamples;
+		private OutlineMode _mode;
 
 		#endregion
 
 		#region interface
+
+		/// <summary>
+		/// Name of the outline mode shader parameter.
+		/// </summary>
+		public const string ModeBlurredKeyword = "_MODE_BLURRED";
+
+		/// <summary>
+		/// Name of the outline mode shader parameter.
+		/// </summary>
+		public const string ModeSolidKeyword = "_MODE_SOLID";
+
+		/// <summary>
+		/// NameID of the outline color shader parameter.
+		/// </summary>
+		public readonly int ColorNameId = Shader.PropertyToID("_Color");
+
+		/// <summary>
+		/// NameID of the outline width shader parameter.
+		/// </summary>
+		public readonly int WidthNameId = Shader.PropertyToID("_Width");
+
+		/// <summary>
+		/// NameID of the outline width shader parameter.
+		/// </summary>
+		public readonly int GaussSamplesNameId = Shader.PropertyToID("_GaussSamples");
 
 		/// <summary>
 		/// Gets resources used by the effect implementation.
@@ -81,6 +104,17 @@ namespace UnityFx.Outline
 		}
 
 		/// <summary>
+		/// Gets Gauss samples for blur calculations.
+		/// </summary>
+		public float[] GaussSamples
+		{
+			get
+			{
+				return _gaussSamples;
+			}
+		}
+
+		/// <summary>
 		/// Initializes a new instance of the <see cref="OutlineMaterialSet"/> class.
 		/// </summary>
 		/// <remarks>
@@ -115,74 +149,116 @@ namespace UnityFx.Outline
 		{
 			SetColor(settings.OutlineColor);
 			SetMode(settings.OutlineMode);
-			SetWidthInternal(settings.OutlineWidth);
+			SetWidth(settings.OutlineWidth);
+			UpdateGaussSamples();
 		}
 
-		/// <summary>
-		/// Sets outline color value.
-		/// </summary>
-		/// <seealso cref="SetWidth(int)"/>
-		/// <seealso cref="SetMode(OutlineMode)"/>
-		public void SetColor(Color color)
-		{
-			_vPassMaterial.SetColor(_colorNameId, color);
-		}
+		#endregion
 
-		/// <summary>
-		/// Sets outline width value.
-		/// </summary>
-		/// <seealso cref="SetColor(Color)"/>
-		/// <seealso cref="SetMode(OutlineMode)"/>
-		public void SetWidth(int width)
+		#region IOutlineSettings
+
+		/// <inheritdoc/>
+		public Color OutlineColor
 		{
-			if (_width != width)
+			get
 			{
-				SetWidthInternal(width);
+				return _color;
+			}
+			set
+			{
+				SetColor(value);
 			}
 		}
 
-		/// <summary>
-		/// Sets outline mode value.
-		/// </summary>
-		/// <seealso cref="SetWidth(int)"/>
-		/// <seealso cref="SetColor(Color)"/>
-		public void SetMode(OutlineMode mode)
+		/// <inheritdoc/>
+		public int OutlineWidth
 		{
-			if (mode == OutlineMode.Solid)
+			get
 			{
-				_hPassMaterial.EnableKeyword(OutlineRenderer.ModeSolidKeyword);
-				_vPassMaterial.EnableKeyword(OutlineRenderer.ModeSolidKeyword);
-
-				_hPassMaterial.DisableKeyword(OutlineRenderer.ModeBlurredKeyword);
-				_vPassMaterial.DisableKeyword(OutlineRenderer.ModeBlurredKeyword);
+				return _width;
 			}
-			else
+			set
 			{
-				_hPassMaterial.EnableKeyword(OutlineRenderer.ModeBlurredKeyword);
-				_vPassMaterial.EnableKeyword(OutlineRenderer.ModeBlurredKeyword);
+				Debug.Assert(value >= OutlineRenderer.MinWidth);
+				Debug.Assert(value <= OutlineRenderer.MaxWidth);
 
-				_hPassMaterial.DisableKeyword(OutlineRenderer.ModeSolidKeyword);
-				_vPassMaterial.DisableKeyword(OutlineRenderer.ModeSolidKeyword);
+				if (_width != value)
+				{
+					SetWidth(value);
+					UpdateGaussSamples();
+				}
 			}
+		}
+
+		/// <inheritdoc/>
+		public OutlineMode OutlineMode
+		{
+			get
+			{
+				return _mode;
+			}
+			set
+			{
+				if (_mode != value)
+				{
+					SetMode(value);
+					UpdateGaussSamples();
+				}
+			}
+		}
+
+		/// <inheritdoc/>
+		public void Invalidate()
+		{
+			Reset(this);
 		}
 
 		#endregion
 
 		#region implementation
 
-		private void SetWidthInternal(int width)
+		private void SetColor(Color color)
 		{
-			Debug.Assert(width >= OutlineRenderer.MinWidth);
-			Debug.Assert(width <= OutlineRenderer.MaxWidth);
+			_color = color;
+			_vPassMaterial.SetColor(ColorNameId, color);
+		}
 
+		private void SetWidth(int width)
+		{
 			_width = width;
-			_gaussSamples = OutlineRenderer.GetGaussSamples(width, _gaussSamples);
 
-			_hPassMaterial.SetInt(_widthNameId, width);
-			_vPassMaterial.SetInt(_widthNameId, width);
+			_hPassMaterial.SetInt(WidthNameId, width);
+			_vPassMaterial.SetInt(WidthNameId, width);
+		}
 
-			_hPassMaterial.SetFloatArray(_gaussSamplesId, _gaussSamples);
-			_vPassMaterial.SetFloatArray(_gaussSamplesId, _gaussSamples);
+		private void SetMode(OutlineMode mode)
+		{
+			_mode = mode;
+
+			if (mode == OutlineMode.Solid)
+			{
+				_hPassMaterial.EnableKeyword(ModeSolidKeyword);
+				_vPassMaterial.EnableKeyword(ModeSolidKeyword);
+
+				_hPassMaterial.DisableKeyword(ModeBlurredKeyword);
+				_vPassMaterial.DisableKeyword(ModeBlurredKeyword);
+			}
+			else
+			{
+				_hPassMaterial.EnableKeyword(ModeBlurredKeyword);
+				_vPassMaterial.EnableKeyword(ModeBlurredKeyword);
+
+				_hPassMaterial.DisableKeyword(ModeSolidKeyword);
+				_vPassMaterial.DisableKeyword(ModeSolidKeyword);
+			}
+		}
+
+		private void UpdateGaussSamples()
+		{
+			if (_mode == OutlineMode.Blurred)
+			{
+				OutlineRenderer.GetGaussSamples(_width, _gaussSamples);
+			}
 		}
 
 		#endregion

@@ -46,31 +46,6 @@ namespace UnityFx.Outline
 		public const string EffectName = "Outline";
 
 		/// <summary>
-		/// Name of the outline color shader parameter.
-		/// </summary>
-		public const string ColorParamName = "_Color";
-
-		/// <summary>
-		/// Name of the outline width shader parameter.
-		/// </summary>
-		public const string WidthParamName = "_Width";
-
-		/// <summary>
-		/// Name of the outline gauss kernel table parameter.
-		/// </summary>
-		public const string GaussSamplesParamName = "_GaussSamples";
-
-		/// <summary>
-		/// Name of the outline mode shader parameter.
-		/// </summary>
-		public const string ModeBlurredKeyword = "_MODE_BLURRED";
-
-		/// <summary>
-		/// Name of the outline mode shader parameter.
-		/// </summary>
-		public const string ModeSolidKeyword = "_MODE_SOLID";
-
-		/// <summary>
 		/// Minimum value of outline width parameter.
 		/// </summary>
 		public const int MinWidth = 1;
@@ -128,6 +103,7 @@ namespace UnityFx.Outline
 				}
 			}
 
+			_commandBuffer.SetGlobalFloatArray(materials.GaussSamplesNameId, materials.GaussSamples);
 			_commandBuffer.SetGlobalTexture(_maskRtId, _maskRtId);
 			_commandBuffer.Blit(_maskRtId, _hPassRtId, materials.HPassMaterial);
 			_commandBuffer.Blit(_hPassRtId, _renderTarget, materials.VPassBlendMaterial);

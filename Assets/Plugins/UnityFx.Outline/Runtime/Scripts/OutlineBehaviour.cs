@@ -210,7 +210,7 @@ namespace UnityFx.Outline
 
 					if (_materials != null)
 					{
-						_materials.SetColor(value);
+						_materials.OutlineColor = value;
 					}
 				}
 			}
@@ -234,7 +234,7 @@ namespace UnityFx.Outline
 
 					if (_materials != null)
 					{
-						_materials.SetWidth(value);
+						_materials.OutlineWidth = value;
 					}
 				}
 			}
@@ -256,7 +256,7 @@ namespace UnityFx.Outline
 
 					if (_materials != null)
 					{
-						_materials.SetMode(value);
+						_materials.OutlineMode = value;
 					}
 				}
 			}
@@ -310,7 +310,7 @@ namespace UnityFx.Outline
 			if (_commandBuffer == null)
 			{
 				_commandBuffer = new CommandBuffer();
-				_commandBuffer.name = string.Format("{0} - {1}", OutlineRenderer.EffectName, name);
+				_commandBuffer.name = string.Format("{0} - {1}", GetType().Name, name);
 				_changed = true;
 			}
 		}
