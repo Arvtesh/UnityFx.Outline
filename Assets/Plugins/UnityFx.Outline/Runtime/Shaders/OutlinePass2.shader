@@ -20,7 +20,6 @@ Shader "UnityFx/Outline/VPassBlend"
 		{
 			CGPROGRAM
 
-			#pragma multi_compile _MODE_SOLID _MODE_BLURRED
 			#pragma vertex vert
 			#pragma fragment frag
 			#include "UnityCG.cginc"
@@ -32,12 +31,7 @@ Shader "UnityFx/Outline/VPassBlend"
 			float4 _Color;
 			float _Intensity;
 			int _Width;
-
-#if _MODE_BLURRED
-
 			float _GaussSamples[32];
-
-#endif
 
 			struct v2f
 			{
@@ -68,36 +62,10 @@ Shader "UnityFx/Outline/VPassBlend"
 
 				for (int k = -n; k <= _Width; k += 1)
 				{
-					float pixelIntensity = tex2D(_HPassTex, i.uvs.xy + float2(0, k * TX_y)).r;
-
-#if _MODE_BLURRED
-
-					intensity += pixelIntensity * _GaussSamples[abs(k)];
-
-#else
-
-					intensity += pixelIntensity;
-
-#endif
+					intensity += tex2D(_HPassTex, i.uvs.xy + float2(0, k * TX_y)).r * _GaussSamples[abs(k)];
 				}
 
-#if _MODE_BLURRED
-
-				if (_Intensity > 99)
-				{
-					intensity = step(0.01, intensity);
-				}
-				else
-				{
-					intensity = intensity * _Intensity;
-				}
-
-#else
-
-				intensity = step(0.01, intensity);
-
-#endif
-
+				intensity = _Intensity > 99 ? step(0.01, intensity) : intensity * _Intensity;
 				return float4(_Color.rgb, saturate(_Color.a * intensity));
 			}
 

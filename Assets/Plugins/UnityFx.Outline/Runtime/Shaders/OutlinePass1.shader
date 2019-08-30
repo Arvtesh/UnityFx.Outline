@@ -20,7 +20,6 @@ Shader "UnityFx/Outline/HPass"
 		{
 			CGPROGRAM
 
-			#pragma multi_compile _MODE_SOLID _MODE_BLURRED
 			#pragma vertex vert
 			#pragma fragment frag
 			#include "UnityCG.cginc"
@@ -28,12 +27,7 @@ Shader "UnityFx/Outline/HPass"
 			sampler2D _MaskTex;
 			float2 _MaskTex_TexelSize;
 			int _Width;
-
-#if _MODE_BLURRED
-
 			float _GaussSamples[32];
-
-#endif
 
 			struct v2f
 			{
@@ -59,17 +53,7 @@ Shader "UnityFx/Outline/HPass"
 
 				for (int k = -n; k <= n; k += 1)
 				{
-					float pixelIntensity = tex2D(_MaskTex, i.uvs.xy + float2(k * TX_x, 0)).r;
-
-#if _MODE_BLURRED
-
-					intensity += pixelIntensity * _GaussSamples[abs(k)];
-
-#else
-
-					intensity += pixelIntensity;
-
-#endif
+					intensity += tex2D(_MaskTex, i.uvs.xy + float2(k * TX_x, 0)).r * _GaussSamples[abs(k)];
 				}
 
 				return intensity;

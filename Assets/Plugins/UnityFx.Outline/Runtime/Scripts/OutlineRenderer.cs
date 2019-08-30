@@ -63,7 +63,12 @@ namespace UnityFx.Outline
 		/// <summary>
 		/// Maximum value of outline intensity parameter.
 		/// </summary>
-		public const int MaxIntensity = 8;
+		public const int MaxIntensity = 64;
+
+		/// <summary>
+		/// Value of outline intensity parameter that is treated as solid fill.
+		/// </summary>
+		public const int SolidIntensity = 100;
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="OutlineRenderer"/> struct.

@@ -30,16 +30,6 @@ namespace UnityFx.Outline
 		#region interface
 
 		/// <summary>
-		/// Name of the outline mode shader parameter.
-		/// </summary>
-		public const string ModeBlurredKeyword = "_MODE_BLURRED";
-
-		/// <summary>
-		/// Name of the outline mode shader parameter.
-		/// </summary>
-		public const string ModeSolidKeyword = "_MODE_SOLID";
-
-		/// <summary>
 		/// NameID of the outline color shader parameter.
 		/// </summary>
 		public readonly int ColorNameId = Shader.PropertyToID("_Color");
@@ -228,7 +218,6 @@ namespace UnityFx.Outline
 				if (_mode != value)
 				{
 					SetMode(value);
-					UpdateGaussSamples();
 				}
 			}
 		}
@@ -269,19 +258,11 @@ namespace UnityFx.Outline
 
 			if (mode == OutlineMode.Solid)
 			{
-				_hPassMaterial.EnableKeyword(ModeSolidKeyword);
-				_vPassMaterial.EnableKeyword(ModeSolidKeyword);
-
-				_hPassMaterial.DisableKeyword(ModeBlurredKeyword);
-				_vPassMaterial.DisableKeyword(ModeBlurredKeyword);
+				_vPassMaterial.SetFloat(IntensityNameId, OutlineRenderer.SolidIntensity);
 			}
 			else
 			{
-				_hPassMaterial.EnableKeyword(ModeBlurredKeyword);
-				_vPassMaterial.EnableKeyword(ModeBlurredKeyword);
-
-				_hPassMaterial.DisableKeyword(ModeSolidKeyword);
-				_vPassMaterial.DisableKeyword(ModeSolidKeyword);
+				_vPassMaterial.SetFloat(IntensityNameId, _intensity);
 			}
 		}
 
