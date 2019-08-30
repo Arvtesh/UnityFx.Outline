@@ -13,6 +13,7 @@ namespace UnityFx.Outline
 	public class OutlineBehaviourEditor : Editor
 	{
 		private OutlineBehaviour _effect;
+		private bool _renderersOpened;
 		private bool _camerasOpened;
 
 		private void OnEnable()
@@ -23,6 +24,25 @@ namespace UnityFx.Outline
 		public override void OnInspectorGUI()
 		{
 			base.OnInspectorGUI();
+
+			_renderersOpened = EditorGUILayout.Foldout(_renderersOpened, "Renderers", true);
+
+			if (_renderersOpened)
+			{
+				EditorGUI.BeginDisabledGroup(true);
+				EditorGUI.indentLevel += 1;
+
+				var rendererNumber = 1;
+
+				foreach (var renderer in _effect.OutlineRenderers)
+				{
+					EditorGUILayout.ObjectField("#" + rendererNumber.ToString(), renderer, typeof(Renderer), true);
+					rendererNumber++;
+				}
+
+				EditorGUI.indentLevel -= 1;
+				EditorGUI.EndDisabledGroup();
+			}
 
 			_camerasOpened = EditorGUILayout.Foldout(_camerasOpened, "Cameras", true);
 
@@ -36,6 +56,7 @@ namespace UnityFx.Outline
 				foreach (var camera in _effect.Cameras)
 				{
 					EditorGUILayout.ObjectField("#" + cameraNumber.ToString(), camera, typeof(Camera), true);
+					cameraNumber++;
 				}
 
 				EditorGUI.indentLevel -= 1;
