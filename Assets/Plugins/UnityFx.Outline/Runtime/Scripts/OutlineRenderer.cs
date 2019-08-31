@@ -13,7 +13,7 @@ namespace UnityFx.Outline
 	/// </summary>
 	/// <remarks>
 	/// This class is used by higher level outline implementations (<see cref="OutlineEffect"/> and <see cref="OutlineBehaviour"/>).
-	/// It implements <see cref="IDisposable"/> to be used with C# inside <see langword="using"/> block as shown in the code sample.
+	/// It implements <see cref="IDisposable"/> to be used inside <see langword="using"/> block as shown in the code sample.
 	/// </remarks>
 	/// <example>
 	/// using (var renderer = new OutlineRenderer(commandBuffer, BuiltinRenderTextureType.CameraTarget))

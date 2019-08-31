@@ -2,6 +2,7 @@
 // See the LICENSE.md file in the project root for more information.
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Rendering;
@@ -35,8 +36,8 @@ namespace UnityFx.Outline
 
 #pragma warning restore 0649
 
-		private Renderer[] _renderers;
 		private OutlineMaterialSet _materials;
+		private RendererCollection _renderers;
 		private CommandBuffer _commandBuffer;
 
 		private Dictionary<Camera, CommandBuffer> _cameraMap = new Dictionary<Camera, CommandBuffer>();
@@ -75,32 +76,20 @@ namespace UnityFx.Outline
 		}
 
 		/// <summary>
-		/// Gets or sets outline renderers. By default all child <see cref="Renderer"/> components are used for outlining.
+		/// Gets outline renderers. By default all child <see cref="Renderer"/> components are used for outlining.
 		/// </summary>
-		public Renderer[] OutlineRenderers
+		public ICollection<Renderer> OutlineRenderers
 		{
 			get
 			{
 				return _renderers;
-			}
-			set
-			{
-				if (value == null)
-				{
-					throw new ArgumentNullException("OutlineRenderers");
-				}
-
-				if (_renderers != value)
-				{
-					SetRenderers(value);
-				}
 			}
 		}
 
 		/// <summary>
 		/// Gets all cameras outline data is rendered to.
 		/// </summary>
-		public IEnumerable<Camera> Cameras
+		public ICollection<Camera> Cameras
 		{
 			get
 			{
@@ -119,18 +108,22 @@ namespace UnityFx.Outline
 
 		private void Awake()
 		{
-			SetRenderers();
+			CreateRenderersIfNeeded();
 			CreateMaterialsIfNeeded();
+			CreateCommandBufferIfNeeded();
 		}
 
-		private void Reset()
+		private void OnDestroy()
 		{
-			SetRenderers(true);
+			if (_commandBuffer != null)
+			{
+				_commandBuffer.Dispose();
+				_commandBuffer = null;
+			}
 		}
 
 		private void OnEnable()
 		{
-			CreateCommandBufferIfNeeded();
 		}
 
 		private void OnDisable()
@@ -143,31 +136,7 @@ namespace UnityFx.Outline
 				}
 			}
 
-			if (_commandBuffer != null)
-			{
-				_commandBuffer.Dispose();
-				_commandBuffer = null;
-			}
-
 			_cameraMap.Clear();
-		}
-
-		private void OnValidate()
-		{
-			SetRenderers();
-			CreateCommandBufferIfNeeded();
-
-			if (_outlineResources && (_materials == null || _materials.OutlineResources != _outlineResources))
-			{
-				_materials = _outlineResources.CreateMaterialSet();
-			}
-
-			if (_materials != null)
-			{
-				_materials.Reset(this);
-			}
-
-			_changed = true;
 		}
 
 		private void Update()
@@ -202,6 +171,24 @@ namespace UnityFx.Outline
 				}
 			}
 		}
+
+#if UNITY_EDITOR
+
+		private void OnValidate()
+		{
+			CreateRenderersIfNeeded();
+			CreateMaterialsIfNeeded();
+			CreateCommandBufferIfNeeded();
+
+			_changed = true;
+		}
+
+		private void Reset()
+		{
+			_renderers.Reset();
+		}
+
+#endif
 
 		#endregion
 
@@ -314,6 +301,191 @@ namespace UnityFx.Outline
 
 		#region implementation
 
+		private sealed class RendererCollection : IList<Renderer>
+		{
+			private readonly List<Renderer> _renderers = new List<Renderer>();
+			private readonly OutlineBehaviour _parent;
+			private readonly GameObject _go;
+
+			public int Count
+			{
+				get
+				{
+					return _renderers.Count;
+				}
+			}
+
+			public bool IsReadOnly
+			{
+				get
+				{
+					return false;
+				}
+			}
+
+			public Renderer this[int index]
+			{
+				get
+				{
+					return _renderers[index];
+				}
+				set
+				{
+					if (index < 0 || index >= _renderers.Count)
+					{
+						throw new ArgumentOutOfRangeException("index");
+					}
+
+					Validate(value);
+					Release(_renderers[index]);
+					Init(value);
+
+					_renderers[index] = value;
+				}
+			}
+
+			public RendererCollection(OutlineBehaviour parent)
+			{
+				Debug.Assert(parent);
+
+				_parent = parent;
+				_go = parent.gameObject;
+			}
+
+			public void Reset()
+			{
+				foreach (var r in _renderers)
+				{
+					Release(r);
+				}
+
+				_renderers.Clear();
+				_parent.GetComponentsInChildren(true, _renderers);
+
+				foreach (var r in _renderers)
+				{
+					Init(r);
+				}
+			}
+
+			public void Add(Renderer renderer)
+			{
+				Validate(renderer);
+				Init(renderer);
+
+				_renderers.Add(renderer);
+			}
+
+			public bool Remove(Renderer renderer)
+			{
+				if (_renderers.Remove(renderer))
+				{
+					Release(renderer);
+					return true;
+				}
+
+				return false;
+			}
+
+			public void Clear()
+			{
+				foreach (var r in _renderers)
+				{
+					Release(r);
+				}
+
+				_renderers.Clear();
+			}
+
+			public bool Contains(Renderer renderer)
+			{
+				return _renderers.Contains(renderer);
+			}
+
+			public int IndexOf(Renderer renderer)
+			{
+				return _renderers.IndexOf(renderer);
+			}
+
+			public void Insert(int index, Renderer renderer)
+			{
+				if (index < 0 || index >= _renderers.Count)
+				{
+					throw new ArgumentOutOfRangeException("index");
+				}
+
+				Validate(renderer);
+				Init(renderer);
+
+				_renderers.Insert(index, renderer);
+			}
+
+			public void RemoveAt(int index)
+			{
+				if (index >= 0 && index < _renderers.Count)
+				{
+					Release(_renderers[index]);
+					_renderers.RemoveAt(index);
+				}
+			}
+
+			public void CopyTo(Renderer[] array, int arrayIndex)
+			{
+				_renderers.CopyTo(array, arrayIndex);
+			}
+
+			public IEnumerator<Renderer> GetEnumerator()
+			{
+				return _renderers.GetEnumerator();
+			}
+
+			IEnumerator IEnumerable.GetEnumerator()
+			{
+				return _renderers.GetEnumerator();
+			}
+
+			private void Validate(Renderer renderer)
+			{
+				if (renderer == null)
+				{
+					throw new ArgumentNullException("renderer");
+				}
+
+				if (!renderer.transform.IsChildOf(_go.transform))
+				{
+					throw new ArgumentException(string.Format("Only children of the {0} are allowed.", _go.name), "renderer");
+				}
+			}
+
+			private void Init(Renderer r)
+			{
+				if (r && r.gameObject != _go)
+				{
+					var c = r.GetComponent<OutlineBehaviourRt>();
+
+					if (c == null)
+					{
+						c = r.gameObject.AddComponent<OutlineBehaviourRt>();
+					}
+
+					c.Parent = _parent;
+				}
+			}
+
+			private void Release(Renderer r)
+			{
+				if (r)
+				{
+					var c = r.GetComponent<OutlineBehaviourRt>();
+
+					if (c)
+					{
+						Destroy(c);
+					}
+				}
+			}
+		}
+
 		private void RemoveDestroyedCameras()
 		{
 			List<Camera> camerasToRemove = null;
@@ -354,9 +526,13 @@ namespace UnityFx.Outline
 
 		private void CreateMaterialsIfNeeded()
 		{
-			if (_materials == null && _outlineResources != null)
+			if (_outlineResources && (_materials == null || _materials.OutlineResources != _outlineResources))
 			{
 				_materials = _outlineResources.CreateMaterialSet();
+			}
+
+			if (_materials != null)
+			{
 				_materials.Reset(this);
 			}
 		}
@@ -374,49 +550,12 @@ namespace UnityFx.Outline
 			}
 		}
 
-		private void SetRenderers(Renderer[] renderers)
+		private void CreateRenderersIfNeeded()
 		{
-			if (_renderers != null)
+			if (_renderers == null)
 			{
-				foreach (var renderer in _renderers)
-				{
-					if (renderer)
-					{
-						var c = renderer.GetComponent<OutlineBehaviourRt>();
-
-						if (c != null)
-						{
-							c.Parent = null;
-						}
-					}
-				}
-			}
-
-			_renderers = renderers;
-			_changed = true;
-
-			// Have to attach a specific behaviour to each renderer to call 
-			foreach (var renderer in _renderers)
-			{
-				if (renderer && renderer.gameObject != gameObject)
-				{
-					var c = renderer.GetComponent<OutlineBehaviourRt>();
-
-					if (c == null)
-					{
-						c = renderer.gameObject.AddComponent<OutlineBehaviourRt>();
-					}
-
-					c.Parent = this;
-				}
-			}
-		}
-
-		private void SetRenderers(bool reset = false)
-		{
-			if (_renderers == null || reset)
-			{
-				SetRenderers(GetComponentsInChildren<Renderer>());
+				_renderers = new RendererCollection(this);
+				_renderers.Reset();
 			}
 		}
 

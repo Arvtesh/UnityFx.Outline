@@ -3,7 +3,7 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/); this project adheres to [Semantic Versioning](http://semver.org/).
 
-## [0.4.0] - unreleased
+## [0.4.0] - 2019.08.31
 
 ### Added
 - Added Gauss blurring to outlines.

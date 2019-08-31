@@ -1,8 +1,8 @@
 {
     "name": "com.unityfx.outline",
-    "version": "0.3.0",
+    "version": "0.4.0",
     "displayName": "Screen-space outline for Unity",
-    "description": "Tools for rendering configurable per-object and per-camera outlines. The outlines configuration can be easily customized either through scripts or with Unity editor. Implementation is based on Unity command buffers and has no dependencies.",
+    "description": "Configurable per-object and per-camera outlines. Both solid and blurred outline modes are supported (Gauss blur). The outlines can be easily customized either through scripts or with Unity editor (both in edit-time or runtime).",
     "unity": "2017.2",
     "keywords": [
         "UnityFx",
