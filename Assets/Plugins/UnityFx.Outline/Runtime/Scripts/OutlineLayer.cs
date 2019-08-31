@@ -17,9 +17,6 @@ namespace UnityFx.Outline
 	{
 		#region data
 
-		private Dictionary<GameObject, Renderer[]> _outlineObjects = new Dictionary<GameObject, Renderer[]>();
-		private OutlineMaterialSet _materials;
-
 		[SerializeField]
 		private Color _outlineColor = Color.red;
 		[SerializeField]
@@ -31,16 +28,15 @@ namespace UnityFx.Outline
 		[SerializeField]
 		private OutlineMode _outlineMode;
 
+		private Dictionary<GameObject, Renderer[]> _outlineObjects = new Dictionary<GameObject, Renderer[]>();
+		private OutlineMaterialSet _materials;
 		private bool _changed;
 
 		#endregion
 
 		#region interface
 
-		/// <summary>
-		/// Gets a value indicating whether the layer contains unapplied changes.
-		/// </summary>
-		public bool IsChanged
+		internal bool IsChanged
 		{
 			get
 			{
