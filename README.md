@@ -122,7 +122,7 @@ materials.OutlineColor = Color.blue;
 
 using (var renderer = new OutlineRenderer(commandBuffer, BuiltinRenderTextureType.CameraTarget))
 {
-  renderer.RenderSingleObject(renderers, _materials);
+  renderer.RenderSingleObject(renderers, materials);
 }
 
 myCamera.AddCommandBuffer(OutlineRenderer.RenderEvent, commandBuffer);
@@ -141,7 +141,6 @@ Please see the links below for extended information on the product:
 - [A great outline tutorial](https://willweissman.wordpress.com/tutorials/shaders/unity-shaderlab-object-outlines/).
 - [Command buffers tutorial](https://lindenreid.wordpress.com/2018/09/13/using-command-buffers-in-unity-selective-bloom/).
 - [Gaussian blur tutorial](https://www.ronja-tutorials.com/2018/08/27/postprocessing-blur.html).
-- [Gaussian blur 2](http://rastergrid.com/blog/2010/09/efficient-gaussian-blur-with-linear-sampling/).
 
 ## Contributing
 Please see [contributing guide](.github/CONTRIBUTING.md) for details.
