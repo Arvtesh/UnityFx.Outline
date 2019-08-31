@@ -2,6 +2,7 @@
 // See the LICENSE.md file in the project root for more information.
 
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Rendering;
 
@@ -12,7 +13,7 @@ namespace UnityFx.Outline
 	/// </summary>
 	/// <remarks>
 	/// This class is used by higher level outline implementations (<see cref="OutlineEffect"/> and <see cref="OutlineBehaviour"/>).
-	/// It implements <see cref="IDisposable"/> to be used with C# inside <see langword="using"/> block as shown in the code sample.
+	/// It implements <see cref="IDisposable"/> to be used inside <see langword="using"/> block as shown in the code sample.
 	/// </remarks>
 	/// <example>
 	/// using (var renderer = new OutlineRenderer(commandBuffer, BuiltinRenderTextureType.CameraTarget))
@@ -20,13 +21,13 @@ namespace UnityFx.Outline
 	/// 	renderer.RenderSingleObject(outlineRenderers, renderMaterial, postProcessMaterial);
 	/// }
 	/// </example>
-	/// <seealso cref="OutlineEffect"/>
-	/// <seealso cref="OutlineBehaviour"/>
+	/// <seealso cref="OutlineMaterialSet"/>
 	public struct OutlineRenderer : IDisposable
 	{
 		#region data
 
-		private readonly int _renderTextureId;
+		private readonly int _maskRtId;
+		private readonly int _hPassRtId;
 		private readonly RenderTargetIdentifier _renderTarget;
 		private readonly CommandBuffer _commandBuffer;
 
@@ -45,16 +46,6 @@ namespace UnityFx.Outline
 		public const string EffectName = "Outline";
 
 		/// <summary>
-		/// Name of the outline color shader parameter.
-		/// </summary>
-		public const string ColorParamName = "_Color";
-
-		/// <summary>
-		/// Name of the outline width shader parameter.
-		/// </summary>
-		public const string WidthParamName = "_Width";
-
-		/// <summary>
 		/// Minimum value of outline width parameter.
 		/// </summary>
 		public const int MinWidth = 1;
@@ -63,6 +54,21 @@ namespace UnityFx.Outline
 		/// Maximum value of outline width parameter.
 		/// </summary>
 		public const int MaxWidth = 32;
+
+		/// <summary>
+		/// Minimum value of outline intensity parameter.
+		/// </summary>
+		public const int MinIntensity = 1;
+
+		/// <summary>
+		/// Maximum value of outline intensity parameter.
+		/// </summary>
+		public const int MaxIntensity = 64;
+
+		/// <summary>
+		/// Value of outline intensity parameter that is treated as solid fill.
+		/// </summary>
+		public const int SolidIntensity = 100;
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="OutlineRenderer"/> struct.
@@ -79,41 +85,107 @@ namespace UnityFx.Outline
 		{
 			Debug.Assert(commandBuffer != null);
 
-			_renderTextureId = Shader.PropertyToID("_MainTex");
+			_maskRtId = Shader.PropertyToID("_MaskTex");
+			_hPassRtId = Shader.PropertyToID("_HPassTex");
 			_renderTarget = dst;
 
 			_commandBuffer = commandBuffer;
 			_commandBuffer.Clear();
 			_commandBuffer.BeginSample(EffectName);
-			_commandBuffer.GetTemporaryRT(_renderTextureId, -1, -1, 0, FilterMode.Bilinear, RenderTextureFormat.R8);
+			_commandBuffer.GetTemporaryRT(_maskRtId, -1, -1, 0, FilterMode.Bilinear, RenderTextureFormat.R8);
+			_commandBuffer.GetTemporaryRT(_hPassRtId, -1, -1, 0, FilterMode.Bilinear, RenderTextureFormat.R8);
 		}
 
 		/// <summary>
 		/// Adds commands for rendering single outline object.
 		/// </summary>
-		public void RenderSingleObject(Renderer[] renderers, Material renderMaterial, Material postProcessMaterial)
+		public void RenderSingleObject(IList<Renderer> renderers, OutlineMaterialSet materials)
 		{
 			Debug.Assert(renderers != null);
-			Debug.Assert(renderMaterial != null);
-			Debug.Assert(postProcessMaterial != null);
+			Debug.Assert(materials != null);
 
-			var rt = new RenderTargetIdentifier(_renderTextureId);
-
-			_commandBuffer.SetRenderTarget(rt);
+			_commandBuffer.SetRenderTarget(_maskRtId);
 			_commandBuffer.ClearRenderTarget(false, true, Color.black);
 
-			foreach (var renderer in renderers)
+			for (var i = 0; i < renderers.Count; ++i)
 			{
-				if (renderer)
+				var renderer = renderers[i];
+
+				if (renderer && renderer.gameObject.activeInHierarchy && renderer.enabled)
 				{
-					for (var i = 0; i < renderer.sharedMaterials.Length; ++i)
+					for (var j = 0; j < renderer.sharedMaterials.Length; ++j)
 					{
-						_commandBuffer.DrawRenderer(renderer, renderMaterial, i);
+						_commandBuffer.DrawRenderer(renderer, materials.RenderMaterial, j);
 					}
 				}
 			}
 
-			_commandBuffer.Blit(rt, _renderTarget, postProcessMaterial);
+			_commandBuffer.SetGlobalFloatArray(materials.GaussSamplesNameId, materials.GaussSamples);
+			_commandBuffer.SetGlobalTexture(_maskRtId, _maskRtId);
+			_commandBuffer.Blit(_maskRtId, _hPassRtId, materials.HPassMaterial);
+			_commandBuffer.Blit(_hPassRtId, _renderTarget, materials.VPassBlendMaterial);
+		}
+
+		/// <summary>
+		/// Adds commands for rendering single outline object.
+		/// </summary>
+		public void RenderSingleObject(Renderer renderer, OutlineMaterialSet materials)
+		{
+			Debug.Assert(renderer != null);
+			Debug.Assert(materials != null);
+
+			_commandBuffer.SetRenderTarget(_maskRtId);
+			_commandBuffer.ClearRenderTarget(false, true, Color.black);
+
+			if (renderer && renderer.gameObject.activeInHierarchy && renderer.enabled)
+			{
+				for (var i = 0; i < renderer.sharedMaterials.Length; ++i)
+				{
+					_commandBuffer.DrawRenderer(renderer, materials.RenderMaterial, i);
+				}
+			}
+
+			_commandBuffer.SetGlobalFloatArray(materials.GaussSamplesNameId, materials.GaussSamples);
+			_commandBuffer.SetGlobalTexture(_maskRtId, _maskRtId);
+			_commandBuffer.Blit(_maskRtId, _hPassRtId, materials.HPassMaterial);
+			_commandBuffer.Blit(_hPassRtId, _renderTarget, materials.VPassBlendMaterial);
+		}
+
+		/// <summary>
+		/// Calculates value of Gauss function for the specified <paramref name="x"/> and <paramref name="stdDev"/> values.
+		/// </summary>
+		/// <seealso href="https://en.wikipedia.org/wiki/Gaussian_blur"/>
+		/// <seealso href="https://en.wikipedia.org/wiki/Normal_distribution"/>
+		public static float Gauss(float x, float stdDev)
+		{
+			var stdDev2 = stdDev * stdDev * 2;
+			var a = 1 / Mathf.Sqrt((float)Math.PI * stdDev2);
+			var gauss = a * Mathf.Pow((float)Math.E, -x * x / stdDev2);
+
+			return gauss;
+		}
+
+		/// <summary>
+		/// Samples Gauss function for the specified <paramref name="width"/>.
+		/// </summary>
+		/// <seealso href="https://en.wikipedia.org/wiki/Normal_distribution"/>
+		public static float[] GetGaussSamples(int width, float[] samples)
+		{
+			// NOTE: According to '3 sigma' rule there is no reason to have StdDev less then width / 3.
+			// In practice blur looks best when StdDev is within range [width / 3,  width / 2].
+			var stdDev = width * 0.5f;
+
+			if (samples == null)
+			{
+				samples = new float[MaxWidth];
+			}
+
+			for (var i = 0; i < width; i++)
+			{
+				samples[i] = Gauss(i, stdDev);
+			}
+
+			return samples;
 		}
 
 		#endregion
@@ -123,7 +195,8 @@ namespace UnityFx.Outline
 		/// <inheritdoc/>
 		public void Dispose()
 		{
-			_commandBuffer.ReleaseTemporaryRT(_renderTextureId);
+			_commandBuffer.ReleaseTemporaryRT(_hPassRtId);
+			_commandBuffer.ReleaseTemporaryRT(_maskRtId);
 			_commandBuffer.EndSample(EffectName);
 		}
 

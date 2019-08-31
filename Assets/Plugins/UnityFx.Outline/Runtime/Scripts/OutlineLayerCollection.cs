@@ -14,7 +14,7 @@ namespace UnityFx.Outline
 	/// <seealso cref="OutlineLayer"/>
 	/// <seealso cref="OutlineEffect"/>
 	[CreateAssetMenu(fileName = "OutlineLayerCollection", menuName = "UnityFx/Outline Layer Collection")]
-	public class OutlineLayerCollection : ScriptableObject, IList<OutlineLayer>
+	public sealed class OutlineLayerCollection : ScriptableObject, IList<OutlineLayer>
 	{
 		#region data
 
@@ -35,6 +35,21 @@ namespace UnityFx.Outline
 				}
 
 				return _layers;
+			}
+		}
+
+		#endregion
+
+		#region ScriptableObject
+
+		private void OnValidate()
+		{
+			if (_layers != null)
+			{
+				foreach (var layer in _layers)
+				{
+					layer.Invalidate();
+				}
 			}
 		}
 

@@ -243,6 +243,7 @@ Camera:
   m_TargetEye: 3
   m_HDR: 1
   m_AllowMSAA: 1
+  m_AllowDynamicResolution: 0
   m_ForceIntoRT: 0
   m_OcclusionCulling: 1
   m_StereoConvergence: 10
@@ -503,7 +504,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _outlineResources: {fileID: 11400000, guid: d28e70f030b1a634db9a6a6d5478ef19, type: 2}
   _outlineColor: {r: 0, g: 1, b: 0, a: 1}
-  _outlineWidth: 8
+  _outlineWidth: 12
+  _outlineIntensity: 2
+  _outlineMode: 1
 --- !u!23 &1789341923
 MeshRenderer:
   m_ObjectHideFlags: 0

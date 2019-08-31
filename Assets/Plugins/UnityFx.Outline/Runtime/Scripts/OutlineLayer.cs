@@ -13,75 +13,30 @@ namespace UnityFx.Outline
 	/// </summary>
 	/// <seealso cref="OutlineEffect"/>
 	[Serializable]
-	public sealed class OutlineLayer : ICollection<GameObject>, ISerializationCallbackReceiver
+	public sealed class OutlineLayer : ICollection<GameObject>, IOutlineSettings, ISerializationCallbackReceiver
 	{
 		#region data
-
-		private readonly int _colorNameId = Shader.PropertyToID(OutlineRenderer.ColorParamName);
-		private readonly int _widthNameId = Shader.PropertyToID(OutlineRenderer.WidthParamName);
-
-		private Dictionary<GameObject, Renderer[]> _outlineObjects = new Dictionary<GameObject, Renderer[]>();
-		private Dictionary<OutlineResources, Material> _renderMaterials;
-		private Dictionary<OutlineResources, Material> _postProcessMaterials;
 
 		[SerializeField]
 		private Color _outlineColor = Color.red;
 		[SerializeField]
 		[Range(OutlineRenderer.MinWidth, OutlineRenderer.MaxWidth)]
 		private int _outlineWidth = 4;
+		[SerializeField]
+		[Range(OutlineRenderer.MinIntensity, OutlineRenderer.MaxIntensity)]
+		private float _outlineIntensity = 2;
+		[SerializeField]
+		private OutlineMode _outlineMode;
 
+		private Dictionary<GameObject, Renderer[]> _outlineObjects = new Dictionary<GameObject, Renderer[]>();
+		private OutlineMaterialSet _materials;
 		private bool _changed;
 
 		#endregion
 
 		#region interface
 
-		/// <summary>
-		/// Gets or sets outline color for the layer.
-		/// </summary>
-		/// <seealso cref="OutlineWidth"/>
-		public Color OutlineColor
-		{
-			get
-			{
-				return _outlineColor;
-			}
-			set
-			{
-				if (_outlineColor != value)
-				{
-					_outlineColor = value;
-					_changed = true;
-				}
-			}
-		}
-
-		/// <summary>
-		/// Gets or sets outline width in pixels. Only positive values are allowed.
-		/// </summary>
-		/// <seealso cref="OutlineColor"/>
-		public int OutlineWidth
-		{
-			get
-			{
-				return _outlineWidth;
-			}
-			set
-			{
-				value = Mathf.Clamp(value, OutlineRenderer.MinWidth, OutlineRenderer.MaxWidth);
-
-				if (_outlineWidth != value)
-				{
-					_outlineWidth = value;
-					_changed = true;
-				}
-			}
-		}
-
-		/// <summary>
-		/// Gets a value indicating whether the layer contains unapplied changes.
-		/// </summary>
-		public bool IsChanged
+		internal bool IsChanged
 		{
 			get
 			{
@@ -137,26 +92,130 @@ namespace UnityFx.Outline
 			}
 		}
 
-		/// <summary>
-		/// Renders the layer with the <paramref name="renderer"/> passed.
-		/// </summary>
-		internal void Render(OutlineRenderer renderer, OutlineResourceCache resources)
+		internal void Render(OutlineRenderer renderer, OutlineResources resources)
 		{
-			var renderMaterial = resources.GetRenderMaterial(this);
-			var postProcessMaterial = resources.GetPostProcessMaterial(this);
-
-			postProcessMaterial.SetColor(_colorNameId, _outlineColor);
-			postProcessMaterial.SetInt(_widthNameId, _outlineWidth);
+			if (_materials == null || _materials.OutlineResources != resources)
+			{
+				_materials = resources.CreateMaterialSet();
+				_materials.Reset(this);
+			}
 
 			foreach (var kvp in _outlineObjects)
 			{
 				if (kvp.Key)
 				{
-					renderer.RenderSingleObject(kvp.Value, renderMaterial, postProcessMaterial);
+					renderer.RenderSingleObject(kvp.Value, _materials);
 				}
 			}
 
 			_changed = false;
+		}
+
+		#endregion
+
+		#region IOutlineSettings
+
+		/// <inheritdoc/>
+		public Color OutlineColor
+		{
+			get
+			{
+				return _outlineColor;
+			}
+			set
+			{
+				if (_outlineColor != value)
+				{
+					_outlineColor = value;
+					_changed = true;
+
+					if (_materials != null)
+					{
+						_materials.OutlineColor = value;
+					}
+				}
+			}
+		}
+
+		/// <inheritdoc/>
+		public int OutlineWidth
+		{
+			get
+			{
+				return _outlineWidth;
+			}
+			set
+			{
+				value = Mathf.Clamp(value, OutlineRenderer.MinWidth, OutlineRenderer.MaxWidth);
+
+				if (_outlineWidth != value)
+				{
+					_outlineWidth = value;
+					_changed = true;
+
+					if (_materials != null)
+					{
+						_materials.OutlineWidth = value;
+					}
+				}
+			}
+		}
+
+		/// <inheritdoc/>
+		public float OutlineIntensity
+		{
+			get
+			{
+				return _outlineIntensity;
+			}
+			set
+			{
+				value = Mathf.Clamp(value, OutlineRenderer.MinIntensity, OutlineRenderer.MaxIntensity);
+
+				if (_outlineIntensity != value)
+				{
+					_outlineIntensity = value;
+					_changed = true;
+
+					if (_materials != null)
+					{
+						_materials.OutlineIntensity = value;
+					}
+				}
+			}
+		}
+
+		/// <inheritdoc/>
+		public OutlineMode OutlineMode
+		{
+			get
+			{
+				return _outlineMode;
+			}
+			set
+			{
+				if (_outlineMode != value)
+				{
+					_outlineMode = value;
+					_changed = true;
+
+					if (_materials != null)
+					{
+						_materials.OutlineMode = value;
+					}
+				}
+			}
+		}
+
+		/// <inheritdoc/>
+		public void Invalidate()
+		{
+			if (_materials != null)
+			{
+				_materials.Reset(this);
+			}
+
+			_changed = true;
 		}
 
 		#endregion
