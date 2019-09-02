@@ -50,7 +50,11 @@ namespace UnityFx.Outline
 			if (EditorGUI.EndChangeCheck())
 			{
 				EditorUtility.SetDirty(_effect.gameObject);
-				EditorSceneManager.MarkSceneDirty(_effect.gameObject.scene);
+
+				if (!EditorApplication.isPlayingOrWillChangePlaymode)
+				{
+					EditorSceneManager.MarkSceneDirty(_effect.gameObject.scene);
+				}
 			}
 
 			// 2) Renderers (read-only).
