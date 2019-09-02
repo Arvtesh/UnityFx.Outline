@@ -3,6 +3,15 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/); this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [0.5.0] - unreleased
+
+### Added
+- Added `OutlineSettings`, that can be shared between dfferent `OutlineLayer` instances.
+- Added custom inspectors for `OutlineSettings`, `OutlineLayerCollection`.
+
+### Changed
+- Improved inspectors for `OutlineBehaviour` and `OutlineEffect`.
+
 ## [0.4.0] - 2019.08.31
 
 ### Added
