@@ -287,17 +287,6 @@ namespace UnityFx.Outline
 			}
 		}
 
-		/// <inheritdoc/>
-		public void Invalidate()
-		{
-			if (_materials != null)
-			{
-				_materials.Reset(this);
-			}
-
-			_changed = true;
-		}
-
 		#endregion
 
 		#region implementation

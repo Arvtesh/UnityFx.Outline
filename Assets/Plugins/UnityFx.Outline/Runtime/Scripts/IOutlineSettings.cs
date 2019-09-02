@@ -2,9 +2,7 @@
 // See the LICENSE.md file in the project root for more information.
 
 using System;
-using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.Rendering;
 
 namespace UnityFx.Outline
 {
@@ -38,10 +36,5 @@ namespace UnityFx.Outline
 		/// <seealso cref="OutlineWidth"/>
 		/// <seealso cref="OutlineColor"/>
 		OutlineMode OutlineMode { get; set; }
-
-		/// <summary>
-		/// Forces the settings to be re-applied and the outline to be re-rendered.
-		/// </summary>
-		void Invalidate();
 	}
 }

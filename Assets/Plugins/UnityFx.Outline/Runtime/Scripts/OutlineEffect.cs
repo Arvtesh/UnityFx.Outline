@@ -16,7 +16,7 @@ namespace UnityFx.Outline
 	/// <seealso cref="https://willweissman.wordpress.com/tutorials/shaders/unity-shaderlab-object-outlines/"/>
 	[DisallowMultipleComponent]
 	[RequireComponent(typeof(Camera))]
-	public sealed class OutlineEffect : MonoBehaviour
+	public sealed partial class OutlineEffect : MonoBehaviour
 	{
 		#region data
 
@@ -25,7 +25,7 @@ namespace UnityFx.Outline
 		[SerializeField]
 		private OutlineLayerCollection _outlineLayers;
 
-		private IList<OutlineLayer> _layers;
+		private EventHandler _changedDelegate;
 		private CommandBuffer _commandBuffer;
 		private bool _changed;
 
@@ -65,19 +65,13 @@ namespace UnityFx.Outline
 		{
 			get
 			{
-				if (_layers == null)
+				if (_outlineLayers == null)
 				{
-					if (_outlineLayers)
-					{
-						_layers = _outlineLayers.Layers;
-					}
-					else
-					{
-						_layers = new List<OutlineLayer>();
-					}
+					_outlineLayers = ScriptableObject.CreateInstance<OutlineLayerCollection>();
+					_outlineLayers.Changed += OnChanged;
 				}
 
-				return _layers;
+				return _outlineLayers;
 			}
 		}
 
@@ -90,8 +84,14 @@ namespace UnityFx.Outline
 		{
 			if (other)
 			{
-				other._layers = OutlineLayers;
+				if (_outlineLayers == null)
+				{
+					_outlineLayers = ScriptableObject.CreateInstance<OutlineLayerCollection>();
+					_outlineLayers.Changed += OnChanged;
+				}
+
 				other._outlineLayers = _outlineLayers;
+				other._outlineLayers.Changed += other.OnChanged;
 				other._changed = true;
 			}
 		}
@@ -104,7 +104,7 @@ namespace UnityFx.Outline
 		{
 			if (_outlineLayers)
 			{
-				_layers = _outlineLayers.Layers;
+				_outlineLayers.Changed += OnChanged;
 			}
 		}
 
@@ -140,30 +140,9 @@ namespace UnityFx.Outline
 
 		private void Update()
 		{
-			if (_layers != null)
+			if (_outlineLayers != null && _changed)
 			{
-				if (_changed)
-				{
-					FillCommandBuffer();
-				}
-				else
-				{
-					var needUpdate = false;
-
-					for (var i = 0; i < _layers.Count; ++i)
-					{
-						if (_layers[i] != null && _layers[i].IsChanged)
-						{
-							needUpdate = true;
-							break;
-						}
-					}
-
-					if (needUpdate)
-					{
-						FillCommandBuffer();
-					}
-				}
+				FillCommandBuffer();
 			}
 		}
 
@@ -173,11 +152,7 @@ namespace UnityFx.Outline
 		{
 			if (_outlineLayers)
 			{
-				_layers = _outlineLayers.Layers;
-			}
-			else
-			{
-				_layers = null;
+				_outlineLayers.Changed += OnChanged;
 			}
 
 			_changed = true;
@@ -186,7 +161,6 @@ namespace UnityFx.Outline
 		private void Reset()
 		{
 			_outlineLayers = null;
-			_layers = null;
 			_changed = true;
 		}
 
@@ -202,21 +176,26 @@ namespace UnityFx.Outline
 			{
 				using (var renderer = new OutlineRenderer(_commandBuffer, BuiltinRenderTextureType.CameraTarget))
 				{
-					for (var i = 0; i < _layers.Count; ++i)
+					for (var i = 0; i < _outlineLayers.Count; ++i)
 					{
-						if (_layers[i] != null)
+						if (_outlineLayers[i] != null)
 						{
-							_layers[i].Render(renderer, _outlineResources);
+							_outlineLayers[i].Render(renderer, _outlineResources);
 						}
 					}
 				}
-
-				_changed = false;
 			}
 			else
 			{
 				_commandBuffer.Clear();
 			}
+
+			_changed = false;
+		}
+
+		private void OnChanged(object sender, EventArgs args)
+		{
+			_changed = true;
 		}
 
 		#endregion

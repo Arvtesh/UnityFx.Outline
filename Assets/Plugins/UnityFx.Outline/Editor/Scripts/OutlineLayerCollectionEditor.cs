@@ -9,30 +9,30 @@ using UnityEngine;
 
 namespace UnityFx.Outline
 {
-	[CustomEditor(typeof(OutlineEffect))]
-	public class OutlineEffectEditor : Editor
+	[CustomEditor(typeof(OutlineLayerCollection))]
+	public class OutlineLayerCollectionEditor : Editor
 	{
-		private OutlineEffect _effect;
+		private OutlineLayerCollection _layers;
 		private bool _previewOpened;
-
-		private void OnEnable()
-		{
-			_effect = (OutlineEffect)target;
-		}
 
 		public override void OnInspectorGUI()
 		{
 			base.OnInspectorGUI();
 
-			if (_effect.OutlineLayers.Count > 0)
+			if (_layers.Count > 0)
 			{
-				_previewOpened = EditorGUILayout.Foldout(_previewOpened, "Preview", true);
+				_previewOpened = EditorGUILayout.Foldout(_previewOpened, "Layers Preview", true);
 
 				if (_previewOpened)
 				{
-					OutlineEditorUtility.RenderPreview(_effect.OutlineLayers, true);
+					OutlineEditorUtility.RenderPreview(_layers, false);
 				}
 			}
+		}
+
+		private void OnEnable()
+		{
+			_layers = (OutlineLayerCollection)target;
 		}
 	}
 }

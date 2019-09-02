@@ -4,6 +4,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.ComponentModel;
 using UnityEngine;
 
 namespace UnityFx.Outline
@@ -13,28 +14,31 @@ namespace UnityFx.Outline
 	/// </summary>
 	/// <seealso cref="OutlineLayer"/>
 	/// <seealso cref="OutlineEffect"/>
-	[CreateAssetMenu(fileName = "OutlineLayerCollection", menuName = "UnityFx/Outline Layer Collection")]
+	[CreateAssetMenu(fileName = "OutlineLayerCollection", menuName = "UnityFx/Outline/Outline Layer Collection")]
 	public sealed class OutlineLayerCollection : ScriptableObject, IList<OutlineLayer>
 	{
 		#region data
 
 		[SerializeField]
-		private List<OutlineLayer> _layers;
+		private OutlineSettings[] _layerSettings;
+
+		private List<OutlineLayer> _layers = new List<OutlineLayer>();
+		private EventHandler _changedDelegate;
 
 		#endregion
 
 		#region interface
 
-		internal IList<OutlineLayer> Layers
+		/// <summary>
+		/// Raised when the collection is changed.
+		/// </summary>
+		public event EventHandler Changed;
+
+		public IList<IOutlineSettings> Settings
 		{
 			get
 			{
-				if (_layers == null)
-				{
-					_layers = new List<OutlineLayer>();
-				}
-
-				return _layers;
+				return _layerSettings;
 			}
 		}
 
@@ -42,26 +46,65 @@ namespace UnityFx.Outline
 
 		#region ScriptableObject
 
-		private void OnValidate()
+		private void Awake()
 		{
-			if (_layers != null)
+			_changedDelegate = OnChanged;
+
+			if (_layerSettings != null)
 			{
-				foreach (var layer in _layers)
+				foreach (var item in _layerSettings)
 				{
-					layer.Invalidate();
+					if (item)
+					{
+						Add(new OutlineLayer(item));
+					}
+					else
+					{
+						Add(new OutlineLayer());
+					}
 				}
 			}
 		}
+
+#if UNITY_EDITOR
+
+		private void OnValidate()
+		{
+			if (_changedDelegate == null)
+			{
+				_changedDelegate = OnChanged;
+			}
+
+			if (_layerSettings != null)
+			{
+				Clear();
+
+				foreach (var item in _layerSettings)
+				{
+					if (item)
+					{
+						Add(new OutlineLayer(item));
+					}
+					else
+					{
+						Add(new OutlineLayer());
+					}
+				}
+			}
+		}
+
+#endif
 
 		#endregion
 
 		#region IList
 
-		public OutlineLayer this[int index]
+		/// <inheritdoc/>
+		public OutlineLayer this[int layerIndex]
 		{
 			get
 			{
-				return _layers[index];
+				return _layers[layerIndex];
 			}
 			set
 			{
@@ -70,10 +113,23 @@ namespace UnityFx.Outline
 					throw new ArgumentNullException("layer");
 				}
 
-				_layers[index] = value;
+				if (layerIndex < 0 || layerIndex >= _layers.Count)
+				{
+					throw new ArgumentOutOfRangeException("layerIndex");
+				}
+
+				if (_layers[layerIndex] != value)
+				{
+					_layers[layerIndex].Changed -= _changedDelegate;
+					_layers[layerIndex] = value;
+					_layers[layerIndex].Changed += _changedDelegate;
+
+					RaiseChanged();
+				}
 			}
 		}
 
+		/// <inheritdoc/>
 		public int IndexOf(OutlineLayer layer)
 		{
 			if (layer != null)
@@ -84,6 +140,7 @@ namespace UnityFx.Outline
 			return -1;
 		}
 
+		/// <inheritdoc/>
 		public void Insert(int index, OutlineLayer layer)
 		{
 			if (layer == null)
@@ -92,17 +149,28 @@ namespace UnityFx.Outline
 			}
 
 			_layers.Insert(index, layer);
+			layer.Changed += _changedDelegate;
+
+			RaiseChanged();
 		}
 
+		/// <inheritdoc/>
 		public void RemoveAt(int index)
 		{
-			_layers.RemoveAt(index);
+			if (index >= 0 && index < _layers.Count)
+			{
+				_layers[index].Changed -= _changedDelegate;
+				_layers.RemoveAt(index);
+
+				RaiseChanged();
+			}
 		}
 
 		#endregion
 
 		#region ICollection
 
+		/// <inheritdoc/>
 		public int Count
 		{
 			get
@@ -111,6 +179,7 @@ namespace UnityFx.Outline
 			}
 		}
 
+		/// <inheritdoc/>
 		public bool IsReadOnly
 		{
 			get
@@ -119,6 +188,7 @@ namespace UnityFx.Outline
 			}
 		}
 
+		/// <inheritdoc/>
 		public void Add(OutlineLayer layer)
 		{
 			if (layer == null)
@@ -127,18 +197,41 @@ namespace UnityFx.Outline
 			}
 
 			_layers.Add(layer);
+
+			layer.Changed += _changedDelegate;
+			RaiseChanged();
 		}
 
+		/// <inheritdoc/>
 		public bool Remove(OutlineLayer layer)
 		{
-			return _layers.Remove(layer);
+			if (layer != null)
+			{
+				layer.Changed -= _changedDelegate;
+			}
+
+			if (_layers.Remove(layer))
+			{
+				RaiseChanged();
+				return true;
+			}
+
+			return false;
 		}
 
+		/// <inheritdoc/>
 		public void Clear()
 		{
+			foreach (var layer in _layers)
+			{
+				layer.Changed -= _changedDelegate;
+			}
+
 			_layers.Clear();
+			RaiseChanged();
 		}
 
+		/// <inheritdoc/>
 		public bool Contains(OutlineLayer layer)
 		{
 			if (layer == null)
@@ -149,6 +242,7 @@ namespace UnityFx.Outline
 			return _layers.Contains(layer);
 		}
 
+		/// <inheritdoc/>
 		public void CopyTo(OutlineLayer[] array, int arrayIndex)
 		{
 			_layers.CopyTo(array, arrayIndex);
@@ -158,6 +252,7 @@ namespace UnityFx.Outline
 
 		#region IEnumerable
 
+		/// <inheritdoc/>
 		public IEnumerator<OutlineLayer> GetEnumerator()
 		{
 			return _layers.GetEnumerator();
@@ -166,6 +261,23 @@ namespace UnityFx.Outline
 		IEnumerator IEnumerable.GetEnumerator()
 		{
 			return _layers.GetEnumerator();
+		}
+
+		#endregion
+
+		#region implementation
+
+		private void RaiseChanged()
+		{
+			if (Changed != null)
+			{
+				Changed(this, EventArgs.Empty);
+			}
+		}
+
+		private void OnChanged(object sender, EventArgs args)
+		{
+			RaiseChanged();
 		}
 
 		#endregion

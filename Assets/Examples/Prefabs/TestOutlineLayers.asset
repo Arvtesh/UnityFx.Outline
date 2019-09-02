@@ -9,14 +9,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 57d0c11168277cf4eb3b4b89706e6aa5, type: 3}
-  m_Name: OutlineLayers
+  m_Name: TestOutlineLayers
   m_EditorClassIdentifier: 
-  _layers:
-  - _outlineColor: {r: 1, g: 0, b: 0, a: 1}
-    _outlineWidth: 7
-    _outlineIntensity: 2
-    _outlineMode: 1
-  - _outlineColor: {r: 0.22794117, g: 0.8455882, b: 0, a: 1}
-    _outlineWidth: 8
-    _outlineIntensity: 2
-    _outlineMode: 0
+  _layerSettings:
+  - {fileID: 11400000, guid: 45705bbb29366194eb01ca517d80967c, type: 2}

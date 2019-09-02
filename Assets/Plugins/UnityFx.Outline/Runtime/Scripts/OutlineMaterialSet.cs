@@ -223,12 +223,6 @@ namespace UnityFx.Outline
 			}
 		}
 
-		/// <inheritdoc/>
-		public void Invalidate()
-		{
-			Reset(this);
-		}
-
 		#endregion
 
 		#region implementation

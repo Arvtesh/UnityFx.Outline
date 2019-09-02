@@ -12,43 +12,45 @@ namespace UnityFx.Outline
 	/// A collection of <see cref="GameObject"/> instances that share outlining settings.
 	/// </summary>
 	/// <seealso cref="OutlineEffect"/>
-	[Serializable]
-	public sealed class OutlineLayer : ICollection<GameObject>, IOutlineSettings, ISerializationCallbackReceiver
+	public sealed class OutlineLayer : ICollection<GameObject>, IOutlineSettings
 	{
 		#region data
 
-		[SerializeField]
-		private Color _outlineColor = Color.red;
-		[SerializeField]
-		[Range(OutlineRenderer.MinWidth, OutlineRenderer.MaxWidth)]
-		private int _outlineWidth = 4;
-		[SerializeField]
-		[Range(OutlineRenderer.MinIntensity, OutlineRenderer.MaxIntensity)]
-		private float _outlineIntensity = 2;
-		[SerializeField]
-		private OutlineMode _outlineMode;
+		private readonly OutlineSettings _settings;
 
 		private Dictionary<GameObject, Renderer[]> _outlineObjects = new Dictionary<GameObject, Renderer[]>();
 		private OutlineMaterialSet _materials;
-		private bool _changed;
 
 		#endregion
 
 		#region interface
 
-		internal bool IsChanged
-		{
-			get
-			{
-				return _changed;
-			}
-		}
+		/// <summary>
+		/// Raised when the layer is changed.
+		/// </summary>
+		public event EventHandler Changed;
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="OutlineLayer"/> class.
 		/// </summary>
 		public OutlineLayer()
 		{
+			_settings = ScriptableObject.CreateInstance<OutlineSettings>();
+			_settings.Changed += OnSettingsChanged;
+		}
+
+		/// <summary>
+		/// Initializes a new instance of the <see cref="OutlineLayer"/> class.
+		/// </summary>
+		public OutlineLayer(OutlineSettings settings)
+		{
+			if (settings == null)
+			{
+				throw new ArgumentNullException("settings");
+			}
+
+			_settings = settings;
+			_settings.Changed += OnSettingsChanged;
 		}
 
 		/// <summary>
@@ -88,7 +90,11 @@ namespace UnityFx.Outline
 				}
 
 				_outlineObjects.Add(go, renderers);
-				_changed = true;
+
+				if (Changed != null)
+				{
+					Changed(this, EventArgs.Empty);
+				}
 			}
 		}
 
@@ -97,8 +103,9 @@ namespace UnityFx.Outline
 			if (_materials == null || _materials.OutlineResources != resources)
 			{
 				_materials = resources.CreateMaterialSet();
-				_materials.Reset(this);
 			}
+
+			_materials.Reset(_settings);
 
 			foreach (var kvp in _outlineObjects)
 			{
@@ -107,8 +114,6 @@ namespace UnityFx.Outline
 					renderer.RenderSingleObject(kvp.Value, _materials);
 				}
 			}
-
-			_changed = false;
 		}
 
 		#endregion
@@ -120,20 +125,11 @@ namespace UnityFx.Outline
 		{
 			get
 			{
-				return _outlineColor;
+				return _settings.OutlineColor;
 			}
 			set
 			{
-				if (_outlineColor != value)
-				{
-					_outlineColor = value;
-					_changed = true;
-
-					if (_materials != null)
-					{
-						_materials.OutlineColor = value;
-					}
-				}
+				_settings.OutlineColor = value;
 			}
 		}
 
@@ -142,22 +138,11 @@ namespace UnityFx.Outline
 		{
 			get
 			{
-				return _outlineWidth;
+				return _settings.OutlineWidth;
 			}
 			set
 			{
-				value = Mathf.Clamp(value, OutlineRenderer.MinWidth, OutlineRenderer.MaxWidth);
-
-				if (_outlineWidth != value)
-				{
-					_outlineWidth = value;
-					_changed = true;
-
-					if (_materials != null)
-					{
-						_materials.OutlineWidth = value;
-					}
-				}
+				_settings.OutlineWidth = value;
 			}
 		}
 
@@ -166,22 +151,11 @@ namespace UnityFx.Outline
 		{
 			get
 			{
-				return _outlineIntensity;
+				return _settings.OutlineIntensity;
 			}
 			set
 			{
-				value = Mathf.Clamp(value, OutlineRenderer.MinIntensity, OutlineRenderer.MaxIntensity);
-
-				if (_outlineIntensity != value)
-				{
-					_outlineIntensity = value;
-					_changed = true;
-
-					if (_materials != null)
-					{
-						_materials.OutlineIntensity = value;
-					}
-				}
+				_settings.OutlineIntensity = value;
 			}
 		}
 
@@ -190,51 +164,12 @@ namespace UnityFx.Outline
 		{
 			get
 			{
-				return _outlineMode;
+				return _settings.OutlineMode;
 			}
 			set
 			{
-				if (_outlineMode != value)
-				{
-					_outlineMode = value;
-					_changed = true;
-
-					if (_materials != null)
-					{
-						_materials.OutlineMode = value;
-					}
-				}
+				_settings.OutlineMode = value;
 			}
-		}
-
-		/// <inheritdoc/>
-		public void Invalidate()
-		{
-			if (_materials != null)
-			{
-				_materials.Reset(this);
-			}
-
-			_changed = true;
-		}
-
-		#endregion
-
-		#region ISerializationCallbackReceiver
-
-		void ISerializationCallbackReceiver.OnAfterDeserialize()
-		{
-			_outlineWidth = Mathf.Clamp(_outlineWidth, OutlineRenderer.MinWidth, OutlineRenderer.MaxWidth);
-
-			if (_outlineColor == Color.clear)
-			{
-				_outlineColor = Color.red;
-			}
-		}
-
-		void ISerializationCallbackReceiver.OnBeforeSerialize()
-		{
-			_changed = true;
 		}
 
 		#endregion
@@ -270,7 +205,12 @@ namespace UnityFx.Outline
 		{
 			if (_outlineObjects.Remove(go))
 			{
-				_changed = true;
+				if (Changed != null)
+				{
+					Changed(this, EventArgs.Empty);
+				}
+
+				return true;
 			}
 
 			return false;
@@ -286,7 +226,11 @@ namespace UnityFx.Outline
 		public void Clear()
 		{
 			_outlineObjects.Clear();
-			_changed = true;
+
+			if (Changed != null)
+			{
+				Changed(this, EventArgs.Empty);
+			}
 		}
 
 		/// <inheritdoc/>
@@ -312,6 +256,15 @@ namespace UnityFx.Outline
 		#endregion
 
 		#region implementation
+
+		private void OnSettingsChanged(object sender, EventArgs e)
+		{
+			if (Changed != null)
+			{
+				Changed(this, EventArgs.Empty);
+			}
+		}
+
 		#endregion
 	}
 }

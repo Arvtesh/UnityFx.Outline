@@ -187,8 +187,6 @@ GameObject:
   m_Component:
   - component: {fileID: 692811816}
   - component: {fileID: 692811815}
-  - component: {fileID: 692811814}
-  - component: {fileID: 692811813}
   - component: {fileID: 692811818}
   - component: {fileID: 692811817}
   m_Layer: 0
@@ -198,20 +196,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!81 &692811813
-AudioListener:
-  m_ObjectHideFlags: 0
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 0}
-  m_GameObject: {fileID: 692811812}
-  m_Enabled: 1
---- !u!124 &692811814
-Behaviour:
-  m_ObjectHideFlags: 0
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 0}
-  m_GameObject: {fileID: 692811812}
-  m_Enabled: 1
 --- !u!20 &692811815
 Camera:
   m_ObjectHideFlags: 0
@@ -504,7 +488,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _outlineResources: {fileID: 11400000, guid: d28e70f030b1a634db9a6a6d5478ef19, type: 2}
   _outlineColor: {r: 0, g: 1, b: 0, a: 1}
-  _outlineWidth: 12
+  _outlineWidth: 15
   _outlineIntensity: 2
   _outlineMode: 1
 --- !u!23 &1789341923
