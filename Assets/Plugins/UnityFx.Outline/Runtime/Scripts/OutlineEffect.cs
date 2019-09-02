@@ -9,7 +9,7 @@ using UnityEngine.Rendering;
 namespace UnityFx.Outline
 {
 	/// <summary>
-	/// Post-effect script. Should be attached to camera.
+	/// Renders outlines at specific camera. Should be attached to camera to function.
 	/// </summary>
 	/// <seealso cref="OutlineLayer"/>
 	/// <seealso cref="OutlineBehaviour"/>
@@ -108,27 +108,6 @@ namespace UnityFx.Outline
 			}
 		}
 
-		private void OnValidate()
-		{
-			if (_outlineLayers)
-			{
-				_layers = _outlineLayers.Layers;
-			}
-			else
-			{
-				_layers = null;
-			}
-
-			_changed = true;
-		}
-
-		private void Reset()
-		{
-			_outlineLayers = null;
-			_layers = null;
-			_changed = true;
-		}
-
 		private void OnEnable()
 		{
 			var camera = GetComponent<Camera>();
@@ -187,6 +166,31 @@ namespace UnityFx.Outline
 				}
 			}
 		}
+
+#if UNITY_EDITOR
+
+		private void OnValidate()
+		{
+			if (_outlineLayers)
+			{
+				_layers = _outlineLayers.Layers;
+			}
+			else
+			{
+				_layers = null;
+			}
+
+			_changed = true;
+		}
+
+		private void Reset()
+		{
+			_outlineLayers = null;
+			_layers = null;
+			_changed = true;
+		}
+
+#endif
 
 		#endregion
 
