@@ -14,6 +14,7 @@ namespace UnityFx.Outline
 	/// </summary>
 	/// <seealso cref="OutlineLayer"/>
 	/// <seealso cref="OutlineEffect"/>
+	/// <seealso cref="OutlineSettings"/>
 	[CreateAssetMenu(fileName = "OutlineLayerCollection", menuName = "UnityFx/Outline/Outline Layer Collection")]
 	public sealed class OutlineLayerCollection : ScriptableObject, IList<OutlineLayer>
 	{
@@ -33,14 +34,6 @@ namespace UnityFx.Outline
 		/// Raised when the collection is changed.
 		/// </summary>
 		public event EventHandler Changed;
-
-		public IList<IOutlineSettings> Settings
-		{
-			get
-			{
-				return _layerSettings;
-			}
-		}
 
 		#endregion
 

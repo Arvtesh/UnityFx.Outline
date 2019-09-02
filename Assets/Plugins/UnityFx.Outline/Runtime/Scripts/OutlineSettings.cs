@@ -2,7 +2,6 @@
 // See the LICENSE.md file in the project root for more information.
 
 using System;
-using System.ComponentModel;
 using UnityEngine;
 
 namespace UnityFx.Outline
@@ -34,9 +33,6 @@ namespace UnityFx.Outline
 		/// </summary>
 		public event EventHandler Changed;
 
-		#endregion
-
-		#region ScriptableObject
 		#endregion
 
 		#region IOutlineSettings
@@ -129,9 +125,6 @@ namespace UnityFx.Outline
 			}
 		}
 
-		#endregion
-
-		#region implementation
 		#endregion
 	}
 }

@@ -13,6 +13,7 @@ namespace UnityFx.Outline
 	/// </summary>
 	/// <seealso cref="OutlineLayer"/>
 	/// <seealso cref="OutlineBehaviour"/>
+	/// <seealso cref="OutlineSettings"/>
 	/// <seealso cref="https://willweissman.wordpress.com/tutorials/shaders/unity-shaderlab-object-outlines/"/>
 	[DisallowMultipleComponent]
 	[RequireComponent(typeof(Camera))]

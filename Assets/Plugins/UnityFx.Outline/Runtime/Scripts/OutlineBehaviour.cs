@@ -23,28 +23,16 @@ namespace UnityFx.Outline
 
 		[SerializeField]
 		private OutlineResources _outlineResources;
-
-		// NOTE: There is a custom editor for OutlineSettings, so no need to show these in default inspector.
 		[SerializeField, HideInInspector]
-		private OutlineSettings _outlineSettings;
-		[SerializeField, HideInInspector]
-		private Color _outlineColor = Color.red;
-		[SerializeField, HideInInspector]
-		private int _outlineWidth = 4;
-		[SerializeField, HideInInspector]
-		private float _outlineIntensity = 2;
-		[SerializeField, HideInInspector]
-		private OutlineMode _outlineMode;
+		private OutlineSettingsInstance _outlineSettings;
 
 #pragma warning restore 0649
 
-		private OutlineMaterialSet _materials;
 		private RendererCollection _renderers;
 		private CommandBuffer _commandBuffer;
 
 		private Dictionary<Camera, CommandBuffer> _cameraMap = new Dictionary<Camera, CommandBuffer>();
 		private float _cameraMapUpdateTimer;
-		private bool _changed;
 
 		#endregion
 
@@ -69,34 +57,23 @@ namespace UnityFx.Outline
 				if (_outlineResources != value)
 				{
 					_outlineResources = value;
-					_changed = true;
+					_outlineSettings.OutlineResources = _outlineResources;
 				}
 			}
 		}
 
 		/// <summary>
-		/// Gets or sets outline settings.
+		/// Gets or sets outline settings. Set this to non-<see langword="null"/> value to share settings with other components.
 		/// </summary>
 		public OutlineSettings OutlineSettings
 		{
 			get
 			{
-				return _outlineSettings;
+				return _outlineSettings.OutlineSettings;
 			}
 			set
 			{
-				if (_outlineSettings != value)
-				{
-					if (_outlineSettings != null)
-					{
-						_outlineSettings.Changed -= OnSettingsChanged;
-					}
-
-					_outlineSettings = value;
-					_changed = true;
-
-					ResetOutlineSettings();
-				}
+				_outlineSettings.OutlineSettings = value;
 			}
 		}
 
@@ -129,22 +106,12 @@ namespace UnityFx.Outline
 		private void Awake()
 		{
 			CreateRenderersIfNeeded();
-			ResetOutlineSettings();
-
-			_changed = true;
+			CreateSettingsIfNeeded();
 		}
 
 		private void OnDestroy()
 		{
-			if (_outlineSettings != null)
-			{
-				_outlineSettings.Changed -= OnSettingsChanged;
-			}
-
-			if (_renderers != null)
-			{
-				_renderers.Clear();
-			}
+			_outlineSettings.Reset();
 		}
 
 		private void OnEnable()
@@ -181,9 +148,14 @@ namespace UnityFx.Outline
 				_cameraMapUpdateTimer = 0;
 			}
 
-			if (_changed)
+			if (_outlineResources != null && _renderers != null && _outlineSettings.IsChanged)
 			{
-				UpdateCommandBuffer();
+				using (var renderer = new OutlineRenderer(_commandBuffer, BuiltinRenderTextureType.CameraTarget))
+				{
+					renderer.RenderSingleObject(_renderers, _outlineSettings.OutlineMaterials);
+				}
+
+				_outlineSettings.AcceptChanges();
 			}
 		}
 
@@ -210,28 +182,13 @@ namespace UnityFx.Outline
 		{
 			CreateRenderersIfNeeded();
 			CreateCommandBufferIfNeeded();
-
-			if (_outlineSettings != null)
-			{
-				_outlineColor = _outlineSettings.OutlineColor;
-				_outlineWidth = _outlineSettings.OutlineWidth;
-				_outlineIntensity = _outlineSettings.OutlineIntensity;
-				_outlineMode = _outlineSettings.OutlineMode;
-				_changed = true;
-			}
-
-			_changed = true;
+			CreateSettingsIfNeeded();
 		}
 
 		private void Reset()
 		{
-			if (_outlineSettings != null)
-			{
-				_outlineSettings.Changed -= OnSettingsChanged;
-			}
-
+			_outlineSettings.OutlineResources = _outlineResources;
 			_renderers.Reset();
-			_changed = true;
 		}
 
 #endif
@@ -245,15 +202,11 @@ namespace UnityFx.Outline
 		{
 			get
 			{
-				return _outlineColor;
+				return _outlineSettings.OutlineColor;
 			}
 			set
 			{
-				if (_outlineColor != value)
-				{
-					_outlineColor = value;
-					_changed = true;
-				}
+				_outlineSettings.OutlineColor = value;
 			}
 		}
 
@@ -262,17 +215,11 @@ namespace UnityFx.Outline
 		{
 			get
 			{
-				return _outlineWidth;
+				return _outlineSettings.OutlineWidth;
 			}
 			set
 			{
-				value = Mathf.Clamp(value, OutlineRenderer.MinWidth, OutlineRenderer.MaxWidth);
-
-				if (_outlineWidth != value)
-				{
-					_outlineWidth = value;
-					_changed = true;
-				}
+				_outlineSettings.OutlineWidth = value;
 			}
 		}
 
@@ -281,17 +228,11 @@ namespace UnityFx.Outline
 		{
 			get
 			{
-				return _outlineIntensity;
+				return _outlineSettings.OutlineIntensity;
 			}
 			set
 			{
-				value = Mathf.Clamp(value, OutlineRenderer.MinIntensity, OutlineRenderer.MaxIntensity);
-
-				if (_outlineIntensity != value)
-				{
-					_outlineIntensity = value;
-					_changed = true;
-				}
+				_outlineSettings.OutlineIntensity = value;
 			}
 		}
 
@@ -300,15 +241,11 @@ namespace UnityFx.Outline
 		{
 			get
 			{
-				return _outlineMode;
+				return _outlineSettings.OutlineMode;
 			}
 			set
 			{
-				if (_outlineMode != value)
-				{
-					_outlineMode = value;
-					_changed = true;
-				}
+				_outlineSettings.OutlineMode = value;
 			}
 		}
 
@@ -353,48 +290,14 @@ namespace UnityFx.Outline
 			}
 		}
 
-		private void ResetOutlineSettings()
+		private void CreateSettingsIfNeeded()
 		{
-			if (_outlineSettings != null)
+			if (_outlineSettings == null)
 			{
-				_outlineSettings.Changed += OnSettingsChanged;
-				_outlineColor = _outlineSettings.OutlineColor;
-				_outlineWidth = _outlineSettings.OutlineWidth;
-				_outlineIntensity = _outlineSettings.OutlineIntensity;
-				_outlineMode = _outlineSettings.OutlineMode;
+				_outlineSettings = new OutlineSettingsInstance();
 			}
-		}
 
-		private void UpdateCommandBuffer()
-		{
-			if (_outlineResources != null && _renderers != null)
-			{
-				if (_materials == null || _materials.OutlineResources != _outlineResources)
-				{
-					_materials = _outlineResources.CreateMaterialSet();
-				}
-
-				_materials.Reset(this);
-
-				using (var renderer = new OutlineRenderer(_commandBuffer, BuiltinRenderTextureType.CameraTarget))
-				{
-					renderer.RenderSingleObject(_renderers, _materials);
-				}
-
-				_changed = false;
-			}
-		}
-
-		private void OnSettingsChanged(object sender, EventArgs e)
-		{
-			if (_outlineSettings != null)
-			{
-				_outlineColor = _outlineSettings.OutlineColor;
-				_outlineWidth = _outlineSettings.OutlineWidth;
-				_outlineIntensity = _outlineSettings.OutlineIntensity;
-				_outlineMode = _outlineSettings.OutlineMode;
-				_changed = true;
-			}
+			_outlineSettings.OutlineResources = _outlineResources;
 		}
 
 		#endregion

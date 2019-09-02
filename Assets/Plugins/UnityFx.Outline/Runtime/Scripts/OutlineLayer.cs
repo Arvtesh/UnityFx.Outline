@@ -12,6 +12,7 @@ namespace UnityFx.Outline
 	/// A collection of <see cref="GameObject"/> instances that share outlining settings.
 	/// </summary>
 	/// <seealso cref="OutlineEffect"/>
+	/// <seealso cref="OutlineSettings"/>
 	public sealed class OutlineLayer : ICollection<GameObject>, IOutlineSettings
 	{
 		#region data
