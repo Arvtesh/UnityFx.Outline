@@ -11,18 +11,12 @@ namespace UnityFx.Outline
 {
 	internal static class OutlineEditorUtility
 	{
-		public static void Render(IOutlineSettings settings, bool displayHeader)
+		public static void Render(IOutlineSettings settings)
 		{
-			if (displayHeader)
-			{
-				EditorGUILayout.LabelField("Outline Settings");
-				EditorGUI.indentLevel += 1;
-			}
-
 			settings.OutlineColor = EditorGUILayout.ColorField("Color", settings.OutlineColor);
 			settings.OutlineWidth = EditorGUILayout.IntSlider("Width", settings.OutlineWidth, OutlineRenderer.MinWidth, OutlineRenderer.MaxWidth);
 
-			var blurred = EditorGUILayout.Toggle("Blured", settings.OutlineMode == OutlineMode.Blurred);
+			var blurred = EditorGUILayout.Toggle("Blurred", settings.OutlineMode == OutlineMode.Blurred);
 
 			if (blurred)
 			{
@@ -32,11 +26,6 @@ namespace UnityFx.Outline
 			}
 
 			settings.OutlineMode = blurred ? OutlineMode.Blurred : OutlineMode.Solid;
-
-			if (displayHeader)
-			{
-				EditorGUI.indentLevel -= 1;
-			}
 		}
 
 		public static void RenderPreview(OutlineLayer layer, int layerIndex, bool showObjects)

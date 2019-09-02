@@ -487,8 +487,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _outlineResources: {fileID: 11400000, guid: d28e70f030b1a634db9a6a6d5478ef19, type: 2}
+  _outlineSettings: {fileID: 0}
   _outlineColor: {r: 0, g: 1, b: 0, a: 1}
-  _outlineWidth: 15
+  _outlineWidth: 14
   _outlineIntensity: 2
   _outlineMode: 1
 --- !u!23 &1789341923

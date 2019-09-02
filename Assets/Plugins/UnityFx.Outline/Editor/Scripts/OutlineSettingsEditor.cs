@@ -12,16 +12,22 @@ namespace UnityFx.Outline
 	[CustomEditor(typeof(OutlineSettings))]
 	public class OutlineSettingsEditor : Editor
 	{
-		private IOutlineSettings _settings;
+		private OutlineSettings _settings;
 
 		public override void OnInspectorGUI()
 		{
-			OutlineEditorUtility.Render(_settings, false);
+			EditorGUI.BeginChangeCheck();
+			OutlineEditorUtility.Render(_settings);
+
+			if (EditorGUI.EndChangeCheck())
+			{
+				EditorUtility.SetDirty(_settings);
+			}
 		}
 
 		private void OnEnable()
 		{
-			_settings = (IOutlineSettings)target;
+			_settings = (OutlineSettings)target;
 		}
 	}
 }

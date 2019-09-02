@@ -2,9 +2,8 @@
 // See the LICENSE.md file in the project root for more information.
 
 using System;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEditor;
+using UnityEditor.SceneManagement;
 using UnityEngine;
 
 namespace UnityFx.Outline
@@ -12,6 +11,8 @@ namespace UnityFx.Outline
 	[CustomEditor(typeof(OutlineBehaviour))]
 	public class OutlineBehaviourEditor : Editor
 	{
+		private readonly GUIContent _outlineSettings = new GUIContent("Outline Settings", "Allows sharing of outline settings with other components. If set, overrides component-specific outline settings.");
+
 		private OutlineBehaviour _effect;
 		private bool _renderersOpened;
 		private bool _camerasOpened;
@@ -25,8 +26,34 @@ namespace UnityFx.Outline
 		{
 			base.OnInspectorGUI();
 
-			OutlineEditorUtility.Render(_effect, true);
+			// 1) Outline settings.
+			EditorGUI.BeginChangeCheck();
 
+			_effect.OutlineSettings = (OutlineSettings)EditorGUILayout.ObjectField(_outlineSettings, _effect.OutlineSettings, typeof(OutlineSettings), true);
+
+			if (_effect.OutlineSettings)
+			{
+				EditorGUI.BeginDisabledGroup(true);
+				EditorGUI.indentLevel += 1;
+				OutlineEditorUtility.Render(_effect);
+				EditorGUILayout.HelpBox(string.Format("Settings are overriden with values from {0}.", _effect.OutlineSettings.name), MessageType.Info, true);
+				EditorGUI.indentLevel -= 1;
+				EditorGUI.EndDisabledGroup();
+			}
+			else
+			{
+				EditorGUI.indentLevel += 1;
+				OutlineEditorUtility.Render(_effect);
+				EditorGUI.indentLevel -= 1;
+			}
+
+			if (EditorGUI.EndChangeCheck())
+			{
+				EditorUtility.SetDirty(_effect.gameObject);
+				EditorSceneManager.MarkSceneDirty(_effect.gameObject.scene);
+			}
+
+			// 2) Renderers (read-only).
 			_renderersOpened = EditorGUILayout.Foldout(_renderersOpened, "Renderers", true);
 
 			if (_renderersOpened)
@@ -46,6 +73,7 @@ namespace UnityFx.Outline
 				EditorGUI.EndDisabledGroup();
 			}
 
+			// 3) Cameras (read-only).
 			_camerasOpened = EditorGUILayout.Foldout(_camerasOpened, "Cameras", true);
 
 			if (_camerasOpened)

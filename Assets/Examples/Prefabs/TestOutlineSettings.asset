@@ -12,6 +12,6 @@ MonoBehaviour:
   m_Name: TestOutlineSettings
   m_EditorClassIdentifier: 
   _outlineColor: {r: 1, g: 0, b: 0, a: 1}
-  _outlineWidth: 3
+  _outlineWidth: 5
   _outlineIntensity: 2
   _outlineMode: 0

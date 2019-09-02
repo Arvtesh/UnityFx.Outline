@@ -24,11 +24,13 @@ namespace UnityFx.Outline
 		[SerializeField]
 		private OutlineResources _outlineResources;
 
-		// NOTE: There is a custom editor for OutlineBehaviour, so no need to show these in default inspector.
+		// NOTE: There is a custom editor for OutlineSettings, so no need to show these in default inspector.
 		[SerializeField, HideInInspector]
-		private Color _outlineColor = Color.green;
+		private OutlineSettings _outlineSettings;
 		[SerializeField, HideInInspector]
-		private int _outlineWidth = 5;
+		private Color _outlineColor = Color.red;
+		[SerializeField, HideInInspector]
+		private int _outlineWidth = 4;
 		[SerializeField, HideInInspector]
 		private float _outlineIntensity = 2;
 		[SerializeField, HideInInspector]
@@ -68,9 +70,32 @@ namespace UnityFx.Outline
 				{
 					_outlineResources = value;
 					_changed = true;
+				}
+			}
+		}
 
-					_materials = _outlineResources.CreateMaterialSet();
-					_materials.Reset(this);
+		/// <summary>
+		/// Gets or sets outline settings.
+		/// </summary>
+		public OutlineSettings OutlineSettings
+		{
+			get
+			{
+				return _outlineSettings;
+			}
+			set
+			{
+				if (_outlineSettings != value)
+				{
+					if (_outlineSettings != null)
+					{
+						_outlineSettings.Changed -= OnSettingsChanged;
+					}
+
+					_outlineSettings = value;
+					_changed = true;
+
+					ResetOutlineSettings();
 				}
 			}
 		}
@@ -104,11 +129,18 @@ namespace UnityFx.Outline
 		private void Awake()
 		{
 			CreateRenderersIfNeeded();
-			CreateMaterialsIfNeeded();
+			ResetOutlineSettings();
+
+			_changed = true;
 		}
 
 		private void OnDestroy()
 		{
+			if (_outlineSettings != null)
+			{
+				_outlineSettings.Changed -= OnSettingsChanged;
+			}
+
 			if (_renderers != null)
 			{
 				_renderers.Clear();
@@ -177,14 +209,27 @@ namespace UnityFx.Outline
 		private void OnValidate()
 		{
 			CreateRenderersIfNeeded();
-			CreateMaterialsIfNeeded();
 			CreateCommandBufferIfNeeded();
+
+			if (_outlineSettings != null)
+			{
+				_outlineColor = _outlineSettings.OutlineColor;
+				_outlineWidth = _outlineSettings.OutlineWidth;
+				_outlineIntensity = _outlineSettings.OutlineIntensity;
+				_outlineMode = _outlineSettings.OutlineMode;
+				_changed = true;
+			}
 
 			_changed = true;
 		}
 
 		private void Reset()
 		{
+			if (_outlineSettings != null)
+			{
+				_outlineSettings.Changed -= OnSettingsChanged;
+			}
+
 			_renderers.Reset();
 			_changed = true;
 		}
@@ -208,11 +253,6 @@ namespace UnityFx.Outline
 				{
 					_outlineColor = value;
 					_changed = true;
-
-					if (_materials != null)
-					{
-						_materials.OutlineColor = value;
-					}
 				}
 			}
 		}
@@ -232,11 +272,6 @@ namespace UnityFx.Outline
 				{
 					_outlineWidth = value;
 					_changed = true;
-
-					if (_materials != null)
-					{
-						_materials.OutlineWidth = value;
-					}
 				}
 			}
 		}
@@ -256,11 +291,6 @@ namespace UnityFx.Outline
 				{
 					_outlineIntensity = value;
 					_changed = true;
-
-					if (_materials != null)
-					{
-						_materials.OutlineIntensity = value;
-					}
 				}
 			}
 		}
@@ -278,11 +308,6 @@ namespace UnityFx.Outline
 				{
 					_outlineMode = value;
 					_changed = true;
-
-					if (_materials != null)
-					{
-						_materials.OutlineMode = value;
-					}
 				}
 			}
 		}
@@ -325,33 +350,50 @@ namespace UnityFx.Outline
 			{
 				_commandBuffer = new CommandBuffer();
 				_commandBuffer.name = string.Format("{0} - {1}", GetType().Name, name);
-				_changed = true;
 			}
 		}
 
-		private void CreateMaterialsIfNeeded()
+		private void ResetOutlineSettings()
 		{
-			if (_outlineResources && (_materials == null || _materials.OutlineResources != _outlineResources))
+			if (_outlineSettings != null)
 			{
-				_materials = _outlineResources.CreateMaterialSet();
-			}
-
-			if (_materials != null)
-			{
-				_materials.Reset(this);
+				_outlineSettings.Changed += OnSettingsChanged;
+				_outlineColor = _outlineSettings.OutlineColor;
+				_outlineWidth = _outlineSettings.OutlineWidth;
+				_outlineIntensity = _outlineSettings.OutlineIntensity;
+				_outlineMode = _outlineSettings.OutlineMode;
 			}
 		}
 
 		private void UpdateCommandBuffer()
 		{
-			if (_outlineResources != null && _renderers != null && _materials != null)
+			if (_outlineResources != null && _renderers != null)
 			{
-				using (var renderer = new Outline.OutlineRenderer(_commandBuffer, BuiltinRenderTextureType.CameraTarget))
+				if (_materials == null || _materials.OutlineResources != _outlineResources)
+				{
+					_materials = _outlineResources.CreateMaterialSet();
+				}
+
+				_materials.Reset(this);
+
+				using (var renderer = new OutlineRenderer(_commandBuffer, BuiltinRenderTextureType.CameraTarget))
 				{
 					renderer.RenderSingleObject(_renderers, _materials);
 				}
 
 				_changed = false;
+			}
+		}
+
+		private void OnSettingsChanged(object sender, EventArgs e)
+		{
+			if (_outlineSettings != null)
+			{
+				_outlineColor = _outlineSettings.OutlineColor;
+				_outlineWidth = _outlineSettings.OutlineWidth;
+				_outlineIntensity = _outlineSettings.OutlineIntensity;
+				_outlineMode = _outlineSettings.OutlineMode;
+				_changed = true;
 			}
 		}
 
