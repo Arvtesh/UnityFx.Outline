@@ -10,7 +10,7 @@ using UnityEngine;
 namespace UnityFx.Outline
 {
 	[CustomEditor(typeof(OutlineEffect))]
-	public class OutlineEffectInspector : Editor
+	public class OutlineEffectEditor : Editor
 	{
 		private OutlineEffect _effect;
 		private bool _previewOpened;
@@ -18,6 +18,34 @@ namespace UnityFx.Outline
 		private void OnEnable()
 		{
 			_effect = (OutlineEffect)target;
+		}
+
+		public static void RenderOutlineSettings(IOutlineSettings settings, bool displayHeader)
+		{
+			if (displayHeader)
+			{
+				EditorGUILayout.LabelField("Outline Settings");
+				EditorGUI.indentLevel += 1;
+			}
+
+			settings.OutlineColor = EditorGUILayout.ColorField("Color", settings.OutlineColor);
+			settings.OutlineWidth = EditorGUILayout.IntSlider("Width", settings.OutlineWidth, OutlineRenderer.MinWidth, OutlineRenderer.MaxWidth);
+
+			var blurred = EditorGUILayout.Toggle("Blured", settings.OutlineMode == OutlineMode.Blurred);
+
+			if (blurred)
+			{
+				EditorGUI.indentLevel += 1;
+				settings.OutlineIntensity = EditorGUILayout.Slider("Blur Intensity", settings.OutlineIntensity, OutlineRenderer.MinIntensity, OutlineRenderer.MaxIntensity);
+				EditorGUI.indentLevel -= 1;
+			}
+
+			settings.OutlineMode = blurred ? OutlineMode.Blurred : OutlineMode.Solid;
+
+			if (displayHeader)
+			{
+				EditorGUI.indentLevel -= 1;
+			}
 		}
 
 		public override void OnInspectorGUI()

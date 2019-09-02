@@ -23,15 +23,15 @@ namespace UnityFx.Outline
 
 		[SerializeField]
 		private OutlineResources _outlineResources;
-		[SerializeField]
+
+		// NOTE: There is a custom editor for OutlineBehaviour, so no need to show these in default inspector.
+		[SerializeField, HideInInspector]
 		private Color _outlineColor = Color.green;
-		[SerializeField]
-		[Range(Outline.OutlineRenderer.MinWidth, Outline.OutlineRenderer.MaxWidth)]
+		[SerializeField, HideInInspector]
 		private int _outlineWidth = 5;
-		[SerializeField]
-		[Range(Outline.OutlineRenderer.MinIntensity, Outline.OutlineRenderer.MaxIntensity)]
+		[SerializeField, HideInInspector]
 		private float _outlineIntensity = 2;
-		[SerializeField]
+		[SerializeField, HideInInspector]
 		private OutlineMode _outlineMode;
 
 #pragma warning restore 0649

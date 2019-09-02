@@ -25,6 +25,8 @@ namespace UnityFx.Outline
 		{
 			base.OnInspectorGUI();
 
+			OutlineEffectEditor.RenderOutlineSettings(_effect, true);
+
 			_renderersOpened = EditorGUILayout.Foldout(_renderersOpened, "Renderers", true);
 
 			if (_renderersOpened)
