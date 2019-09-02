@@ -6,7 +6,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/); this proj
 ## [0.5.0] - unreleased
 
 ### Added
-- Added `OutlineSettings`, that can be shared between dfferent `OutlineLayer` instances.
+- Added `OutlineSettings`, that can be shared between dfferent `OutlineLayer` and `OutlineBehaviour` instances.
 - Added custom inspectors for `OutlineSettings`, `OutlineLayerCollection`.
 
 ### Changed
