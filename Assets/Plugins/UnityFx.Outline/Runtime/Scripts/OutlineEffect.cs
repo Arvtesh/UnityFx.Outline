@@ -105,6 +105,7 @@ namespace UnityFx.Outline
 		{
 			if (_outlineLayers)
 			{
+				_outlineLayers.Init();
 				_outlineLayers.Changed += OnChanged;
 			}
 		}
@@ -141,9 +142,17 @@ namespace UnityFx.Outline
 
 		private void Update()
 		{
-			if (_outlineLayers != null && _changed)
+			if (_outlineLayers && _changed)
 			{
 				FillCommandBuffer();
+			}
+		}
+
+		private void OnDestroy()
+		{
+			if (_outlineLayers)
+			{
+				_outlineLayers.Reset();
 			}
 		}
 

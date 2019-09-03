@@ -8,7 +8,7 @@ using UnityEngine;
 namespace UnityFx.Outline
 {
 	[Serializable]
-	internal class OutlineSettingsInstance : IOutlineSettings, IChangeTracking
+	internal class OutlineSettingsInstance : IOutlineSettingsEx, IChangeTracking, IDisposable
 	{
 		#region data
 
@@ -35,32 +35,43 @@ namespace UnityFx.Outline
 
 		#region interface
 
-		public OutlineResources OutlineResources
+		public event EventHandler Changed;
+
+		public OutlineMaterialSet OutlineMaterials
 		{
 			get
 			{
-				if (_materials != null)
-				{
-					return _materials.OutlineResources;
-				}
-
-				return null;
-			}
-			set
-			{
-				if (value == null)
-				{
-					throw new ArgumentNullException("OutlineResources");
-				}
-
-				if (_materials == null || _materials.OutlineResources != value)
-				{
-					_materials = value.CreateMaterialSet();
-					_materials.Reset(this);
-					_changed = true;
-				}
+				return _materials;
 			}
 		}
+
+		internal void Awake()
+		{
+			ResetSettings(true);
+		}
+
+		internal void SetResources(OutlineResources resources)
+		{
+			if (resources == null)
+			{
+				if (_materials != null)
+				{
+					_materials.Dispose();
+					_materials = null;
+				}
+			}
+			else if (_materials == null || _materials.OutlineResources != resources)
+			{
+				_materials = resources.CreateMaterialSet();
+				_materials.Reset(this);
+
+				SetChanged();
+			}
+		}
+
+		#endregion
+
+		#region IOutlineSettingsEx
 
 		public OutlineSettings OutlineSettings
 		{
@@ -79,42 +90,9 @@ namespace UnityFx.Outline
 
 					_outlineSettings = value;
 
-					if (_outlineSettings != null)
-					{
-						_outlineSettings.Changed += OnSettingsChanged;
-						_outlineColor = _outlineSettings.OutlineColor;
-						_outlineWidth = _outlineSettings.OutlineWidth;
-						_outlineIntensity = _outlineSettings.OutlineIntensity;
-						_outlineMode = _outlineSettings.OutlineMode;
-
-						if (_materials != null)
-						{
-							_materials.Reset(this);
-						}
-
-						_changed = true;
-					}
+					ResetSettings(true);
 				}
 			}
-		}
-
-		public OutlineMaterialSet OutlineMaterials
-		{
-			get
-			{
-				return _materials;
-			}
-		}
-
-		public void Reset()
-		{
-			if (_outlineSettings != null)
-			{
-				_outlineSettings.Changed -= OnSettingsChanged;
-			}
-
-			_materials = null;
-			_changed = true;
 		}
 
 		#endregion
@@ -133,12 +111,13 @@ namespace UnityFx.Outline
 				if (_outlineColor != value)
 				{
 					_outlineColor = value;
-					_changed = true;
 
 					if (_materials != null)
 					{
 						_materials.OutlineColor = value;
 					}
+
+					SetChanged();
 				}
 			}
 		}
@@ -157,12 +136,13 @@ namespace UnityFx.Outline
 				if (_outlineWidth != value)
 				{
 					_outlineWidth = value;
-					_changed = true;
 
 					if (_materials != null)
 					{
 						_materials.OutlineWidth = value;
 					}
+
+					SetChanged();
 				}
 			}
 		}
@@ -181,12 +161,13 @@ namespace UnityFx.Outline
 				if (_outlineIntensity != value)
 				{
 					_outlineIntensity = value;
-					_changed = true;
 
 					if (_materials != null)
 					{
 						_materials.OutlineIntensity = value;
 					}
+
+					SetChanged();
 				}
 			}
 		}
@@ -203,12 +184,13 @@ namespace UnityFx.Outline
 				if (_outlineMode != value)
 				{
 					_outlineMode = value;
-					_changed = true;
 
 					if (_materials != null)
 					{
 						_materials.OutlineMode = value;
 					}
+
+					SetChanged();
 				}
 			}
 		}
@@ -234,12 +216,41 @@ namespace UnityFx.Outline
 
 		#endregion
 
+		#region IDisposable
+
+		public void Dispose()
+		{
+			if (_outlineSettings != null)
+			{
+				_outlineSettings.Changed -= OnSettingsChanged;
+			}
+
+			if (_materials != null)
+			{
+				_materials.Dispose();
+				_materials = null;
+			}
+		}
+
+		#endregion
+
 		#region implementation
 
 		private void OnSettingsChanged(object sender, EventArgs e)
 		{
+			Debug.Assert(_outlineSettings);
+			ResetSettings(false);
+		}
+
+		private void ResetSettings(bool subscribeToEvents)
+		{
 			if (_outlineSettings != null)
 			{
+				if (subscribeToEvents)
+				{
+					_outlineSettings.Changed += OnSettingsChanged;
+				}
+
 				_outlineColor = _outlineSettings.OutlineColor;
 				_outlineWidth = _outlineSettings.OutlineWidth;
 				_outlineIntensity = _outlineSettings.OutlineIntensity;
@@ -250,7 +261,17 @@ namespace UnityFx.Outline
 					_materials.Reset(this);
 				}
 
-				_changed = true;
+				SetChanged();
+			}
+		}
+
+		private void SetChanged()
+		{
+			_changed = true;
+
+			if (Changed != null)
+			{
+				Changed(this, EventArgs.Empty);
 			}
 		}
 

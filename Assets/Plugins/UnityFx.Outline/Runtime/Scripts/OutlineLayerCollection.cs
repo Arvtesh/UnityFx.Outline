@@ -20,9 +20,7 @@ namespace UnityFx.Outline
 	{
 		#region data
 
-		[SerializeField]
-		private OutlineSettings[] _layerSettings;
-
+		[SerializeField, HideInInspector]
 		private List<OutlineLayer> _layers = new List<OutlineLayer>();
 		private EventHandler _changedDelegate;
 
@@ -30,34 +28,30 @@ namespace UnityFx.Outline
 
 		#region interface
 
-		/// <summary>
-		/// Raised when the collection is changed.
-		/// </summary>
-		public event EventHandler Changed;
+		internal event EventHandler Changed;
+
+		internal void Init()
+		{
+			_changedDelegate = OnChanged;
+
+			foreach (var layer in _layers)
+			{
+				layer.Awake();
+				layer.Changed += _changedDelegate;
+			}
+		}
+
+		internal void Reset()
+		{
+			foreach (var layer in _layers)
+			{
+				layer.Reset();
+			}
+		}
 
 		#endregion
 
 		#region ScriptableObject
-
-		private void Awake()
-		{
-			_changedDelegate = OnChanged;
-
-			if (_layerSettings != null)
-			{
-				foreach (var item in _layerSettings)
-				{
-					if (item)
-					{
-						Add(new OutlineLayer(item));
-					}
-					else
-					{
-						Add(new OutlineLayer());
-					}
-				}
-			}
-		}
 
 #if UNITY_EDITOR
 
@@ -66,23 +60,6 @@ namespace UnityFx.Outline
 			if (_changedDelegate == null)
 			{
 				_changedDelegate = OnChanged;
-			}
-
-			if (_layerSettings != null)
-			{
-				Clear();
-
-				foreach (var item in _layerSettings)
-				{
-					if (item)
-					{
-						Add(new OutlineLayer(item));
-					}
-					else
-					{
-						Add(new OutlineLayer());
-					}
-				}
 			}
 		}
 
@@ -245,8 +222,12 @@ namespace UnityFx.Outline
 
 		#region IEnumerable
 
-		/// <inheritdoc/>
-		public IEnumerator<OutlineLayer> GetEnumerator()
+		public List<OutlineLayer>.Enumerator GetEnumerator()
+		{
+			return _layers.GetEnumerator();
+		}
+
+		IEnumerator<OutlineLayer> IEnumerable<OutlineLayer>.GetEnumerator()
 		{
 			return _layers.GetEnumerator();
 		}

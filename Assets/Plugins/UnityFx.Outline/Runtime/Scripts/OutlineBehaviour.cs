@@ -15,7 +15,7 @@ namespace UnityFx.Outline
 	/// <seealso cref="OutlineEffect"/>
 	[ExecuteInEditMode]
 	[DisallowMultipleComponent]
-	public sealed partial class OutlineBehaviour : MonoBehaviour, IOutlineSettings
+	public sealed partial class OutlineBehaviour : MonoBehaviour, IOutlineSettingsEx
 	{
 		#region data
 
@@ -57,23 +57,8 @@ namespace UnityFx.Outline
 				if (_outlineResources != value)
 				{
 					_outlineResources = value;
-					_outlineSettings.OutlineResources = _outlineResources;
+					_outlineSettings.SetResources(_outlineResources);
 				}
-			}
-		}
-
-		/// <summary>
-		/// Gets or sets outline settings. Set this to non-<see langword="null"/> value to share settings with other components.
-		/// </summary>
-		public OutlineSettings OutlineSettings
-		{
-			get
-			{
-				return _outlineSettings.OutlineSettings;
-			}
-			set
-			{
-				_outlineSettings.OutlineSettings = value;
 			}
 		}
 
@@ -107,11 +92,13 @@ namespace UnityFx.Outline
 		{
 			CreateRenderersIfNeeded();
 			CreateSettingsIfNeeded();
+
+			_outlineSettings.Awake();
 		}
 
 		private void OnDestroy()
 		{
-			_outlineSettings.Reset();
+			_outlineSettings.SetResources(null);
 		}
 
 		private void OnEnable()
@@ -187,11 +174,30 @@ namespace UnityFx.Outline
 
 		private void Reset()
 		{
-			_outlineSettings.OutlineResources = _outlineResources;
+			_outlineSettings.SetResources(_outlineResources);
 			_renderers.Reset();
 		}
 
 #endif
+
+		#endregion
+
+		#region IOutlineSettingsEx
+
+		/// <summary>
+		/// Gets or sets outline settings. Set this to non-<see langword="null"/> value to share settings with other components.
+		/// </summary>
+		public OutlineSettings OutlineSettings
+		{
+			get
+			{
+				return _outlineSettings.OutlineSettings;
+			}
+			set
+			{
+				_outlineSettings.OutlineSettings = value;
+			}
+		}
 
 		#endregion
 
@@ -297,7 +303,7 @@ namespace UnityFx.Outline
 				_outlineSettings = new OutlineSettingsInstance();
 			}
 
-			_outlineSettings.OutlineResources = _outlineResources;
+			_outlineSettings.SetResources(_outlineResources);
 		}
 
 		#endregion

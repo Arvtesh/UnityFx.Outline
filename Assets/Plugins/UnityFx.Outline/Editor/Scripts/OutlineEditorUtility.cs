@@ -11,6 +11,31 @@ namespace UnityFx.Outline
 {
 	internal static class OutlineEditorUtility
 	{
+		public static void Render(IOutlineSettingsEx settings)
+		{
+			settings.OutlineSettings = (OutlineSettings)EditorGUILayout.ObjectField("Outline Settings", settings.OutlineSettings, typeof(OutlineSettings), true);
+
+			if (settings.OutlineSettings)
+			{
+				EditorGUI.BeginDisabledGroup(true);
+				EditorGUI.indentLevel += 1;
+
+				Render((IOutlineSettings)settings);
+
+				EditorGUILayout.HelpBox(string.Format("Settings are overriden with values from {0}.", settings.OutlineSettings.name), MessageType.Info, true);
+				EditorGUI.indentLevel -= 1;
+				EditorGUI.EndDisabledGroup();
+			}
+			else
+			{
+				EditorGUI.indentLevel += 1;
+
+				Render((IOutlineSettings)settings);
+
+				EditorGUI.indentLevel -= 1;
+			}
+		}
+
 		public static void Render(IOutlineSettings settings)
 		{
 			settings.OutlineColor = EditorGUILayout.ColorField("Color", settings.OutlineColor);

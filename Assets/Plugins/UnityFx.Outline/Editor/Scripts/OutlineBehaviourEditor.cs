@@ -11,8 +11,6 @@ namespace UnityFx.Outline
 	[CustomEditor(typeof(OutlineBehaviour))]
 	public class OutlineBehaviourEditor : Editor
 	{
-		private readonly GUIContent _outlineSettings = new GUIContent("Outline Settings", "Allows sharing of outline settings with other components. If set, overrides component-specific outline settings.");
-
 		private OutlineBehaviour _effect;
 		private bool _renderersOpened;
 		private bool _camerasOpened;
@@ -29,23 +27,7 @@ namespace UnityFx.Outline
 			// 1) Outline settings.
 			EditorGUI.BeginChangeCheck();
 
-			_effect.OutlineSettings = (OutlineSettings)EditorGUILayout.ObjectField(_outlineSettings, _effect.OutlineSettings, typeof(OutlineSettings), true);
-
-			if (_effect.OutlineSettings)
-			{
-				EditorGUI.BeginDisabledGroup(true);
-				EditorGUI.indentLevel += 1;
-				OutlineEditorUtility.Render(_effect);
-				EditorGUILayout.HelpBox(string.Format("Settings are overriden with values from {0}.", _effect.OutlineSettings.name), MessageType.Info, true);
-				EditorGUI.indentLevel -= 1;
-				EditorGUI.EndDisabledGroup();
-			}
-			else
-			{
-				EditorGUI.indentLevel += 1;
-				OutlineEditorUtility.Render(_effect);
-				EditorGUI.indentLevel -= 1;
-			}
+			OutlineEditorUtility.Render(_effect);
 
 			if (EditorGUI.EndChangeCheck())
 			{

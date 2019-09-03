@@ -13,30 +13,27 @@ namespace UnityFx.Outline
 	/// </summary>
 	/// <seealso cref="OutlineEffect"/>
 	/// <seealso cref="OutlineSettings"/>
-	public sealed class OutlineLayer : ICollection<GameObject>, IOutlineSettings
+	[Serializable]
+	public sealed class OutlineLayer : ICollection<GameObject>, IOutlineSettingsEx
 	{
 		#region data
 
-		private readonly OutlineSettings _settings;
+		private readonly OutlineSettingsInstance _settings;
 
 		private Dictionary<GameObject, Renderer[]> _outlineObjects = new Dictionary<GameObject, Renderer[]>();
-		private OutlineMaterialSet _materials;
 
 		#endregion
 
 		#region interface
 
-		/// <summary>
-		/// Raised when the layer is changed.
-		/// </summary>
-		public event EventHandler Changed;
+		internal event EventHandler Changed;
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="OutlineLayer"/> class.
 		/// </summary>
 		public OutlineLayer()
 		{
-			_settings = ScriptableObject.CreateInstance<OutlineSettings>();
+			_settings = new OutlineSettingsInstance();
 			_settings.Changed += OnSettingsChanged;
 		}
 
@@ -50,7 +47,8 @@ namespace UnityFx.Outline
 				throw new ArgumentNullException("settings");
 			}
 
-			_settings = settings;
+			_settings = new OutlineSettingsInstance();
+			_settings.OutlineSettings = settings;
 			_settings.Changed += OnSettingsChanged;
 		}
 
@@ -99,21 +97,46 @@ namespace UnityFx.Outline
 			}
 		}
 
+		internal void Awake()
+		{
+			_settings.Awake();
+		}
+
+		internal void Reset()
+		{
+			_settings.SetResources(null);
+			_outlineObjects.Clear();
+		}
+
 		internal void Render(OutlineRenderer renderer, OutlineResources resources)
 		{
-			if (_materials == null || _materials.OutlineResources != resources)
-			{
-				_materials = resources.CreateMaterialSet();
-			}
-
-			_materials.Reset(_settings);
+			_settings.SetResources(resources);
 
 			foreach (var kvp in _outlineObjects)
 			{
 				if (kvp.Key)
 				{
-					renderer.RenderSingleObject(kvp.Value, _materials);
+					renderer.RenderSingleObject(kvp.Value, _settings.OutlineMaterials);
 				}
+			}
+		}
+
+		#endregion
+
+		#region IOutlineSettingsEx
+
+		/// <summary>
+		/// Gets or sets outline settings. Set this to non-<see langword="null"/> value to share settings with other components.
+		/// </summary>
+		public OutlineSettings OutlineSettings
+		{
+			get
+			{
+				return _settings.OutlineSettings;
+			}
+			set
+			{
+				_settings.OutlineSettings = value;
 			}
 		}
 

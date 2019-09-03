@@ -11,5 +11,4 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 57d0c11168277cf4eb3b4b89706e6aa5, type: 3}
   m_Name: TestOutlineLayers
   m_EditorClassIdentifier: 
-  _layerSettings:
-  - {fileID: 11400000, guid: 45705bbb29366194eb01ca517d80967c, type: 2}
+  _layers: []

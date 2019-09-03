@@ -10,7 +10,7 @@ namespace UnityFx.Outline
 	/// A set of materials needed to render outlines.
 	/// </summary>
 	/// <seealso cref="OutlineRenderer"/>
-	public sealed class OutlineMaterialSet  : IOutlineSettings
+	public sealed class OutlineMaterialSet  : IOutlineSettings, IDisposable
 	{
 		#region data
 
@@ -219,6 +219,29 @@ namespace UnityFx.Outline
 				{
 					SetMode(value);
 				}
+			}
+		}
+
+		#endregion
+
+		#region IDisposable
+
+		/// <inheritdoc/>
+		public void Dispose()
+		{
+			if (_renderMaterial)
+			{
+				UnityEngine.Object.DestroyImmediate(_renderMaterial);
+			}
+
+			if (_hPassMaterial)
+			{
+				UnityEngine.Object.DestroyImmediate(_hPassMaterial);
+			}
+
+			if (_vPassMaterial)
+			{
+				UnityEngine.Object.DestroyImmediate(_vPassMaterial);
 			}
 		}
 
