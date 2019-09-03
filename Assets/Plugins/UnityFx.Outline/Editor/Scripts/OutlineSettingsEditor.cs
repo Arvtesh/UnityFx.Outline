@@ -17,7 +17,7 @@ namespace UnityFx.Outline
 		public override void OnInspectorGUI()
 		{
 			EditorGUI.BeginChangeCheck();
-			OutlineEditorUtility.Render(_settings);
+			OutlineEditorUtility.Render(_settings, _settings);
 
 			if (EditorGUI.EndChangeCheck())
 			{

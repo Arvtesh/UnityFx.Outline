@@ -4,6 +4,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.ComponentModel;
 using UnityEngine;
 
 namespace UnityFx.Outline
@@ -14,19 +15,18 @@ namespace UnityFx.Outline
 	/// <seealso cref="OutlineEffect"/>
 	/// <seealso cref="OutlineSettings"/>
 	[Serializable]
-	public sealed class OutlineLayer : ICollection<GameObject>, IOutlineSettingsEx
+	public sealed class OutlineLayer : ICollection<GameObject>, IOutlineSettingsEx, IChangeTracking
 	{
 		#region data
 
 		private readonly OutlineSettingsInstance _settings;
 
 		private Dictionary<GameObject, Renderer[]> _outlineObjects = new Dictionary<GameObject, Renderer[]>();
+		private bool _changed;
 
 		#endregion
 
 		#region interface
-
-		internal event EventHandler Changed;
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="OutlineLayer"/> class.
@@ -34,7 +34,6 @@ namespace UnityFx.Outline
 		public OutlineLayer()
 		{
 			_settings = new OutlineSettingsInstance();
-			_settings.Changed += OnSettingsChanged;
 		}
 
 		/// <summary>
@@ -47,9 +46,10 @@ namespace UnityFx.Outline
 				throw new ArgumentNullException("settings");
 			}
 
-			_settings = new OutlineSettingsInstance();
-			_settings.OutlineSettings = settings;
-			_settings.Changed += OnSettingsChanged;
+			_settings = new OutlineSettingsInstance
+			{
+				OutlineSettings = settings
+			};
 		}
 
 		/// <summary>
@@ -89,23 +89,19 @@ namespace UnityFx.Outline
 				}
 
 				_outlineObjects.Add(go, renderers);
-
-				if (Changed != null)
-				{
-					Changed(this, EventArgs.Empty);
-				}
+				_changed = true;
 			}
-		}
-
-		internal void Awake()
-		{
-			_settings.Awake();
 		}
 
 		internal void Reset()
 		{
 			_settings.SetResources(null);
 			_outlineObjects.Clear();
+		}
+
+		internal void UpdateChanged()
+		{
+			_settings.UpdateChanged();
 		}
 
 		internal void Render(OutlineRenderer renderer, OutlineResources resources)
@@ -229,11 +225,7 @@ namespace UnityFx.Outline
 		{
 			if (_outlineObjects.Remove(go))
 			{
-				if (Changed != null)
-				{
-					Changed(this, EventArgs.Empty);
-				}
-
+				_changed = true;
 				return true;
 			}
 
@@ -249,11 +241,10 @@ namespace UnityFx.Outline
 		/// <inheritdoc/>
 		public void Clear()
 		{
-			_outlineObjects.Clear();
-
-			if (Changed != null)
+			if (_outlineObjects.Count > 0)
 			{
-				Changed(this, EventArgs.Empty);
+				_outlineObjects.Clear();
+				_changed = true;
 			}
 		}
 
@@ -267,6 +258,7 @@ namespace UnityFx.Outline
 
 		#region IEnumerable
 
+		/// <inheritdoc/>
 		public IEnumerator<GameObject> GetEnumerator()
 		{
 			return _outlineObjects.Keys.GetEnumerator();
@@ -279,16 +271,27 @@ namespace UnityFx.Outline
 
 		#endregion
 
-		#region implementation
+		#region IChangeTracking
 
-		private void OnSettingsChanged(object sender, EventArgs e)
+		/// <inheritdoc/>
+		public bool IsChanged
 		{
-			if (Changed != null)
+			get
 			{
-				Changed(this, EventArgs.Empty);
+				return _changed || _settings.IsChanged;
 			}
 		}
 
+		/// <inheritdoc/>
+		public void AcceptChanges()
+		{
+			_settings.AcceptChanges();
+			_changed = false;
+		}
+
+		#endregion
+
+		#region implementation
 		#endregion
 	}
 }

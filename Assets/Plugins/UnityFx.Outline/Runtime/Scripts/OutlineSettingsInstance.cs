@@ -29,13 +29,11 @@ namespace UnityFx.Outline
 #pragma warning restore 0649
 
 		private OutlineMaterialSet _materials;
-		private bool _changed;
+		private bool _changed = true;
 
 		#endregion
 
 		#region interface
-
-		public event EventHandler Changed;
 
 		public OutlineMaterialSet OutlineMaterials
 		{
@@ -43,11 +41,6 @@ namespace UnityFx.Outline
 			{
 				return _materials;
 			}
-		}
-
-		internal void Awake()
-		{
-			ResetSettings(true);
 		}
 
 		internal void SetResources(OutlineResources resources)
@@ -64,8 +57,30 @@ namespace UnityFx.Outline
 			{
 				_materials = resources.CreateMaterialSet();
 				_materials.Reset(this);
+				_changed = true;
+			}
+		}
 
-				SetChanged();
+		internal void UpdateChanged()
+		{
+			if (_outlineSettings != null)
+			{
+				_outlineColor = _outlineSettings.OutlineColor;
+				_outlineWidth = _outlineSettings.OutlineWidth;
+				_outlineIntensity = _outlineSettings.OutlineIntensity;
+				_outlineMode = _outlineSettings.OutlineMode;
+			}
+
+			if (_materials != null)
+			{
+				if (_outlineColor != _materials.OutlineColor ||
+					_outlineWidth != _materials.OutlineWidth ||
+					_outlineIntensity != _materials.OutlineIntensity ||
+					_outlineMode != _materials.OutlineMode)
+				{
+					_materials.Reset(this);
+					_changed = true;
+				}
 			}
 		}
 
@@ -83,14 +98,22 @@ namespace UnityFx.Outline
 			{
 				if (_outlineSettings != value)
 				{
-					if (_outlineSettings != null)
-					{
-						_outlineSettings.Changed -= OnSettingsChanged;
-					}
-
 					_outlineSettings = value;
 
-					ResetSettings(true);
+					if (_outlineSettings != null)
+					{
+						_outlineColor = _outlineSettings.OutlineColor;
+						_outlineWidth = _outlineSettings.OutlineWidth;
+						_outlineIntensity = _outlineSettings.OutlineIntensity;
+						_outlineMode = _outlineSettings.OutlineMode;
+
+						if (_materials != null)
+						{
+							_materials.Reset(this);
+						}
+
+						_changed = true;
+					}
 				}
 			}
 		}
@@ -111,13 +134,12 @@ namespace UnityFx.Outline
 				if (_outlineColor != value)
 				{
 					_outlineColor = value;
+					_changed = true;
 
 					if (_materials != null)
 					{
 						_materials.OutlineColor = value;
 					}
-
-					SetChanged();
 				}
 			}
 		}
@@ -136,13 +158,12 @@ namespace UnityFx.Outline
 				if (_outlineWidth != value)
 				{
 					_outlineWidth = value;
+					_changed = true;
 
 					if (_materials != null)
 					{
 						_materials.OutlineWidth = value;
 					}
-
-					SetChanged();
 				}
 			}
 		}
@@ -161,13 +182,12 @@ namespace UnityFx.Outline
 				if (_outlineIntensity != value)
 				{
 					_outlineIntensity = value;
+					_changed = true;
 
 					if (_materials != null)
 					{
 						_materials.OutlineIntensity = value;
 					}
-
-					SetChanged();
 				}
 			}
 		}
@@ -184,13 +204,12 @@ namespace UnityFx.Outline
 				if (_outlineMode != value)
 				{
 					_outlineMode = value;
+					_changed = true;
 
 					if (_materials != null)
 					{
 						_materials.OutlineMode = value;
 					}
-
-					SetChanged();
 				}
 			}
 		}
@@ -220,11 +239,6 @@ namespace UnityFx.Outline
 
 		public void Dispose()
 		{
-			if (_outlineSettings != null)
-			{
-				_outlineSettings.Changed -= OnSettingsChanged;
-			}
-
 			if (_materials != null)
 			{
 				_materials.Dispose();
@@ -235,46 +249,6 @@ namespace UnityFx.Outline
 		#endregion
 
 		#region implementation
-
-		private void OnSettingsChanged(object sender, EventArgs e)
-		{
-			Debug.Assert(_outlineSettings);
-			ResetSettings(false);
-		}
-
-		private void ResetSettings(bool subscribeToEvents)
-		{
-			if (_outlineSettings != null)
-			{
-				if (subscribeToEvents)
-				{
-					_outlineSettings.Changed += OnSettingsChanged;
-				}
-
-				_outlineColor = _outlineSettings.OutlineColor;
-				_outlineWidth = _outlineSettings.OutlineWidth;
-				_outlineIntensity = _outlineSettings.OutlineIntensity;
-				_outlineMode = _outlineSettings.OutlineMode;
-
-				if (_materials != null)
-				{
-					_materials.Reset(this);
-				}
-
-				SetChanged();
-			}
-		}
-
-		private void SetChanged()
-		{
-			_changed = true;
-
-			if (Changed != null)
-			{
-				Changed(this, EventArgs.Empty);
-			}
-		}
-
 		#endregion
 	}
 }

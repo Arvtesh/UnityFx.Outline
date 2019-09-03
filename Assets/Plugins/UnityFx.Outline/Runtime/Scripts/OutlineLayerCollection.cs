@@ -16,30 +16,17 @@ namespace UnityFx.Outline
 	/// <seealso cref="OutlineEffect"/>
 	/// <seealso cref="OutlineSettings"/>
 	[CreateAssetMenu(fileName = "OutlineLayerCollection", menuName = "UnityFx/Outline/Outline Layer Collection")]
-	public sealed class OutlineLayerCollection : ScriptableObject, IList<OutlineLayer>
+	public sealed class OutlineLayerCollection : ScriptableObject, IList<OutlineLayer>, IChangeTracking
 	{
 		#region data
 
 		[SerializeField, HideInInspector]
 		private List<OutlineLayer> _layers = new List<OutlineLayer>();
-		private EventHandler _changedDelegate;
+		private bool _changed;
 
 		#endregion
 
 		#region interface
-
-		internal event EventHandler Changed;
-
-		internal void Init()
-		{
-			_changedDelegate = OnChanged;
-
-			foreach (var layer in _layers)
-			{
-				layer.Awake();
-				layer.Changed += _changedDelegate;
-			}
-		}
 
 		internal void Reset()
 		{
@@ -49,21 +36,13 @@ namespace UnityFx.Outline
 			}
 		}
 
-		#endregion
-
-		#region ScriptableObject
-
-#if UNITY_EDITOR
-
-		private void OnValidate()
+		internal void UpdateChanged()
 		{
-			if (_changedDelegate == null)
+			foreach (var layer in _layers)
 			{
-				_changedDelegate = OnChanged;
+				layer.UpdateChanged();
 			}
 		}
-
-#endif
 
 		#endregion
 
@@ -90,11 +69,8 @@ namespace UnityFx.Outline
 
 				if (_layers[layerIndex] != value)
 				{
-					_layers[layerIndex].Changed -= _changedDelegate;
 					_layers[layerIndex] = value;
-					_layers[layerIndex].Changed += _changedDelegate;
-
-					RaiseChanged();
+					_changed = true;
 				}
 			}
 		}
@@ -119,9 +95,7 @@ namespace UnityFx.Outline
 			}
 
 			_layers.Insert(index, layer);
-			layer.Changed += _changedDelegate;
-
-			RaiseChanged();
+			_changed = true;
 		}
 
 		/// <inheritdoc/>
@@ -129,10 +103,8 @@ namespace UnityFx.Outline
 		{
 			if (index >= 0 && index < _layers.Count)
 			{
-				_layers[index].Changed -= _changedDelegate;
 				_layers.RemoveAt(index);
-
-				RaiseChanged();
+				_changed = true;
 			}
 		}
 
@@ -167,22 +139,15 @@ namespace UnityFx.Outline
 			}
 
 			_layers.Add(layer);
-
-			layer.Changed += _changedDelegate;
-			RaiseChanged();
+			_changed = true;
 		}
 
 		/// <inheritdoc/>
 		public bool Remove(OutlineLayer layer)
 		{
-			if (layer != null)
-			{
-				layer.Changed -= _changedDelegate;
-			}
-
 			if (_layers.Remove(layer))
 			{
-				RaiseChanged();
+				_changed = true;
 				return true;
 			}
 
@@ -192,13 +157,11 @@ namespace UnityFx.Outline
 		/// <inheritdoc/>
 		public void Clear()
 		{
-			foreach (var layer in _layers)
+			if (_layers.Count > 0)
 			{
-				layer.Changed -= _changedDelegate;
+				_layers.Clear();
+				_changed = true;
 			}
-
-			_layers.Clear();
-			RaiseChanged();
 		}
 
 		/// <inheritdoc/>
@@ -239,21 +202,44 @@ namespace UnityFx.Outline
 
 		#endregion
 
-		#region implementation
+		#region IChangeTracking
 
-		private void RaiseChanged()
+		/// <inheritdoc/>
+		public bool IsChanged
 		{
-			if (Changed != null)
+			get
 			{
-				Changed(this, EventArgs.Empty);
+				if (_changed)
+				{
+					return true;
+				}
+
+				foreach (var layer in _layers)
+				{
+					if (layer.IsChanged)
+					{
+						return true;
+					}
+				}
+
+				return false;
 			}
 		}
 
-		private void OnChanged(object sender, EventArgs args)
+		/// <inheritdoc/>
+		public void AcceptChanges()
 		{
-			RaiseChanged();
+			foreach (var layer in _layers)
+			{
+				layer.AcceptChanges();
+			}
+
+			_changed = false;
 		}
 
+		#endregion
+
+		#region implementation
 		#endregion
 	}
 }

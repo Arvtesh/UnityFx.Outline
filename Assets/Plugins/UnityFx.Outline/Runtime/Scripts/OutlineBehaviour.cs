@@ -92,8 +92,6 @@ namespace UnityFx.Outline
 		{
 			CreateRenderersIfNeeded();
 			CreateSettingsIfNeeded();
-
-			_outlineSettings.Awake();
 		}
 
 		private void OnDestroy()
@@ -134,6 +132,13 @@ namespace UnityFx.Outline
 				RemoveDestroyedCameras();
 				_cameraMapUpdateTimer = 0;
 			}
+
+#if UNITY_EDITOR
+
+			// NOTE: In editor validate materials on each frame. This is not done in player.
+			_outlineSettings.UpdateChanged();
+
+#endif
 
 			if (_outlineResources != null && _renderers != null && _outlineSettings.IsChanged)
 			{

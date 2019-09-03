@@ -27,7 +27,7 @@ namespace UnityFx.Outline
 			// 1) Outline settings.
 			EditorGUI.BeginChangeCheck();
 
-			OutlineEditorUtility.Render(_effect);
+			OutlineEditorUtility.Render(_effect, _effect);
 
 			if (EditorGUI.EndChangeCheck())
 			{

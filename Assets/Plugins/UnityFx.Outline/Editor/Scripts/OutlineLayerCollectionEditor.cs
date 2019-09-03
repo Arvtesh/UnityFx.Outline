@@ -41,7 +41,7 @@ namespace UnityFx.Outline
 					EditorGUILayout.EndHorizontal();
 
 					EditorGUI.indentLevel += 1;
-					OutlineEditorUtility.Render(_layers[i]);
+					OutlineEditorUtility.Render(_layers[i], _layers);
 					EditorGUI.indentLevel -= 1;
 				}
 			}

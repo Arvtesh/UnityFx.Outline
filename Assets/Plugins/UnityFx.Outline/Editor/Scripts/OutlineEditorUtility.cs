@@ -11,18 +11,24 @@ namespace UnityFx.Outline
 {
 	internal static class OutlineEditorUtility
 	{
-		public static void Render(IOutlineSettingsEx settings)
+		public static void Render(IOutlineSettingsEx settings, UnityEngine.Object undoContext)
 		{
-			settings.OutlineSettings = (OutlineSettings)EditorGUILayout.ObjectField("Outline Settings", settings.OutlineSettings, typeof(OutlineSettings), true);
+			var obj = (OutlineSettings)EditorGUILayout.ObjectField("Outline Settings", settings.OutlineSettings, typeof(OutlineSettings), true);
 
-			if (settings.OutlineSettings)
+			if (settings.OutlineSettings != obj)
+			{
+				Undo.RecordObject(undoContext, "Settings");
+				settings.OutlineSettings = obj;
+			}
+
+			if (obj)
 			{
 				EditorGUI.BeginDisabledGroup(true);
 				EditorGUI.indentLevel += 1;
 
-				Render((IOutlineSettings)settings);
+				Render((IOutlineSettings)settings, undoContext);
 
-				EditorGUILayout.HelpBox(string.Format("Settings are overriden with values from {0}.", settings.OutlineSettings.name), MessageType.Info, true);
+				EditorGUILayout.HelpBox(string.Format("Settings are overriden with values from {0}.", obj.name), MessageType.Info, true);
 				EditorGUI.indentLevel -= 1;
 				EditorGUI.EndDisabledGroup();
 			}
@@ -30,27 +36,52 @@ namespace UnityFx.Outline
 			{
 				EditorGUI.indentLevel += 1;
 
-				Render((IOutlineSettings)settings);
+				Render((IOutlineSettings)settings, undoContext);
 
 				EditorGUI.indentLevel -= 1;
 			}
 		}
 
-		public static void Render(IOutlineSettings settings)
+		public static void Render(IOutlineSettings settings, UnityEngine.Object undoContext)
 		{
-			settings.OutlineColor = EditorGUILayout.ColorField("Color", settings.OutlineColor);
-			settings.OutlineWidth = EditorGUILayout.IntSlider("Width", settings.OutlineWidth, OutlineRenderer.MinWidth, OutlineRenderer.MaxWidth);
+			var color = EditorGUILayout.ColorField("Color", settings.OutlineColor);
+
+			if (settings.OutlineColor != color)
+			{
+				Undo.RecordObject(undoContext, "Color");
+				settings.OutlineColor = color;
+			}
+
+			var width = EditorGUILayout.IntSlider("Width", settings.OutlineWidth, OutlineRenderer.MinWidth, OutlineRenderer.MaxWidth);
+
+			if (settings.OutlineWidth != width)
+			{
+				Undo.RecordObject(undoContext, "Width");
+				settings.OutlineWidth = width;
+			}
 
 			var blurred = EditorGUILayout.Toggle("Blurred", settings.OutlineMode == OutlineMode.Blurred);
 
 			if (blurred)
 			{
 				EditorGUI.indentLevel += 1;
-				settings.OutlineIntensity = EditorGUILayout.Slider("Blur Intensity", settings.OutlineIntensity, OutlineRenderer.MinIntensity, OutlineRenderer.MaxIntensity);
+
+				var i = EditorGUILayout.Slider("Blur Intensity", settings.OutlineIntensity, OutlineRenderer.MinIntensity, OutlineRenderer.MaxIntensity);
+
+				if (!Mathf.Approximately(settings.OutlineIntensity, i))
+				{
+					Undo.RecordObject(undoContext, "Blur Intensity");
+					settings.OutlineIntensity = i;
+				}
+
 				EditorGUI.indentLevel -= 1;
 			}
 
-			settings.OutlineMode = blurred ? OutlineMode.Blurred : OutlineMode.Solid;
+			if (blurred != (settings.OutlineMode == OutlineMode.Blurred))
+			{
+				Undo.RecordObject(undoContext, "Blur");
+				settings.OutlineMode = blurred ? OutlineMode.Blurred : OutlineMode.Solid;
+			}
 		}
 
 		public static void RenderPreview(OutlineLayer layer, int layerIndex, bool showObjects)

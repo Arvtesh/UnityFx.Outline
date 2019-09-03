@@ -69,7 +69,6 @@ namespace UnityFx.Outline
 				if (_outlineLayers == null)
 				{
 					_outlineLayers = ScriptableObject.CreateInstance<OutlineLayerCollection>();
-					_outlineLayers.Changed += OnChanged;
 				}
 
 				return _outlineLayers;
@@ -88,11 +87,9 @@ namespace UnityFx.Outline
 				if (_outlineLayers == null)
 				{
 					_outlineLayers = ScriptableObject.CreateInstance<OutlineLayerCollection>();
-					_outlineLayers.Changed += OnChanged;
 				}
 
 				other._outlineLayers = _outlineLayers;
-				other._outlineLayers.Changed += other.OnChanged;
 				other._changed = true;
 			}
 		}
@@ -103,11 +100,6 @@ namespace UnityFx.Outline
 
 		private void Awake()
 		{
-			if (_outlineLayers)
-			{
-				_outlineLayers.Init();
-				_outlineLayers.Changed += OnChanged;
-			}
 		}
 
 		private void OnEnable()
@@ -142,9 +134,27 @@ namespace UnityFx.Outline
 
 		private void Update()
 		{
+#if UNITY_EDITOR
+
+			if (_outlineLayers)
+			{
+				_outlineLayers.UpdateChanged();
+				_changed = _outlineLayers.IsChanged;
+			}
+
+#endif
+
 			if (_outlineLayers && _changed)
 			{
 				FillCommandBuffer();
+			}
+		}
+
+		private void LateUpdate()
+		{
+			if (_outlineLayers)
+			{
+				_outlineLayers.AcceptChanges();
 			}
 		}
 
@@ -160,11 +170,6 @@ namespace UnityFx.Outline
 
 		private void OnValidate()
 		{
-			if (_outlineLayers)
-			{
-				_outlineLayers.Changed += OnChanged;
-			}
-
 			_changed = true;
 		}
 

@@ -258,7 +258,6 @@ namespace UnityFx.Outline
 		private void SetWidth(int width)
 		{
 			_width = width;
-
 			_hPassMaterial.SetInt(WidthNameId, width);
 			_vPassMaterial.SetInt(WidthNameId, width);
 		}

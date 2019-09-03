@@ -27,12 +27,6 @@ namespace UnityFx.Outline
 		#endregion
 
 		#region interface
-
-		/// <summary>
-		/// Raised when the settings are changed.
-		/// </summary>
-		public event EventHandler Changed;
-
 		#endregion
 
 		#region IOutlineSettings
@@ -46,15 +40,7 @@ namespace UnityFx.Outline
 			}
 			set
 			{
-				if (_outlineColor != value)
-				{
-					_outlineColor = value;
-
-					if (Changed != null)
-					{
-						Changed(this, EventArgs.Empty);
-					}
-				}
+				_outlineColor = value;
 			}
 		}
 
@@ -67,17 +53,7 @@ namespace UnityFx.Outline
 			}
 			set
 			{
-				value = Mathf.Clamp(value, OutlineRenderer.MinWidth, OutlineRenderer.MaxWidth);
-
-				if (_outlineWidth != value)
-				{
-					_outlineWidth = value;
-
-					if (Changed != null)
-					{
-						Changed(this, EventArgs.Empty);
-					}
-				}
+				_outlineWidth = Mathf.Clamp(value, OutlineRenderer.MinWidth, OutlineRenderer.MaxWidth);
 			}
 		}
 
@@ -90,17 +66,7 @@ namespace UnityFx.Outline
 			}
 			set
 			{
-				value = Mathf.Clamp(value, OutlineRenderer.MinIntensity, OutlineRenderer.MaxIntensity);
-
-				if (_outlineIntensity != value)
-				{
-					_outlineIntensity = value;
-
-					if (Changed != null)
-					{
-						Changed(this, EventArgs.Empty);
-					}
-				}
+				_outlineIntensity = Mathf.Clamp(value, OutlineRenderer.MinIntensity, OutlineRenderer.MaxIntensity);
 			}
 		}
 
@@ -113,15 +79,7 @@ namespace UnityFx.Outline
 			}
 			set
 			{
-				if (_outlineMode != value)
-				{
-					_outlineMode = value;
-
-					if (Changed != null)
-					{
-						Changed(this, EventArgs.Empty);
-					}
-				}
+				_outlineMode = value;
 			}
 		}
 
