@@ -8,6 +8,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/); this proj
 ### Added
 - Added `OutlineSettings`, that can be shared between dfferent `OutlineLayer` and `OutlineBehaviour` instances.
 - Added custom inspectors for `OutlineSettings`, `OutlineLayerCollection`.
+- Added undo/redo support to all custom inspectors.
 
 ### Changed
 - Improved inspectors for `OutlineBehaviour` and `OutlineEffect`.
