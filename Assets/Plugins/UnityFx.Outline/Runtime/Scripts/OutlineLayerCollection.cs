@@ -22,6 +22,7 @@ namespace UnityFx.Outline
 
 		[SerializeField, HideInInspector]
 		private List<OutlineLayer> _layers = new List<OutlineLayer>();
+
 		private bool _changed;
 
 		#endregion
@@ -41,6 +42,18 @@ namespace UnityFx.Outline
 			foreach (var layer in _layers)
 			{
 				layer.UpdateChanged();
+			}
+		}
+
+		#endregion
+
+		#region ScriptableObject
+
+		private void OnEnable()
+		{
+			foreach (var layer in _layers)
+			{
+				layer.SetCollection(this);
 			}
 		}
 
@@ -69,7 +82,9 @@ namespace UnityFx.Outline
 
 				if (_layers[layerIndex] != value)
 				{
+					_layers[layerIndex].SetCollection(null);
 					_layers[layerIndex] = value;
+					_layers[layerIndex].SetCollection(this);
 					_changed = true;
 				}
 			}
@@ -94,6 +109,8 @@ namespace UnityFx.Outline
 				throw new ArgumentNullException("layer");
 			}
 
+			layer.SetCollection(this);
+
 			_layers.Insert(index, layer);
 			_changed = true;
 		}
@@ -103,6 +120,7 @@ namespace UnityFx.Outline
 		{
 			if (index >= 0 && index < _layers.Count)
 			{
+				_layers[index].SetCollection(null);
 				_layers.RemoveAt(index);
 				_changed = true;
 			}
@@ -138,6 +156,8 @@ namespace UnityFx.Outline
 				throw new ArgumentNullException("layer");
 			}
 
+			layer.SetCollection(this);
+
 			_layers.Add(layer);
 			_changed = true;
 		}
@@ -147,6 +167,8 @@ namespace UnityFx.Outline
 		{
 			if (_layers.Remove(layer))
 			{
+				layer.SetCollection(null);
+
 				_changed = true;
 				return true;
 			}
@@ -159,6 +181,11 @@ namespace UnityFx.Outline
 		{
 			if (_layers.Count > 0)
 			{
+				foreach (var layer in _layers)
+				{
+					layer.SetCollection(null);
+				}
+
 				_layers.Clear();
 				_changed = true;
 			}
@@ -185,12 +212,8 @@ namespace UnityFx.Outline
 
 		#region IEnumerable
 
-		public List<OutlineLayer>.Enumerator GetEnumerator()
-		{
-			return _layers.GetEnumerator();
-		}
-
-		IEnumerator<OutlineLayer> IEnumerable<OutlineLayer>.GetEnumerator()
+		/// <inheritdoc/>
+		public IEnumerator<OutlineLayer> GetEnumerator()
 		{
 			return _layers.GetEnumerator();
 		}

@@ -13,14 +13,15 @@ namespace UnityFx.Outline
 	/// A collection of <see cref="GameObject"/> instances that share outlining settings.
 	/// </summary>
 	/// <seealso cref="OutlineEffect"/>
-	/// <seealso cref="OutlineSettings"/>
 	[Serializable]
 	public sealed class OutlineLayer : ICollection<GameObject>, IOutlineSettingsEx, IChangeTracking
 	{
 		#region data
 
-		private readonly OutlineSettingsInstance _settings;
+		[SerializeField, HideInInspector]
+		private OutlineSettingsInstance _settings = new OutlineSettingsInstance();
 
+		private OutlineLayerCollection _parentCollection;
 		private Dictionary<GameObject, Renderer[]> _outlineObjects = new Dictionary<GameObject, Renderer[]>();
 		private bool _changed;
 
@@ -33,7 +34,6 @@ namespace UnityFx.Outline
 		/// </summary>
 		public OutlineLayer()
 		{
-			_settings = new OutlineSettingsInstance();
 		}
 
 		/// <summary>
@@ -46,10 +46,7 @@ namespace UnityFx.Outline
 				throw new ArgumentNullException("settings");
 			}
 
-			_settings = new OutlineSettingsInstance
-			{
-				OutlineSettings = settings
-			};
+			_settings.OutlineSettings = settings;
 		}
 
 		/// <summary>
@@ -93,6 +90,10 @@ namespace UnityFx.Outline
 			}
 		}
 
+		#endregion
+
+		#region internals
+
 		internal void Reset()
 		{
 			_settings.SetResources(null);
@@ -102,6 +103,18 @@ namespace UnityFx.Outline
 		internal void UpdateChanged()
 		{
 			_settings.UpdateChanged();
+		}
+
+		internal void SetCollection(OutlineLayerCollection collection)
+		{
+			if (_parentCollection == null || collection == null || _parentCollection == collection)
+			{
+				_parentCollection = collection;
+			}
+			else
+			{
+				throw new InvalidOperationException("OutlineLayer can only belong to a single OutlineLayerCollection.");
+			}
 		}
 
 		internal void Render(OutlineRenderer renderer, OutlineResources resources)

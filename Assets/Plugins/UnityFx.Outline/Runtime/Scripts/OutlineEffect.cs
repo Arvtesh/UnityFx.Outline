@@ -139,12 +139,11 @@ namespace UnityFx.Outline
 			if (_outlineLayers)
 			{
 				_outlineLayers.UpdateChanged();
-				_changed = _outlineLayers.IsChanged;
 			}
 
 #endif
 
-			if (_outlineLayers && _changed)
+			if (_outlineLayers && (_changed || _outlineLayers.IsChanged))
 			{
 				FillCommandBuffer();
 			}
@@ -152,6 +151,7 @@ namespace UnityFx.Outline
 
 		private void LateUpdate()
 		{
+			// TODO: Find a way to do this once per OutlineLayerCollection instance.
 			if (_outlineLayers)
 			{
 				_outlineLayers.AcceptChanges();
