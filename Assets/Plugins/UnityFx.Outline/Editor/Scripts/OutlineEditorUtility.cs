@@ -11,6 +11,18 @@ namespace UnityFx.Outline
 {
 	internal static class OutlineEditorUtility
 	{
+		public static void RenderDivider(Color color, int thickness = 1, int padding = 5)
+		{
+			var r = EditorGUILayout.GetControlRect(GUILayout.Height(padding + thickness));
+
+			r.height = thickness;
+			r.y += padding / 2;
+			r.x -= 2;
+			r.width += 6;
+
+			EditorGUI.DrawRect(r, color);
+		}
+
 		public static void Render(IOutlineSettingsEx settings, UnityEngine.Object undoContext)
 		{
 			var obj = (OutlineSettings)EditorGUILayout.ObjectField("Outline Settings", settings.OutlineSettings, typeof(OutlineSettings), true);
@@ -28,7 +40,7 @@ namespace UnityFx.Outline
 
 				Render((IOutlineSettings)settings, undoContext);
 
-				EditorGUILayout.HelpBox(string.Format("Settings are overriden with values from {0}.", obj.name), MessageType.Info, true);
+				EditorGUILayout.HelpBox(string.Format("Outline settings are overriden with values from {0}.", obj.name), MessageType.Info, true);
 				EditorGUI.indentLevel -= 1;
 				EditorGUI.EndDisabledGroup();
 			}

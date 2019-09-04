@@ -28,7 +28,8 @@ namespace UnityFx.Outline
 			{
 				for (var i = 0; i < _layers.Count; i++)
 				{
-					EditorGUILayout.BeginHorizontal();
+					EditorGUILayout.Space();
+					var rect = EditorGUILayout.BeginHorizontal();
 					EditorGUILayout.PrefixLabel("Layer #" + i.ToString());
 
 					GUILayout.FlexibleSpace();
@@ -39,14 +40,25 @@ namespace UnityFx.Outline
 					}
 
 					EditorGUILayout.EndHorizontal();
+					EditorGUILayout.Space();
 
-					EditorGUI.indentLevel += 1;
+					rect.xMin -= 2;
+					rect.xMax += 2;
+					rect.yMin -= 2;
+					rect.yMax += 2;
+
+					GUI.Box(rect, GUIContent.none);
+
 					OutlineEditorUtility.Render(_layers[i], _layers);
-					EditorGUI.indentLevel -= 1;
 				}
+			}
+			else
+			{
+				EditorGUILayout.HelpBox("The layer collection is empty.", MessageType.Info, true);
 			}
 
 			// Add/remove processing.
+			OutlineEditorUtility.RenderDivider(Color.gray);
 			EditorGUILayout.BeginHorizontal();
 			GUILayout.FlexibleSpace();
 
@@ -54,7 +66,13 @@ namespace UnityFx.Outline
 			{
 				_layers.Add(new OutlineLayer());
 			}
-			else if (removeLayer >= 0)
+
+			if (GUILayout.Button("Remove All", _layerButtonStyle))
+			{
+				_layers.Clear();
+			}
+
+			if (removeLayer >= 0)
 			{
 				_layers.RemoveAt(removeLayer);
 			}
