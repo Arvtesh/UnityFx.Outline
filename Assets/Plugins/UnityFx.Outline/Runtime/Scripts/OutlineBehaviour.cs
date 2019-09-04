@@ -84,6 +84,14 @@ namespace UnityFx.Outline
 			}
 		}
 
+		/// <summary>
+		/// Detects changes in nested assets and updates outline if needed. The actual update might not be invoked until the next frame.
+		/// </summary>
+		public void UpdateChanged()
+		{
+			_outlineSettings.UpdateChanged();
+		}
+
 		#endregion
 
 		#region MonoBehaviour
@@ -135,8 +143,7 @@ namespace UnityFx.Outline
 
 #if UNITY_EDITOR
 
-			// NOTE: In editor validate materials on each frame. This is not done in player.
-			_outlineSettings.UpdateChanged();
+			UpdateChanged();
 
 #endif
 

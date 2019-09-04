@@ -94,6 +94,17 @@ namespace UnityFx.Outline
 			}
 		}
 
+		/// <summary>
+		/// Detects changes in nested assets and updates outline if needed. The actual update might not be invoked until the next frame.
+		/// </summary>
+		public void UpdateChanged()
+		{
+			if (_outlineLayers)
+			{
+				_outlineLayers.UpdateChanged();
+			}
+		}
+
 		#endregion
 
 		#region MonoBehaviour
@@ -136,10 +147,7 @@ namespace UnityFx.Outline
 		{
 #if UNITY_EDITOR
 
-			if (_outlineLayers)
-			{
-				_outlineLayers.UpdateChanged();
-			}
+			UpdateChanged();
 
 #endif
 
