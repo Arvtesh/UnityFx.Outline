@@ -41,6 +41,7 @@ namespace UnityFx.Outline
 		/// <summary>
 		/// Gets or sets resources used by the effect implementation.
 		/// </summary>
+		/// <exception cref="ArgumentNullException">Thrown if setter argument is <see langword="null"/>.</exception>
 		public OutlineResources OutlineResources
 		{
 			get

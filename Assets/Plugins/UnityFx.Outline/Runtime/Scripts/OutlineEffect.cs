@@ -26,7 +26,6 @@ namespace UnityFx.Outline
 		[SerializeField]
 		private OutlineLayerCollection _outlineLayers;
 
-		private EventHandler _changedDelegate;
 		private CommandBuffer _commandBuffer;
 		private bool _changed;
 
@@ -37,6 +36,7 @@ namespace UnityFx.Outline
 		/// <summary>
 		/// Gets or sets resources used by the effect implementation.
 		/// </summary>
+		/// <exception cref="ArgumentNullException">Thrown if setter argument is <see langword="null"/>.</exception>
 		public OutlineResources OutlineResources
 		{
 			get
@@ -59,10 +59,11 @@ namespace UnityFx.Outline
 		}
 
 		/// <summary>
-		/// Gets outline layers.
+		/// Gets or sets outline layers.
 		/// </summary>
+		/// <exception cref="ArgumentNullException">Thrown if setter argument is <see langword="null"/>.</exception>
 		/// <seealso cref="ShareLayersWith(OutlineEffect)"/>
-		public IList<OutlineLayer> OutlineLayers
+		public OutlineLayerCollection OutlineLayers
 		{
 			get
 			{
@@ -73,10 +74,23 @@ namespace UnityFx.Outline
 
 				return _outlineLayers;
 			}
+			set
+			{
+				if (value == null)
+				{
+					throw new ArgumentNullException("OutlineLayers");
+				}
+
+				if (_outlineLayers != value)
+				{
+					_outlineLayers = value;
+					_changed = true;
+				}
+			}
 		}
 
 		/// <summary>
-		/// Shares <see cref="OutlineLayers"/> with another <see cref="OutlineEffect"/> instace.
+		/// Shares <see cref="OutlineLayers"/> with another <see cref="OutlineEffect"/> instance.
 		/// </summary>
 		/// <param name="other">Effect to share <see cref="OutlineLayers"/> with.</param>
 		/// <seealso cref="OutlineLayers"/>

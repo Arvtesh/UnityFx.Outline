@@ -10,8 +10,10 @@ using UnityEngine;
 namespace UnityFx.Outline
 {
 	/// <summary>
-	/// A collection of <see cref="GameObject"/> instances that share outlining settings.
+	/// A collection of <see cref="GameObject"/> instances that share outline settings. An <see cref="OutlineLayer"/>
+	/// can only belong to one <see cref="OutlineLayerCollection"/> at time.
 	/// </summary>
+	/// <seealso cref="OutlineLayerCollection"/>
 	/// <seealso cref="OutlineEffect"/>
 	[Serializable]
 	public sealed class OutlineLayer : ICollection<GameObject>, IOutlineSettingsEx, IChangeTracking
@@ -39,6 +41,7 @@ namespace UnityFx.Outline
 		/// <summary>
 		/// Initializes a new instance of the <see cref="OutlineLayer"/> class.
 		/// </summary>
+		/// <exception cref="ArgumentNullException">Thrown if <paramref name="settings"/> is <see langword="null"/>.</exception>
 		public OutlineLayer(OutlineSettings settings)
 		{
 			if (settings == null)
@@ -52,6 +55,7 @@ namespace UnityFx.Outline
 		/// <summary>
 		/// Adds a new object to the layer.
 		/// </summary>
+		/// <exception cref="ArgumentNullException">Thrown if <paramref name="go"/> is <see langword="null"/>.</exception>
 		public void Add(GameObject go, int ignoreLayerMask)
 		{
 			if (go == null)
