@@ -64,16 +64,19 @@ namespace UnityFx.Outline
 
 			if (GUILayout.Button("Add New", _layerButtonStyle))
 			{
+				Undo.RecordObject(_layers, "Add Layer");
 				_layers.Add(new OutlineLayer());
 			}
 
 			if (GUILayout.Button("Remove All", _layerButtonStyle))
 			{
+				Undo.RecordObject(_layers, "Remove All Layers");
 				_layers.Clear();
 			}
 
 			if (removeLayer >= 0)
 			{
+				Undo.RecordObject(_layers, "Remove Layer");
 				_layers.RemoveAt(removeLayer);
 			}
 
