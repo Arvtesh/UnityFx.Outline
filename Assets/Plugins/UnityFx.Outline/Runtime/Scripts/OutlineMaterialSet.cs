@@ -21,8 +21,8 @@ namespace UnityFx.Outline
 		private readonly float[] _gaussSamples = new float[OutlineRenderer.MaxWidth];
 
 		private Color _color;
-		private int _width;
-		private float _intensity;
+		private int _width = OutlineRenderer.MinWidth;
+		private float _intensity = OutlineRenderer.MinIntensity;
 		private OutlineMode _mode;
 		private bool _disposed;
 
@@ -128,6 +128,11 @@ namespace UnityFx.Outline
 			_renderMaterial = new Material(resources.RenderShader);
 			_hPassMaterial = new Material(resources.HPassShader);
 			_vPassMaterial = new Material(resources.VPassBlendShader);
+
+			_hPassMaterial.SetInt(WidthNameId, _width);
+			_vPassMaterial.SetInt(WidthNameId, _width);
+			_vPassMaterial.SetColor(ColorNameId, _color);
+			_vPassMaterial.SetFloat(IntensityNameId, OutlineRenderer.SolidIntensity);
 		}
 
 		/// <summary>
@@ -143,6 +148,11 @@ namespace UnityFx.Outline
 			_renderMaterial = renderMaterial;
 			_hPassMaterial = new Material(resources.HPassShader);
 			_vPassMaterial = new Material(resources.VPassBlendShader);
+
+			_hPassMaterial.SetInt(WidthNameId, _width);
+			_vPassMaterial.SetInt(WidthNameId, _width);
+			_vPassMaterial.SetColor(ColorNameId, _color);
+			_vPassMaterial.SetFloat(IntensityNameId, OutlineRenderer.SolidIntensity);
 		}
 
 		/// <summary>
