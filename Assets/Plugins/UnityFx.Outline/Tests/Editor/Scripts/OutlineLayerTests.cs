@@ -11,7 +11,7 @@ using NUnit.Framework;
 namespace UnityFx.Outline
 {
 	[Category("OutlineLayer"), TestOf(typeof(OutlineLayer))]
-	public class OutlineLayerTests : IOutlineSettingsTests, IDisposable
+	public class OutlineLayerTests : IOutlineSettingsExTests, IDisposable
 	{
 		private OutlineLayer _layer;
 
