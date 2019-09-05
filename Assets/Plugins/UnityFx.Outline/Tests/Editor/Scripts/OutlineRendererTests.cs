@@ -12,7 +12,7 @@ using NUnit.Framework;
 namespace UnityFx.Outline
 {
 	[Category("OutlineRenderer"), TestOf(typeof(OutlineRenderer))]
-	public class OutlineRendererTests
+	public class OutlineRendererTests : IDisposable
 	{
 		private CommandBuffer _commandBuffer;
 		private OutlineRenderer _renderer;

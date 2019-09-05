@@ -240,7 +240,7 @@ namespace UnityFx.Outline
 		/// <inheritdoc/>
 		public bool Remove(GameObject go)
 		{
-			if (_outlineObjects.Remove(go))
+			if (go != null && _outlineObjects.Remove(go))
 			{
 				_changed = true;
 				return true;

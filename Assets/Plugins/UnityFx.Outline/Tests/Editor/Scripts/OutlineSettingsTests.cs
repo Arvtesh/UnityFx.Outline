@@ -12,7 +12,7 @@ using NUnit.Framework;
 namespace UnityFx.Outline
 {
 	[Category("OutlineSettings"), TestOf(typeof(OutlineSettings))]
-	public class OutlineSettingsTests : IOutlineSettingsTests
+	public class OutlineSettingsTests : IOutlineSettingsTests, IDisposable
 	{
 		private OutlineSettings _settings;
 
