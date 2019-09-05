@@ -1,0 +1,11 @@
+{
+    "name": "UnityFx.Outline.Editor.Tests",
+    "references": [
+        "UnityFx.Outline",
+        "UnityFx.Outline.Editor"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": []
+}

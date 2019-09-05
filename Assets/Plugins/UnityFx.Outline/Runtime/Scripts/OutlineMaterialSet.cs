@@ -281,14 +281,14 @@ namespace UnityFx.Outline
 		private void SetWidth(int width)
 		{
 			_width = Mathf.Clamp(width, OutlineRenderer.MinWidth, OutlineRenderer.MaxWidth);
-			_hPassMaterial.SetInt(WidthNameId, width);
-			_vPassMaterial.SetInt(WidthNameId, width);
+			_hPassMaterial.SetInt(WidthNameId, _width);
+			_vPassMaterial.SetInt(WidthNameId, _width);
 		}
 
 		private void SetIntensity(float intensity)
 		{
 			_intensity = Mathf.Clamp(intensity, OutlineRenderer.MinIntensity, OutlineRenderer.MaxIntensity);
-			_vPassMaterial.SetFloat(IntensityNameId, intensity);
+			_vPassMaterial.SetFloat(IntensityNameId, _intensity);
 		}
 
 		private void SetMode(OutlineMode mode)

@@ -1,0 +1,11 @@
+{
+    "name": "UnityFx.Outline.Tests",
+    "references": [
+        "UnityFx.Outline"
+    ],
+    "optionalUnityReferences": [
+        "TestAssemblies"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": []
+}
