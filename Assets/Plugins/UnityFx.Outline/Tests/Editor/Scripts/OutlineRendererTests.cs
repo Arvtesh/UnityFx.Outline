@@ -27,7 +27,6 @@ namespace UnityFx.Outline
 		[TearDown]
 		public void Dispose()
 		{
-			_renderer.Dispose();
 			_commandBuffer.Dispose();
 		}
 
