@@ -23,7 +23,7 @@ namespace UnityFx.Outline
 		[SerializeField, HideInInspector]
 		private List<OutlineLayer> _layers = new List<OutlineLayer>();
 
-		private bool _changed;
+		private bool _changed = true;
 
 		#endregion
 
@@ -82,9 +82,10 @@ namespace UnityFx.Outline
 
 				if (_layers[layerIndex] != value)
 				{
+					value.SetCollection(this);
+
 					_layers[layerIndex].SetCollection(null);
 					_layers[layerIndex] = value;
-					_layers[layerIndex].SetCollection(this);
 					_changed = true;
 				}
 			}
@@ -109,10 +110,13 @@ namespace UnityFx.Outline
 				throw new ArgumentNullException("layer");
 			}
 
-			layer.SetCollection(this);
+			if (layer.ParentCollection != this)
+			{
+				layer.SetCollection(this);
 
-			_layers.Insert(index, layer);
-			_changed = true;
+				_layers.Insert(index, layer);
+				_changed = true;
+			}
 		}
 
 		/// <inheritdoc/>
@@ -156,10 +160,13 @@ namespace UnityFx.Outline
 				throw new ArgumentNullException("layer");
 			}
 
-			layer.SetCollection(this);
+			if (layer.ParentCollection != this)
+			{
+				layer.SetCollection(this);
 
-			_layers.Add(layer);
-			_changed = true;
+				_layers.Add(layer);
+				_changed = true;
+			}
 		}
 
 		/// <inheritdoc/>

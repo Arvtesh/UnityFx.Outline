@@ -98,6 +98,14 @@ namespace UnityFx.Outline
 
 		#region internals
 
+		internal OutlineLayerCollection ParentCollection
+		{
+			get
+			{
+				return _parentCollection;
+			}
+		}
+
 		internal void Reset()
 		{
 			_settings.SetResources(null);
@@ -252,6 +260,11 @@ namespace UnityFx.Outline
 		/// <inheritdoc/>
 		public bool Contains(GameObject go)
 		{
+			if (ReferenceEquals(go, null))
+			{
+				return false;
+			}
+
 			return _outlineObjects.ContainsKey(go);
 		}
 

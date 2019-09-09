@@ -151,9 +151,9 @@ namespace UnityFx.Outline
 		}
 
 		[Test]
-		public void Contains_ThrowsIfArgumentIsNull()
+		public void Contains_DoesNotThrowIfArgumentIsNull()
 		{
-			Assert.Throws<ArgumentNullException>(() => _layer.Contains(null));
+			_layer.Contains(null);
 		}
 
 		[Test]
