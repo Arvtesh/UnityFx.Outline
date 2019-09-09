@@ -9,14 +9,15 @@ using UnityEngine.Rendering;
 namespace UnityFx.Outline
 {
 	/// <summary>
-	/// Post-effect script. Should be attached to camera.
+	/// Renders outlines at specific camera. Should be attached to camera to function.
 	/// </summary>
 	/// <seealso cref="OutlineLayer"/>
 	/// <seealso cref="OutlineBehaviour"/>
+	/// <seealso cref="OutlineSettings"/>
 	/// <seealso cref="https://willweissman.wordpress.com/tutorials/shaders/unity-shaderlab-object-outlines/"/>
 	[DisallowMultipleComponent]
 	[RequireComponent(typeof(Camera))]
-	public sealed class OutlineEffect : MonoBehaviour
+	public sealed partial class OutlineEffect : MonoBehaviour
 	{
 		#region data
 
@@ -25,7 +26,6 @@ namespace UnityFx.Outline
 		[SerializeField]
 		private OutlineLayerCollection _outlineLayers;
 
-		private IList<OutlineLayer> _layers;
 		private CommandBuffer _commandBuffer;
 		private bool _changed;
 
@@ -36,6 +36,7 @@ namespace UnityFx.Outline
 		/// <summary>
 		/// Gets or sets resources used by the effect implementation.
 		/// </summary>
+		/// <exception cref="ArgumentNullException">Thrown if setter argument is <see langword="null"/>.</exception>
 		public OutlineResources OutlineResources
 		{
 			get
@@ -58,31 +59,38 @@ namespace UnityFx.Outline
 		}
 
 		/// <summary>
-		/// Gets outline layers.
+		/// Gets or sets outline layers.
 		/// </summary>
+		/// <exception cref="ArgumentNullException">Thrown if setter argument is <see langword="null"/>.</exception>
 		/// <seealso cref="ShareLayersWith(OutlineEffect)"/>
-		public IList<OutlineLayer> OutlineLayers
+		public OutlineLayerCollection OutlineLayers
 		{
 			get
 			{
-				if (_layers == null)
+				if (_outlineLayers == null)
 				{
-					if (_outlineLayers)
-					{
-						_layers = _outlineLayers.Layers;
-					}
-					else
-					{
-						_layers = new List<OutlineLayer>();
-					}
+					_outlineLayers = ScriptableObject.CreateInstance<OutlineLayerCollection>();
 				}
 
-				return _layers;
+				return _outlineLayers;
+			}
+			set
+			{
+				if (value == null)
+				{
+					throw new ArgumentNullException("OutlineLayers");
+				}
+
+				if (_outlineLayers != value)
+				{
+					_outlineLayers = value;
+					_changed = true;
+				}
 			}
 		}
 
 		/// <summary>
-		/// Shares <see cref="OutlineLayers"/> with another <see cref="OutlineEffect"/> instace.
+		/// Shares <see cref="OutlineLayers"/> with another <see cref="OutlineEffect"/> instance.
 		/// </summary>
 		/// <param name="other">Effect to share <see cref="OutlineLayers"/> with.</param>
 		/// <seealso cref="OutlineLayers"/>
@@ -90,9 +98,24 @@ namespace UnityFx.Outline
 		{
 			if (other)
 			{
-				other._layers = OutlineLayers;
+				if (_outlineLayers == null)
+				{
+					_outlineLayers = ScriptableObject.CreateInstance<OutlineLayerCollection>();
+				}
+
 				other._outlineLayers = _outlineLayers;
 				other._changed = true;
+			}
+		}
+
+		/// <summary>
+		/// Detects changes in nested assets and updates outline if needed. The actual update might not be invoked until the next frame.
+		/// </summary>
+		public void UpdateChanged()
+		{
+			if (_outlineLayers)
+			{
+				_outlineLayers.UpdateChanged();
 			}
 		}
 
@@ -102,31 +125,6 @@ namespace UnityFx.Outline
 
 		private void Awake()
 		{
-			if (_outlineLayers)
-			{
-				_layers = _outlineLayers.Layers;
-			}
-		}
-
-		private void OnValidate()
-		{
-			if (_outlineLayers)
-			{
-				_layers = _outlineLayers.Layers;
-			}
-			else
-			{
-				_layers = null;
-			}
-
-			_changed = true;
-		}
-
-		private void Reset()
-		{
-			_outlineLayers = null;
-			_layers = null;
-			_changed = true;
 		}
 
 		private void OnEnable()
@@ -161,32 +159,49 @@ namespace UnityFx.Outline
 
 		private void Update()
 		{
-			if (_layers != null)
+#if UNITY_EDITOR
+
+			UpdateChanged();
+
+#endif
+
+			if (_outlineLayers && (_changed || _outlineLayers.IsChanged))
 			{
-				if (_changed)
-				{
-					FillCommandBuffer();
-				}
-				else
-				{
-					var needUpdate = false;
-
-					for (var i = 0; i < _layers.Count; ++i)
-					{
-						if (_layers[i] != null && _layers[i].IsChanged)
-						{
-							needUpdate = true;
-							break;
-						}
-					}
-
-					if (needUpdate)
-					{
-						FillCommandBuffer();
-					}
-				}
+				FillCommandBuffer();
 			}
 		}
+
+		private void LateUpdate()
+		{
+			// TODO: Find a way to do this once per OutlineLayerCollection instance.
+			if (_outlineLayers)
+			{
+				_outlineLayers.AcceptChanges();
+			}
+		}
+
+		private void OnDestroy()
+		{
+			if (_outlineLayers)
+			{
+				_outlineLayers.Reset();
+			}
+		}
+
+#if UNITY_EDITOR
+
+		private void OnValidate()
+		{
+			_changed = true;
+		}
+
+		private void Reset()
+		{
+			_outlineLayers = null;
+			_changed = true;
+		}
+
+#endif
 
 		#endregion
 
@@ -198,21 +213,26 @@ namespace UnityFx.Outline
 			{
 				using (var renderer = new OutlineRenderer(_commandBuffer, BuiltinRenderTextureType.CameraTarget))
 				{
-					for (var i = 0; i < _layers.Count; ++i)
+					for (var i = 0; i < _outlineLayers.Count; ++i)
 					{
-						if (_layers[i] != null)
+						if (_outlineLayers[i] != null)
 						{
-							_layers[i].Render(renderer, _outlineResources);
+							_outlineLayers[i].Render(renderer, _outlineResources);
 						}
 					}
 				}
-
-				_changed = false;
 			}
 			else
 			{
 				_commandBuffer.Clear();
 			}
+
+			_changed = false;
+		}
+
+		private void OnChanged(object sender, EventArgs args)
+		{
+			_changed = true;
 		}
 
 		#endregion

@@ -3,7 +3,22 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/); this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [0.5.0] - 2019.09.09
+
+Features editor UI and unit tests.
+
+### Added
+- Added `OutlineSettings`, that can be shared between dfferent `OutlineLayer` and `OutlineBehaviour` instances.
+- Added custom inspectors for `OutlineSettings`, `OutlineLayerCollection`.
+- Added undo/redo support to all custom inspectors.
+- Added unit-tests.
+
+### Changed
+- Improved inspectors for `OutlineBehaviour` and `OutlineEffect`.
+
 ## [0.4.0] - 2019.08.31
+
+Features blurred otulines.
 
 ### Added
 - Added Gauss blurring to outlines.

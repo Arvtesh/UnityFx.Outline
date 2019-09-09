@@ -2,7 +2,6 @@
 // See the LICENSE.md file in the project root for more information.
 
 using System;
-using System.Collections.Generic;
 using UnityEngine;
 
 namespace UnityFx.Outline
@@ -11,7 +10,7 @@ namespace UnityFx.Outline
 	/// A set of materials needed to render outlines.
 	/// </summary>
 	/// <seealso cref="OutlineRenderer"/>
-	public sealed class OutlineMaterialSet  : IOutlineSettings
+	public sealed class OutlineMaterialSet  : IOutlineSettings, IDisposable
 	{
 		#region data
 
@@ -22,9 +21,10 @@ namespace UnityFx.Outline
 		private readonly float[] _gaussSamples = new float[OutlineRenderer.MaxWidth];
 
 		private Color _color;
-		private int _width;
-		private float _intensity;
+		private int _width = OutlineRenderer.MinWidth;
+		private float _intensity = OutlineRenderer.MinIntensity;
 		private OutlineMode _mode;
+		private bool _disposed;
 
 		#endregion
 
@@ -119,10 +119,20 @@ namespace UnityFx.Outline
 		/// </remarks>
 		public OutlineMaterialSet(OutlineResources resources)
 		{
+			if (resources == null)
+			{
+				throw new ArgumentNullException("resources");
+			}
+
 			_outlineResources = resources;
 			_renderMaterial = new Material(resources.RenderShader);
 			_hPassMaterial = new Material(resources.HPassShader);
 			_vPassMaterial = new Material(resources.VPassBlendShader);
+
+			_hPassMaterial.SetInt(WidthNameId, _width);
+			_vPassMaterial.SetInt(WidthNameId, _width);
+			_vPassMaterial.SetColor(ColorNameId, _color);
+			_vPassMaterial.SetFloat(IntensityNameId, OutlineRenderer.SolidIntensity);
 		}
 
 		/// <summary>
@@ -130,10 +140,19 @@ namespace UnityFx.Outline
 		/// </summary>
 		internal OutlineMaterialSet(OutlineResources resources, Material renderMaterial)
 		{
+			Debug.Assert(resources);
+			Debug.Assert(resources.IsValid);
+			Debug.Assert(renderMaterial);
+
 			_outlineResources = resources;
 			_renderMaterial = renderMaterial;
 			_hPassMaterial = new Material(resources.HPassShader);
 			_vPassMaterial = new Material(resources.VPassBlendShader);
+
+			_hPassMaterial.SetInt(WidthNameId, _width);
+			_vPassMaterial.SetInt(WidthNameId, _width);
+			_vPassMaterial.SetColor(ColorNameId, _color);
+			_vPassMaterial.SetFloat(IntensityNameId, OutlineRenderer.SolidIntensity);
 		}
 
 		/// <summary>
@@ -144,6 +163,13 @@ namespace UnityFx.Outline
 		/// <seealso cref="SetMode(OutlineMode)"/>
 		public void Reset(IOutlineSettings settings)
 		{
+			ThrowIfDisposed();
+
+			if (settings == null)
+			{
+				throw new ArgumentNullException("settings");
+			}
+
 			SetColor(settings.OutlineColor);
 			SetIntensity(settings.OutlineIntensity);
 			SetWidth(settings.OutlineWidth);
@@ -164,6 +190,7 @@ namespace UnityFx.Outline
 			}
 			set
 			{
+				ThrowIfDisposed();
 				SetColor(value);
 			}
 		}
@@ -177,8 +204,7 @@ namespace UnityFx.Outline
 			}
 			set
 			{
-				Debug.Assert(value >= OutlineRenderer.MinWidth);
-				Debug.Assert(value <= OutlineRenderer.MaxWidth);
+				ThrowIfDisposed();
 
 				if (_width != value)
 				{
@@ -197,8 +223,7 @@ namespace UnityFx.Outline
 			}
 			set
 			{
-				Debug.Assert(value >= OutlineRenderer.MinIntensity);
-				Debug.Assert(value <= OutlineRenderer.MaxIntensity);
+				ThrowIfDisposed();
 
 				if (_intensity != value)
 				{
@@ -216,6 +241,8 @@ namespace UnityFx.Outline
 			}
 			set
 			{
+				ThrowIfDisposed();
+
 				if (_mode != value)
 				{
 					SetMode(value);
@@ -223,10 +250,32 @@ namespace UnityFx.Outline
 			}
 		}
 
+		#endregion
+
+		#region IDisposable
+
 		/// <inheritdoc/>
-		public void Invalidate()
+		public void Dispose()
 		{
-			Reset(this);
+			if (!_disposed)
+			{
+				_disposed = true;
+
+				if (_renderMaterial)
+				{
+					UnityEngine.Object.DestroyImmediate(_renderMaterial);
+				}
+
+				if (_hPassMaterial)
+				{
+					UnityEngine.Object.DestroyImmediate(_hPassMaterial);
+				}
+
+				if (_vPassMaterial)
+				{
+					UnityEngine.Object.DestroyImmediate(_vPassMaterial);
+				}
+			}
 		}
 
 		#endregion
@@ -241,16 +290,15 @@ namespace UnityFx.Outline
 
 		private void SetWidth(int width)
 		{
-			_width = width;
-
-			_hPassMaterial.SetInt(WidthNameId, width);
-			_vPassMaterial.SetInt(WidthNameId, width);
+			_width = Mathf.Clamp(width, OutlineRenderer.MinWidth, OutlineRenderer.MaxWidth);
+			_hPassMaterial.SetInt(WidthNameId, _width);
+			_vPassMaterial.SetInt(WidthNameId, _width);
 		}
 
 		private void SetIntensity(float intensity)
 		{
-			_intensity = intensity;
-			_vPassMaterial.SetFloat(IntensityNameId, intensity);
+			_intensity = Mathf.Clamp(intensity, OutlineRenderer.MinIntensity, OutlineRenderer.MaxIntensity);
+			_vPassMaterial.SetFloat(IntensityNameId, _intensity);
 		}
 
 		private void SetMode(OutlineMode mode)
@@ -270,6 +318,14 @@ namespace UnityFx.Outline
 		private void UpdateGaussSamples()
 		{
 			OutlineRenderer.GetGaussSamples(_width, _gaussSamples);
+		}
+
+		private void ThrowIfDisposed()
+		{
+			if (_disposed)
+			{
+				throw new ObjectDisposedException(GetType().Name);
+			}
 		}
 
 		#endregion

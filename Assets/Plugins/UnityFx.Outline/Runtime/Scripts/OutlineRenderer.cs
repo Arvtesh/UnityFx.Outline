@@ -13,7 +13,8 @@ namespace UnityFx.Outline
 	/// </summary>
 	/// <remarks>
 	/// This class is used by higher level outline implementations (<see cref="OutlineEffect"/> and <see cref="OutlineBehaviour"/>).
-	/// It implements <see cref="IDisposable"/> to be used inside <see langword="using"/> block as shown in the code sample.
+	/// It implements <see cref="IDisposable"/> to be used inside <see langword="using"/> block as shown in the code sample. Disposing
+	/// <see cref="OutlineRenderer"/> does not dispose the <see cref="CommandBuffer"/>.
 	/// </remarks>
 	/// <example>
 	/// using (var renderer = new OutlineRenderer(commandBuffer, BuiltinRenderTextureType.CameraTarget))
@@ -30,6 +31,8 @@ namespace UnityFx.Outline
 		private readonly int _hPassRtId;
 		private readonly RenderTargetIdentifier _renderTarget;
 		private readonly CommandBuffer _commandBuffer;
+
+		private bool _disposed;
 
 		#endregion
 
@@ -85,6 +88,7 @@ namespace UnityFx.Outline
 		{
 			Debug.Assert(commandBuffer != null);
 
+			_disposed = false;
 			_maskRtId = Shader.PropertyToID("_MaskTex");
 			_hPassRtId = Shader.PropertyToID("_HPassTex");
 			_renderTarget = dst;
@@ -101,8 +105,15 @@ namespace UnityFx.Outline
 		/// </summary>
 		public void RenderSingleObject(IList<Renderer> renderers, OutlineMaterialSet materials)
 		{
-			Debug.Assert(renderers != null);
-			Debug.Assert(materials != null);
+			if (renderers == null)
+			{
+				throw new ArgumentNullException("renderers");
+			}
+
+			if (materials == null)
+			{
+				throw new ArgumentNullException("materials");
+			}
 
 			_commandBuffer.SetRenderTarget(_maskRtId);
 			_commandBuffer.ClearRenderTarget(false, true, Color.black);
@@ -131,8 +142,15 @@ namespace UnityFx.Outline
 		/// </summary>
 		public void RenderSingleObject(Renderer renderer, OutlineMaterialSet materials)
 		{
-			Debug.Assert(renderer != null);
-			Debug.Assert(materials != null);
+			if (renderer == null)
+			{
+				throw new ArgumentNullException("renderer");
+			}
+
+			if (materials == null)
+			{
+				throw new ArgumentNullException("materials");
+			}
 
 			_commandBuffer.SetRenderTarget(_maskRtId);
 			_commandBuffer.ClearRenderTarget(false, true, Color.black);
@@ -195,9 +213,13 @@ namespace UnityFx.Outline
 		/// <inheritdoc/>
 		public void Dispose()
 		{
-			_commandBuffer.ReleaseTemporaryRT(_hPassRtId);
-			_commandBuffer.ReleaseTemporaryRT(_maskRtId);
-			_commandBuffer.EndSample(EffectName);
+			if (!_disposed)
+			{
+				_disposed = true;
+				_commandBuffer.ReleaseTemporaryRT(_hPassRtId);
+				_commandBuffer.ReleaseTemporaryRT(_maskRtId);
+				_commandBuffer.EndSample(EffectName);
+			}
 		}
 
 		#endregion

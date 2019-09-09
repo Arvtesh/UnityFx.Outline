@@ -8,8 +8,8 @@ Npm | [![Npm release](https://img.shields.io/npm/v/com.unityfx.outline.svg)](htt
 **Requires Unity 2017 or higher.**
 
 ## Synopsis
-![Outline demo](OutlineSamples.png "Outline demo")
-![Outline demo](MotusOutline.png "Outline demo")
+![Outline demo](Docs/OutlineSamples.png "Outline demo")
+![Outline demo](Docs/MotusOutline.png "Outline demo")
 
 *UnityFx.Outline* implements configurable per-object and per-camera outlines. Both solid and blurred outline modes are supported (Gauss blur). The outlines can be easily customized either through scripts or with Unity editor (both in edit-time or runtime).
 
@@ -54,7 +54,7 @@ Npm package is available at [npmjs.com](https://www.npmjs.com/package/com.unityf
     }
   ],
   "dependencies": {
-    "com.unityfx.outline": "0.4.0"
+    "com.unityfx.outline": "0.5.0"
   }
 }
 ```
@@ -66,6 +66,8 @@ using UnityFx.Outline;
 ```
 
 ### Per-camera outlines
+![Outline demo](Docs/OutlineEffectInspector.png "OutlineEffect Inspector")
+
 Add `OutlineEffect` script to a camera that should render outlines. Then add and configure as many layers as you need:
 ```csharp
 var outlineEffect = Camera.main.GetComponent<OutlineEffect>();
@@ -92,6 +94,8 @@ effect1.ShareLayersWith(effect2);
 ```
 
 ### Per-object outlines
+![Outline demo](Docs/OutlineBehaviourInspector.png "OutlineBehaviour Inspector")
+
 Add `OutlineBehaviour` script to objects that should be outlined (in edit mode or in runtime). Make sure `OutlineBehaviour.OutlineResources` is initialized. You can customize outline settings either via Unity inspector or via script. Objects with `OutlineBehaviour` assigned render outlines in all cameras.
 
 ```csharp
@@ -122,7 +126,7 @@ materials.OutlineColor = Color.blue;
 
 using (var renderer = new OutlineRenderer(commandBuffer, BuiltinRenderTextureType.CameraTarget))
 {
-  renderer.RenderSingleObject(renderers, _materials);
+  renderer.RenderSingleObject(renderers, materials);
 }
 
 myCamera.AddCommandBuffer(OutlineRenderer.RenderEvent, commandBuffer);
@@ -141,7 +145,6 @@ Please see the links below for extended information on the product:
 - [A great outline tutorial](https://willweissman.wordpress.com/tutorials/shaders/unity-shaderlab-object-outlines/).
 - [Command buffers tutorial](https://lindenreid.wordpress.com/2018/09/13/using-command-buffers-in-unity-selective-bloom/).
 - [Gaussian blur tutorial](https://www.ronja-tutorials.com/2018/08/27/postprocessing-blur.html).
-- [Gaussian blur 2](http://rastergrid.com/blog/2010/09/efficient-gaussian-blur-with-linear-sampling/).
 
 ## Contributing
 Please see [contributing guide](.github/CONTRIBUTING.md) for details.

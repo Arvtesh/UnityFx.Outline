@@ -2,9 +2,8 @@
 // See the LICENSE.md file in the project root for more information.
 
 using System;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEditor;
+using UnityEditor.SceneManagement;
 using UnityEngine;
 
 namespace UnityFx.Outline
@@ -25,6 +24,22 @@ namespace UnityFx.Outline
 		{
 			base.OnInspectorGUI();
 
+			// 1) Outline settings.
+			EditorGUI.BeginChangeCheck();
+
+			OutlineEditorUtility.Render(_effect, _effect);
+
+			if (EditorGUI.EndChangeCheck())
+			{
+				EditorUtility.SetDirty(_effect.gameObject);
+
+				if (!EditorApplication.isPlayingOrWillChangePlaymode)
+				{
+					EditorSceneManager.MarkSceneDirty(_effect.gameObject.scene);
+				}
+			}
+
+			// 2) Renderers (read-only).
 			_renderersOpened = EditorGUILayout.Foldout(_renderersOpened, "Renderers", true);
 
 			if (_renderersOpened)
@@ -44,6 +59,7 @@ namespace UnityFx.Outline
 				EditorGUI.EndDisabledGroup();
 			}
 
+			// 3) Cameras (read-only).
 			_camerasOpened = EditorGUILayout.Foldout(_camerasOpened, "Cameras", true);
 
 			if (_camerasOpened)
