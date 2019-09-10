@@ -131,6 +131,8 @@ namespace UnityFx.Outline
 			}
 			set
 			{
+				ThrowIfSettingsAssigned();
+
 				if (_outlineColor != value)
 				{
 					_outlineColor = value;
@@ -153,6 +155,8 @@ namespace UnityFx.Outline
 			}
 			set
 			{
+				ThrowIfSettingsAssigned();
+
 				value = Mathf.Clamp(value, OutlineRenderer.MinWidth, OutlineRenderer.MaxWidth);
 
 				if (_outlineWidth != value)
@@ -177,6 +181,8 @@ namespace UnityFx.Outline
 			}
 			set
 			{
+				ThrowIfSettingsAssigned();
+
 				value = Mathf.Clamp(value, OutlineRenderer.MinIntensity, OutlineRenderer.MaxIntensity);
 
 				if (_outlineIntensity != value)
@@ -201,6 +207,8 @@ namespace UnityFx.Outline
 			}
 			set
 			{
+				ThrowIfSettingsAssigned();
+
 				if (_outlineMode != value)
 				{
 					_outlineMode = value;
@@ -249,6 +257,15 @@ namespace UnityFx.Outline
 		#endregion
 
 		#region implementation
+
+		private void ThrowIfSettingsAssigned()
+		{
+			if (_outlineSettings)
+			{
+				throw new InvalidOperationException("The outline parameters cannot be altered when OutlineSettings is set.");
+			}
+		}
+
 		#endregion
 	}
 }
