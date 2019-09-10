@@ -30,7 +30,23 @@ namespace UnityFx.Outline
 				{
 					EditorGUILayout.Space();
 					var rect = EditorGUILayout.BeginHorizontal();
-					EditorGUILayout.PrefixLabel("Layer #" + i.ToString());
+					//EditorGUILayout.PrefixLabel("Layer #" + i.ToString());
+
+					var enabled = EditorGUILayout.ToggleLeft("Layer #" + i.ToString(), _layers[i].Enabled);
+
+					if (enabled != _layers[i].Enabled)
+					{
+						if (enabled)
+						{
+							Undo.RecordObject(_layers, "Enable Layer");
+						}
+						else
+						{
+							Undo.RecordObject(_layers, "Disable Layer");
+						}
+
+						_layers[i].Enabled = enabled;
+					}
 
 					GUILayout.FlexibleSpace();
 

@@ -22,6 +22,8 @@ namespace UnityFx.Outline
 
 		[SerializeField, HideInInspector]
 		private OutlineSettingsInstance _settings = new OutlineSettingsInstance();
+		[SerializeField, HideInInspector]
+		private bool _enabled = true;
 
 		private OutlineLayerCollection _parentCollection;
 		private Dictionary<GameObject, Renderer[]> _outlineObjects = new Dictionary<GameObject, Renderer[]>();
@@ -30,6 +32,25 @@ namespace UnityFx.Outline
 		#endregion
 
 		#region interface
+
+		/// <summary>
+		/// Gets or sets a value indicating whether the layer is enabled.
+		/// </summary>
+		public bool Enabled
+		{
+			get
+			{
+				return _enabled;
+			}
+			set
+			{
+				if (_enabled != value)
+				{
+					_enabled = value;
+					_changed = true;
+				}
+			}
+		}
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="OutlineLayer"/> class.
@@ -131,13 +152,16 @@ namespace UnityFx.Outline
 
 		internal void Render(OutlineRenderer renderer, OutlineResources resources)
 		{
-			_settings.SetResources(resources);
-
-			foreach (var kvp in _outlineObjects)
+			if (_enabled)
 			{
-				if (kvp.Key)
+				_settings.SetResources(resources);
+
+				foreach (var kvp in _outlineObjects)
 				{
-					renderer.RenderSingleObject(kvp.Value, _settings.OutlineMaterials);
+					if (kvp.Key)
+					{
+						renderer.RenderSingleObject(kvp.Value, _settings.OutlineMaterials);
+					}
 				}
 			}
 		}
