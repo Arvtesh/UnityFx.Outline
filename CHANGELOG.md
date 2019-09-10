@@ -3,6 +3,15 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/); this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [0.6.0] - unreleased
+
+### Added
+- Added `OutlineLayer.Enabled` flag.
+- Added more info to the `OutlineLayer` preview inspector.
+
+### Changed
+- `IOutilneSettings` setters now throw if overriden.
+
 ## [0.5.0] - 2019.09.09
 
 Features editor UI and unit tests.
@@ -18,7 +27,7 @@ Features editor UI and unit tests.
 
 ## [0.4.0] - 2019.08.31
 
-Features blurred otulines.
+Features blurred outlines.
 
 ### Added
 - Added Gauss blurring to outlines.
