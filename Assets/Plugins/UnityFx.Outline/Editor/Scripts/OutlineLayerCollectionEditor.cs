@@ -29,9 +29,8 @@ namespace UnityFx.Outline
 				for (var i = 0; i < _layers.Count; i++)
 				{
 					EditorGUILayout.Space();
-					var rect = EditorGUILayout.BeginHorizontal();
-					//EditorGUILayout.PrefixLabel("Layer #" + i.ToString());
 
+					var rect = EditorGUILayout.BeginHorizontal();
 					var enabled = EditorGUILayout.ToggleLeft("Layer #" + i.ToString(), _layers[i].Enabled);
 
 					if (enabled != _layers[i].Enabled)
@@ -64,6 +63,14 @@ namespace UnityFx.Outline
 					rect.yMax += 2;
 
 					GUI.Box(rect, GUIContent.none);
+
+					var priority = EditorGUILayout.IntField("Layer Priority", _layers[i].Priority);
+
+					if (priority != _layers[i].Priority)
+					{
+						Undo.RecordObject(_layers, "Set Layer Priority");
+						_layers[i].Priority = priority;
+					}
 
 					OutlineEditorUtility.Render(_layers[i], _layers);
 				}

@@ -45,6 +45,15 @@ namespace UnityFx.Outline
 			}
 		}
 
+		internal void Render(OutlineRenderer renderer, OutlineResources resources)
+		{
+			// TODO: Render layers in order defined with layer priorities.
+			for (var i = 0; i < _layers.Count; ++i)
+			{
+				_layers[i].Render(renderer, resources);
+			}
+		}
+
 		#endregion
 
 		#region ScriptableObject

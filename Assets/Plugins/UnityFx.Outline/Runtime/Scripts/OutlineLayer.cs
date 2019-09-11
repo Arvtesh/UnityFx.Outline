@@ -16,12 +16,14 @@ namespace UnityFx.Outline
 	/// <seealso cref="OutlineLayerCollection"/>
 	/// <seealso cref="OutlineEffect"/>
 	[Serializable]
-	public sealed class OutlineLayer : ICollection<GameObject>, IOutlineSettingsEx, IChangeTracking
+	public sealed class OutlineLayer : ICollection<GameObject>, IOutlineSettingsEx, IChangeTracking, IComparable<OutlineLayer>
 	{
 		#region data
 
 		[SerializeField, HideInInspector]
 		private OutlineSettingsInstance _settings = new OutlineSettingsInstance();
+		[SerializeField, HideInInspector]
+		private int _zOrder;
 		[SerializeField, HideInInspector]
 		private bool _enabled = true;
 
@@ -36,6 +38,7 @@ namespace UnityFx.Outline
 		/// <summary>
 		/// Gets or sets a value indicating whether the layer is enabled.
 		/// </summary>
+		/// <seealso cref="Priority"/>
 		public bool Enabled
 		{
 			get
@@ -47,6 +50,27 @@ namespace UnityFx.Outline
 				if (_enabled != value)
 				{
 					_enabled = value;
+					_changed = true;
+				}
+			}
+		}
+
+		/// <summary>
+		/// Gets or sets the layer priority. Layers with greater <see cref="Priority"/> values are rendered on top of layers with lower priority.
+		/// Layers with equal priorities are rendered according to index in parent collection.
+		/// </summary>
+		/// <seealso cref="Enabled"/>
+		public int Priority
+		{
+			get
+			{
+				return _zOrder;
+			}
+			set
+			{
+				if (_zOrder != value)
+				{
+					_zOrder = value;
 					_changed = true;
 				}
 			}
@@ -341,6 +365,16 @@ namespace UnityFx.Outline
 		{
 			_settings.AcceptChanges();
 			_changed = false;
+		}
+
+		#endregion
+
+		#region IComparable
+
+		/// <inheritdoc/>
+		public int CompareTo(OutlineLayer other)
+		{
+			throw new NotImplementedException();
 		}
 
 		#endregion

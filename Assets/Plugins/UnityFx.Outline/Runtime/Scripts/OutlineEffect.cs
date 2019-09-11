@@ -2,7 +2,7 @@
 // See the LICENSE.md file in the project root for more information.
 
 using System;
-using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using UnityEngine;
 using UnityEngine.Rendering;
 
@@ -67,11 +67,7 @@ namespace UnityFx.Outline
 		{
 			get
 			{
-				if (_outlineLayers == null)
-				{
-					_outlineLayers = ScriptableObject.CreateInstance<OutlineLayerCollection>();
-				}
-
+				CreateLayersIfNeeded();
 				return _outlineLayers;
 			}
 			set
@@ -98,10 +94,7 @@ namespace UnityFx.Outline
 		{
 			if (other)
 			{
-				if (_outlineLayers == null)
-				{
-					_outlineLayers = ScriptableObject.CreateInstance<OutlineLayerCollection>();
-				}
+				CreateLayersIfNeeded();
 
 				other._outlineLayers = _outlineLayers;
 				other._changed = true;
@@ -213,13 +206,7 @@ namespace UnityFx.Outline
 			{
 				using (var renderer = new OutlineRenderer(_commandBuffer, BuiltinRenderTextureType.CameraTarget))
 				{
-					for (var i = 0; i < _outlineLayers.Count; ++i)
-					{
-						if (_outlineLayers[i] != null)
-						{
-							_outlineLayers[i].Render(renderer, _outlineResources);
-						}
-					}
+					_outlineLayers.Render(renderer, _outlineResources);
 				}
 			}
 			else
@@ -230,9 +217,13 @@ namespace UnityFx.Outline
 			_changed = false;
 		}
 
-		private void OnChanged(object sender, EventArgs args)
+		private void CreateLayersIfNeeded()
 		{
-			_changed = true;
+			if (ReferenceEquals(_outlineLayers, null))
+			{
+				_outlineLayers = ScriptableObject.CreateInstance<OutlineLayerCollection>();
+				_outlineLayers.name = "OutlineLayers";
+			}
 		}
 
 		#endregion
