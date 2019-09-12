@@ -295,5 +295,25 @@ namespace UnityFx.Outline
 
 			Assert.IsFalse(_layerCollection.IsChanged);
 		}
+
+		[Test]
+		public void SortedLayers_IsSortedByPriority()
+		{
+			var layer1 = new OutlineLayer()
+			{
+				Priority = 2
+			};
+
+			var layer2 = new OutlineLayer();
+			var layer3 = new OutlineLayer();
+
+			_layerCollection.Add(layer1);
+			_layerCollection.Add(layer2);
+			_layerCollection.Add(layer3);
+
+			Assert.AreEqual(layer2, _layerCollection.SortedLayers[0]);
+			Assert.AreEqual(layer3, _layerCollection.SortedLayers[1]);
+			Assert.AreEqual(layer1, _layerCollection.SortedLayers[2]);
+		}
 	}
 }

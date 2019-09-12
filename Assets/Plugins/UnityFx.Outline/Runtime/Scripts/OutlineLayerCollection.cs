@@ -20,14 +20,41 @@ namespace UnityFx.Outline
 	{
 		#region data
 
+		private class OutlineLayerComparer : IComparer<OutlineLayer>
+		{
+			public int Compare(OutlineLayer x, OutlineLayer y)
+			{
+				return x.Priority - y.Priority;
+			}
+		}
+
 		[SerializeField, HideInInspector]
 		private List<OutlineLayer> _layers = new List<OutlineLayer>();
 
+		private List<OutlineLayer> _sortedLayers = new List<OutlineLayer>();
+		private OutlineLayerComparer _sortComparer = new OutlineLayerComparer();
+		private bool _orderChanged = true;
 		private bool _changed = true;
 
 		#endregion
 
 		#region interface
+
+		/// <summary>
+		/// Gets layers ordered by <see cref="OutlineLayer.Priority"/>.
+		/// </summary>
+		public OutlineLayer[] SortedLayers
+		{
+			get
+			{
+				UpdateSortedLayersIdNeeded();
+				return _sortedLayers.ToArray();
+			}
+		}
+
+		#endregion
+
+		#region internals
 
 		internal void Reset()
 		{
@@ -47,10 +74,11 @@ namespace UnityFx.Outline
 
 		internal void Render(OutlineRenderer renderer, OutlineResources resources)
 		{
-			// TODO: Render layers in order defined with layer priorities.
-			for (var i = 0; i < _layers.Count; ++i)
+			UpdateSortedLayersIdNeeded();
+
+			foreach (var layer in _sortedLayers)
 			{
-				_layers[i].Render(renderer, resources);
+				layer.Render(renderer, resources);
 			}
 		}
 
@@ -95,6 +123,8 @@ namespace UnityFx.Outline
 
 					_layers[layerIndex].SetCollection(null);
 					_layers[layerIndex] = value;
+
+					_orderChanged = true;
 					_changed = true;
 				}
 			}
@@ -124,6 +154,8 @@ namespace UnityFx.Outline
 				layer.SetCollection(this);
 
 				_layers.Insert(index, layer);
+
+				_orderChanged = true;
 				_changed = true;
 			}
 		}
@@ -135,6 +167,8 @@ namespace UnityFx.Outline
 			{
 				_layers[index].SetCollection(null);
 				_layers.RemoveAt(index);
+
+				_orderChanged = true;
 				_changed = true;
 			}
 		}
@@ -174,6 +208,8 @@ namespace UnityFx.Outline
 				layer.SetCollection(this);
 
 				_layers.Add(layer);
+
+				_orderChanged = true;
 				_changed = true;
 			}
 		}
@@ -185,7 +221,9 @@ namespace UnityFx.Outline
 			{
 				layer.SetCollection(null);
 
+				_sortedLayers.Remove(layer);
 				_changed = true;
+
 				return true;
 			}
 
@@ -203,6 +241,7 @@ namespace UnityFx.Outline
 				}
 
 				_layers.Clear();
+				_sortedLayers.Clear();
 				_changed = true;
 			}
 		}
@@ -279,6 +318,18 @@ namespace UnityFx.Outline
 		#endregion
 
 		#region implementation
+
+		private void UpdateSortedLayersIdNeeded()
+		{
+			if (_orderChanged)
+			{
+				_sortedLayers.Clear();
+				_sortedLayers.AddRange(_layers);
+				_sortedLayers.Sort(_sortComparer);
+				_orderChanged = false;
+			}
+		}
+
 		#endregion
 	}
 }
