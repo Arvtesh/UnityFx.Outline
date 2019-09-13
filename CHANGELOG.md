@@ -6,7 +6,11 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/); this proj
 ## [0.6.0] - unreleased
 
 ### Added
-- Added `OutlineLayer.Enabled` flag.
+- Added `OutlineLayer.Enabled`.
+- Added `OutlineLayer.Name`.
+- Added possibility to change render order of layers via `OutlineLayer.Priority`.
+- Added possibility to edit renderers of an `OutlineLayer`.
+- Added possibility to alter `CameraEvent` used to render `OutlineEffect`.
 - Added more info to the `OutlineLayer` preview inspector.
 
 ### Changed
