@@ -5,6 +5,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Text;
 using UnityEngine;
 
 namespace UnityFx.Outline
@@ -23,6 +24,8 @@ namespace UnityFx.Outline
 		[SerializeField, HideInInspector]
 		private OutlineSettingsInstance _settings = new OutlineSettingsInstance();
 		[SerializeField, HideInInspector]
+		private string _name;
+		[SerializeField, HideInInspector]
 		private int _zOrder;
 		[SerializeField, HideInInspector]
 		private bool _enabled = true;
@@ -34,6 +37,21 @@ namespace UnityFx.Outline
 		#endregion
 
 		#region interface
+
+		/// <summary>
+		/// Gets or sets layer name.
+		/// </summary>
+		public string Name
+		{
+			get
+			{
+				return _name;
+			}
+			set
+			{
+				_name = value;
+			}
+		}
 
 		/// <summary>
 		/// Gets or sets a value indicating whether the layer is enabled.
@@ -82,10 +100,34 @@ namespace UnityFx.Outline
 		}
 
 		/// <summary>
+		/// Gets index of the layer in parent collection.
+		/// </summary>
+		public int Index
+		{
+			get
+			{
+				if (_parentCollection != null)
+				{
+					return _parentCollection.IndexOf(this);
+				}
+
+				return -1;
+			}
+		}
+
+		/// <summary>
 		/// Initializes a new instance of the <see cref="OutlineLayer"/> class.
 		/// </summary>
 		public OutlineLayer()
 		{
+		}
+
+		/// <summary>
+		/// Initializes a new instance of the <see cref="OutlineLayer"/> class.
+		/// </summary>
+		public OutlineLayer(string name)
+		{
+			_name = name;
 		}
 
 		/// <summary>
@@ -99,6 +141,21 @@ namespace UnityFx.Outline
 				throw new ArgumentNullException("settings");
 			}
 
+			_settings.OutlineSettings = settings;
+		}
+
+		/// <summary>
+		/// Initializes a new instance of the <see cref="OutlineLayer"/> class.
+		/// </summary>
+		/// <exception cref="ArgumentNullException">Thrown if <paramref name="settings"/> is <see langword="null"/>.</exception>
+		public OutlineLayer(string name, OutlineSettings settings)
+		{
+			if (settings == null)
+			{
+				throw new ArgumentNullException("settings");
+			}
+
+			_name = name;
 			_settings.OutlineSettings = settings;
 		}
 
@@ -369,6 +426,52 @@ namespace UnityFx.Outline
 		{
 			_settings.AcceptChanges();
 			_changed = false;
+		}
+
+		#endregion
+
+		#region Object
+
+		public override string ToString()
+		{
+			var text = new StringBuilder();
+
+			if (string.IsNullOrEmpty(_name))
+			{
+				text.Append("OutlineLayer");
+			}
+			else
+			{
+				text.Append(_name);
+			}
+
+			if (_parentCollection != null)
+			{
+				text.Append(" #");
+				text.Append(_parentCollection.IndexOf(this));
+			}
+
+			if (_zOrder > 0)
+			{
+				text.Append(" z");
+				text.Append(_zOrder);
+			}
+
+			if (_outlineObjects.Count > 0)
+			{
+				text.Append(" (");
+
+				foreach (var go in _outlineObjects.Keys)
+				{
+					text.Append(go.name);
+					text.Append(", ");
+				}
+
+				text.Remove(text.Length - 2, 2);
+				text.Append(")");
+			}
+
+			return string.Format("{0}", text);
 		}
 
 		#endregion

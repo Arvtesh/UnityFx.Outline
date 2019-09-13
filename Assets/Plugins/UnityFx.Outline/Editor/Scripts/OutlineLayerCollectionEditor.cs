@@ -64,6 +64,14 @@ namespace UnityFx.Outline
 
 					GUI.Box(rect, GUIContent.none);
 
+					var name = EditorGUILayout.TextField("Layer Name", _layers[i].Name);
+
+					if (name != _layers[i].Name)
+					{
+						Undo.RecordObject(_layers, "Set Layer Name");
+						_layers[i].Name = name;
+					}
+
 					var priority = EditorGUILayout.IntField("Layer Priority", _layers[i].Priority);
 
 					if (priority != _layers[i].Priority)
