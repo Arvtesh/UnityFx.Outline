@@ -16,7 +16,7 @@ namespace UnityFx.Outline
 	/// <seealso cref="OutlineLayerCollection"/>
 	/// <seealso cref="OutlineEffect"/>
 	[Serializable]
-	public sealed class OutlineLayer : ICollection<GameObject>, IOutlineSettingsEx, IChangeTracking, IComparable<OutlineLayer>
+	public sealed partial class OutlineLayer : ICollection<GameObject>, IOutlineSettingsEx, IChangeTracking
 	{
 		#region data
 
@@ -28,7 +28,7 @@ namespace UnityFx.Outline
 		private bool _enabled = true;
 
 		private OutlineLayerCollection _parentCollection;
-		private Dictionary<GameObject, Renderer[]> _outlineObjects = new Dictionary<GameObject, Renderer[]>();
+		private Dictionary<GameObject, RendererCollection> _outlineObjects = new Dictionary<GameObject, RendererCollection>();
 		private bool _changed;
 
 		#endregion
@@ -110,33 +110,32 @@ namespace UnityFx.Outline
 
 			if (!_outlineObjects.ContainsKey(go))
 			{
-				var renderers = go.GetComponentsInChildren<Renderer>();
-
-				if (renderers != null)
-				{
-					if (renderers.Length > 0 && ignoreLayerMask != 0)
-					{
-						var filteredRenderers = new List<Renderer>(renderers.Length);
-
-						for (var i = 0; i < renderers.Length; ++i)
-						{
-							if ((renderers[i].gameObject.layer & ignoreLayerMask) == 0)
-							{
-								filteredRenderers.Add(renderers[i]);
-							}
-						}
-
-						renderers = filteredRenderers.ToArray();
-					}
-				}
-				else
-				{
-					renderers = new Renderer[0];
-				}
-
-				_outlineObjects.Add(go, renderers);
+				_outlineObjects.Add(go, new RendererCollection(go, ignoreLayerMask));
 				_changed = true;
 			}
+		}
+
+		/// <summary>
+		/// Attempts to get renderers assosiated with the specified <see cref="GameObject"/>.
+		/// </summary>
+		/// <exception cref="ArgumentNullException">Thrown if <paramref name="go"/> is <see langword="null"/>.</exception>
+		public bool TryGetRenderers(GameObject go, out ICollection<Renderer> renderers)
+		{
+			if (go == null)
+			{
+				throw new ArgumentNullException("go");
+			}
+
+			RendererCollection result;
+
+			if (_outlineObjects.TryGetValue(go, out result))
+			{
+				renderers = result;
+				return true;
+			}
+
+			renderers = null;
+			return false;
 		}
 
 		#endregion
@@ -182,7 +181,7 @@ namespace UnityFx.Outline
 
 				foreach (var kvp in _outlineObjects)
 				{
-					if (kvp.Key)
+					if (kvp.Key && kvp.Key.activeInHierarchy)
 					{
 						renderer.RenderSingleObject(kvp.Value, _settings.OutlineMaterials);
 					}
@@ -365,16 +364,6 @@ namespace UnityFx.Outline
 		{
 			_settings.AcceptChanges();
 			_changed = false;
-		}
-
-		#endregion
-
-		#region IComparable
-
-		/// <inheritdoc/>
-		public int CompareTo(OutlineLayer other)
-		{
-			throw new NotImplementedException();
 		}
 
 		#endregion
