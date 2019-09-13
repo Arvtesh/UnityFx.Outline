@@ -5,7 +5,8 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEditor;
-using UnityEngine;
+using UnityEditor.SceneManagement;
+using UnityEngine.Rendering;
 
 namespace UnityFx.Outline
 {
@@ -23,6 +24,25 @@ namespace UnityFx.Outline
 		public override void OnInspectorGUI()
 		{
 			base.OnInspectorGUI();
+
+			EditorGUI.BeginChangeCheck();
+			var e = (CameraEvent)EditorGUILayout.EnumPopup("Render Event", _effect.RenderEvent);
+
+			if (e != _effect.RenderEvent)
+			{
+				Undo.RecordObject(_effect, "Set Render Event");
+				_effect.RenderEvent = e;
+			}
+
+			if (EditorGUI.EndChangeCheck())
+			{
+				EditorUtility.SetDirty(_effect.gameObject);
+
+				if (!EditorApplication.isPlayingOrWillChangePlaymode)
+				{
+					EditorSceneManager.MarkSceneDirty(_effect.gameObject.scene);
+				}
+			}
 
 			if (_effect.OutlineLayers.Count > 0)
 			{

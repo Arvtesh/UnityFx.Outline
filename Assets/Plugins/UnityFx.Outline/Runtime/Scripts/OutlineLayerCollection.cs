@@ -56,6 +56,12 @@ namespace UnityFx.Outline
 
 		#region internals
 
+		internal void SetOrderChanged()
+		{
+			_orderChanged = true;
+			_changed = true;
+		}
+
 		internal void Reset()
 		{
 			foreach (var layer in _layers)
@@ -92,6 +98,8 @@ namespace UnityFx.Outline
 			{
 				layer.SetCollection(this);
 			}
+
+			_orderChanged = true;
 		}
 
 		#endregion

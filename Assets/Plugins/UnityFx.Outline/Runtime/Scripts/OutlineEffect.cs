@@ -25,6 +25,8 @@ namespace UnityFx.Outline
 		private OutlineResources _outlineResources;
 		[SerializeField]
 		private OutlineLayerCollection _outlineLayers;
+		[SerializeField, HideInInspector]
+		private CameraEvent _cameraEvent = OutlineRenderer.RenderEvent;
 
 		private CommandBuffer _commandBuffer;
 		private bool _changed;
@@ -86,6 +88,35 @@ namespace UnityFx.Outline
 		}
 
 		/// <summary>
+		/// Gets or sets <see cref="CameraEvent"/> used to render the outlines.
+		/// </summary>
+		public CameraEvent RenderEvent
+		{
+			get
+			{
+				return _cameraEvent;
+			}
+			set
+			{
+				if (_cameraEvent != value)
+				{
+					if (_commandBuffer != null)
+					{
+						var camera = GetComponent<Camera>();
+
+						if (camera)
+						{
+							camera.RemoveCommandBuffer(_cameraEvent, _commandBuffer);
+							camera.AddCommandBuffer(value, _commandBuffer);
+						}
+					}
+
+					_cameraEvent = value;
+				}
+			}
+		}
+
+		/// <summary>
 		/// Shares <see cref="OutlineLayers"/> with another <see cref="OutlineEffect"/> instance.
 		/// </summary>
 		/// <param name="other">Effect to share <see cref="OutlineLayers"/> with.</param>
@@ -126,11 +157,14 @@ namespace UnityFx.Outline
 
 			if (camera)
 			{
-				_commandBuffer = new CommandBuffer();
-				_commandBuffer.name = string.Format("{0} - {1}", GetType().Name, name);
+				_commandBuffer = new CommandBuffer
+				{
+					name = string.Format("{0} - {1}", GetType().Name, name)
+				};
+
 				_changed = true;
 
-				camera.AddCommandBuffer(OutlineRenderer.RenderEvent, _commandBuffer);
+				camera.AddCommandBuffer(_cameraEvent, _commandBuffer);
 			}
 		}
 
@@ -140,7 +174,7 @@ namespace UnityFx.Outline
 
 			if (camera)
 			{
-				camera.RemoveCommandBuffer(OutlineRenderer.RenderEvent, _commandBuffer);
+				camera.RemoveCommandBuffer(_cameraEvent, _commandBuffer);
 			}
 
 			if (_commandBuffer != null)

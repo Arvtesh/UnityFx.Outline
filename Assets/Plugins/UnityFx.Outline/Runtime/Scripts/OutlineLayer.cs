@@ -70,6 +70,11 @@ namespace UnityFx.Outline
 			{
 				if (_zOrder != value)
 				{
+					if (_parentCollection != null)
+					{
+						_parentCollection.SetOrderChanged();
+					}
+
 					_zOrder = value;
 					_changed = true;
 				}

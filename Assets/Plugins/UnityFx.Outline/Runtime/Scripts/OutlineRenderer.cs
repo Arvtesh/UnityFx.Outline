@@ -118,13 +118,13 @@ namespace UnityFx.Outline
 			_commandBuffer.SetRenderTarget(_maskRtId);
 			_commandBuffer.ClearRenderTarget(false, true, Color.black);
 
-			foreach (var renderer in renderers)
+			foreach (var r in renderers)
 			{
-				if (renderer && renderer.enabled && renderer.gameObject.activeInHierarchy)
+				if (r && r.enabled && r.gameObject.activeInHierarchy)
 				{
-					for (var j = 0; j < renderer.sharedMaterials.Length; ++j)
+					for (var j = 0; j < r.sharedMaterials.Length; ++j)
 					{
-						_commandBuffer.DrawRenderer(renderer, materials.RenderMaterial, j);
+						_commandBuffer.DrawRenderer(r, materials.RenderMaterial, j);
 					}
 				}
 			}
