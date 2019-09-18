@@ -29,6 +29,7 @@ namespace UnityFx.Outline
 		private CameraEvent _cameraEvent = OutlineRenderer.RenderEvent;
 
 		private CommandBuffer _commandBuffer;
+		private int _commandBufferUpdateCounter;
 		private bool _changed;
 
 		#endregion
@@ -162,6 +163,7 @@ namespace UnityFx.Outline
 					name = string.Format("{0} - {1}", GetType().Name, name)
 				};
 
+				_commandBufferUpdateCounter = 0;
 				_changed = true;
 
 				camera.AddCommandBuffer(_cameraEvent, _commandBuffer);
@@ -209,6 +211,7 @@ namespace UnityFx.Outline
 
 		private void OnDestroy()
 		{
+			// TODO: Find a way to do this once per OutlineLayerCollection instance.
 			if (_outlineLayers)
 			{
 				_outlineLayers.Reset();
@@ -248,6 +251,7 @@ namespace UnityFx.Outline
 				_commandBuffer.Clear();
 			}
 
+			_commandBufferUpdateCounter++;
 			_changed = false;
 		}
 

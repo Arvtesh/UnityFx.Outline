@@ -33,6 +33,7 @@ namespace UnityFx.Outline
 
 		private Dictionary<Camera, CommandBuffer> _cameraMap = new Dictionary<Camera, CommandBuffer>();
 		private float _cameraMapUpdateTimer;
+		private int _commandBufferUpdateCounter;
 
 		#endregion
 
@@ -156,6 +157,7 @@ namespace UnityFx.Outline
 				}
 
 				_outlineSettings.AcceptChanges();
+				_commandBufferUpdateCounter++;
 			}
 		}
 
@@ -306,6 +308,7 @@ namespace UnityFx.Outline
 			{
 				_commandBuffer = new CommandBuffer();
 				_commandBuffer.name = string.Format("{0} - {1}", GetType().Name, name);
+				_commandBufferUpdateCounter = 0;
 			}
 		}
 
