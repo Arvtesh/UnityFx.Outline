@@ -39,17 +39,18 @@ namespace UnityFx.Outline
 		#region interface
 
 		/// <summary>
-		/// Gets or sets layer name.
+		/// Gets the layer name.
 		/// </summary>
 		public string Name
 		{
 			get
 			{
+				if (string.IsNullOrEmpty(_name))
+				{
+					return "OutlineLayer #" + Index.ToString();
+				}
+
 				return _name;
-			}
-			set
-			{
-				_name = value;
 			}
 		}
 
@@ -203,6 +204,18 @@ namespace UnityFx.Outline
 		#endregion
 
 		#region internals
+
+		internal string NameTag
+		{
+			get
+			{
+				return _name;
+			}
+			set
+			{
+				_name = value;
+			}
+		}
 
 		internal OutlineLayerCollection ParentCollection
 		{
