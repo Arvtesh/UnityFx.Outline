@@ -12,6 +12,7 @@ namespace UnityFx.Outline
 	public class OutlineBehaviourEditor : Editor
 	{
 		private OutlineBehaviour _effect;
+		private bool _debugOpened;
 		private bool _renderersOpened;
 		private bool _camerasOpened;
 
@@ -75,6 +76,18 @@ namespace UnityFx.Outline
 					cameraNumber++;
 				}
 
+				EditorGUI.indentLevel -= 1;
+				EditorGUI.EndDisabledGroup();
+			}
+
+			// 4) Debug info.
+			_debugOpened = EditorGUILayout.Foldout(_debugOpened, "Debug", true);
+
+			if (_debugOpened)
+			{
+				EditorGUI.BeginDisabledGroup(true);
+				EditorGUI.indentLevel += 1;
+				EditorGUILayout.IntField("Command buffer updates", _effect.NumberOfCommandBufferUpdates);
 				EditorGUI.indentLevel -= 1;
 				EditorGUI.EndDisabledGroup();
 			}

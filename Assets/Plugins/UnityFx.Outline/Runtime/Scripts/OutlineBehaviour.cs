@@ -33,11 +33,31 @@ namespace UnityFx.Outline
 
 		private Dictionary<Camera, CommandBuffer> _cameraMap = new Dictionary<Camera, CommandBuffer>();
 		private float _cameraMapUpdateTimer;
+
+#if UNITY_EDITOR
+
 		private int _commandBufferUpdateCounter;
+
+#endif
 
 		#endregion
 
 		#region interface
+
+#if UNITY_EDITOR
+
+		/// <summary>
+		/// Gets number of the command buffer updates since its creation. Only available in editor.
+		/// </summary>
+		public int NumberOfCommandBufferUpdates
+		{
+			get
+			{
+				return _commandBufferUpdateCounter;
+			}
+		}
+
+#endif
 
 		/// <summary>
 		/// Gets or sets resources used by the effect implementation.
@@ -149,7 +169,7 @@ namespace UnityFx.Outline
 
 #endif
 
-			if (_outlineResources != null && _renderers != null && _outlineSettings.IsChanged)
+			if (_outlineResources != null && _renderers != null && (_outlineSettings.IsChanged || _commandBuffer.sizeInBytes == 0))
 			{
 				using (var renderer = new OutlineRenderer(_commandBuffer, BuiltinRenderTextureType.CameraTarget))
 				{
@@ -157,7 +177,12 @@ namespace UnityFx.Outline
 				}
 
 				_outlineSettings.AcceptChanges();
+
+#if UNITY_EDITOR
+
 				_commandBufferUpdateCounter++;
+
+#endif
 			}
 		}
 
@@ -308,7 +333,12 @@ namespace UnityFx.Outline
 			{
 				_commandBuffer = new CommandBuffer();
 				_commandBuffer.name = string.Format("{0} - {1}", GetType().Name, name);
+
+#if UNITY_EDITOR
+
 				_commandBufferUpdateCounter = 0;
+
+#endif
 			}
 		}
 

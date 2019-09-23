@@ -14,6 +14,7 @@ namespace UnityFx.Outline
 	public class OutlineEffectEditor : Editor
 	{
 		private OutlineEffect _effect;
+		private bool _debugOpened;
 		private bool _previewOpened;
 
 		private void OnEnable()
@@ -52,6 +53,17 @@ namespace UnityFx.Outline
 				{
 					OutlineEditorUtility.RenderPreview(_effect.OutlineLayers, true);
 				}
+			}
+
+			_debugOpened = EditorGUILayout.Foldout(_debugOpened, "Debug", true);
+
+			if (_debugOpened)
+			{
+				EditorGUI.BeginDisabledGroup(true);
+				EditorGUI.indentLevel += 1;
+				EditorGUILayout.IntField("Command buffer updates", _effect.NumberOfCommandBufferUpdates);
+				EditorGUI.indentLevel -= 1;
+				EditorGUI.EndDisabledGroup();
 			}
 		}
 	}

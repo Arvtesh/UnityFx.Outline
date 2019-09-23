@@ -29,12 +29,32 @@ namespace UnityFx.Outline
 		private CameraEvent _cameraEvent = OutlineRenderer.RenderEvent;
 
 		private CommandBuffer _commandBuffer;
-		private int _commandBufferUpdateCounter;
 		private bool _changed;
+
+#if UNITY_EDITOR
+
+		private int _commandBufferUpdateCounter;
+
+#endif
 
 		#endregion
 
 		#region interface
+
+#if UNITY_EDITOR
+
+		/// <summary>
+		/// Gets number of the command buffer updates since its creation. Only available in editor.
+		/// </summary>
+		public int NumberOfCommandBufferUpdates
+		{
+			get
+			{
+				return _commandBufferUpdateCounter;
+			}
+		}
+
+#endif
 
 		/// <summary>
 		/// Gets or sets resources used by the effect implementation.
@@ -163,8 +183,13 @@ namespace UnityFx.Outline
 					name = string.Format("{0} - {1}", GetType().Name, name)
 				};
 
-				_commandBufferUpdateCounter = 0;
 				_changed = true;
+
+#if UNITY_EDITOR
+
+				_commandBufferUpdateCounter = 0;
+
+#endif
 
 				camera.AddCommandBuffer(_cameraEvent, _commandBuffer);
 			}
@@ -251,8 +276,13 @@ namespace UnityFx.Outline
 				_commandBuffer.Clear();
 			}
 
-			_commandBufferUpdateCounter++;
 			_changed = false;
+
+#if UNITY_EDITOR
+
+			_commandBufferUpdateCounter++;
+
+#endif
 		}
 
 		private void CreateLayersIfNeeded()
