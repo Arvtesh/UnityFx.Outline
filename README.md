@@ -54,7 +54,7 @@ Npm package is available at [npmjs.com](https://www.npmjs.com/package/com.unityf
     }
   ],
   "dependencies": {
-    "com.unityfx.outline": "0.5.0"
+    "com.unityfx.outline": "0.6.0"
   }
 }
 ```
@@ -71,7 +71,7 @@ using UnityFx.Outline;
 Add `OutlineEffect` script to a camera that should render outlines. Then add and configure as many layers as you need:
 ```csharp
 var outlineEffect = Camera.main.GetComponent<OutlineEffect>();
-var layer = new OutlineLayer();
+var layer = new OutlineLayer("MyOutlines");
 
 layer.OutlineColor = Color.red;
 layer.OutlineWidth = 7;
