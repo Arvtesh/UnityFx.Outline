@@ -179,6 +179,15 @@ namespace UnityFx.Outline
 		}
 
 		/// <summary>
+		/// Adds a new object to the layer.
+		/// </summary>
+		/// <exception cref="ArgumentNullException">Thrown if <paramref name="go"/> is <see langword="null"/>.</exception>
+		public void Add(GameObject go, string ignoreLayer)
+		{
+			Add(go, 1 << LayerMask.NameToLayer(ignoreLayer));
+		}
+
+		/// <summary>
 		/// Attempts to get renderers assosiated with the specified <see cref="GameObject"/>.
 		/// </summary>
 		/// <exception cref="ArgumentNullException">Thrown if <paramref name="go"/> is <see langword="null"/>.</exception>
