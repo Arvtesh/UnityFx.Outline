@@ -76,6 +76,25 @@ namespace UnityFx.Outline
 		}
 
 		[Test]
+		public void Add_FiltersRenderesByLayer()
+		{
+			var go = new GameObject("r1", typeof(MeshRenderer));
+			var go2 = new GameObject("r2", typeof(MeshRenderer));
+
+			go2.layer = LayerMask.NameToLayer("TransparentFX");
+			go2.transform.SetParent(go.transform, false);
+
+			ICollection<Renderer> r;
+
+			_layer.Add(go, "TransparentFX");
+			_layer.TryGetRenderers(go, out r);
+
+			Assert.AreEqual(1, r.Count);
+			Assert.IsTrue(r.Contains(go.GetComponent<Renderer>()));
+			Assert.IsFalse(r.Contains(go2.GetComponent<Renderer>()));
+		}
+
+		[Test]
 		public void Remove_DoesNotThrowOnNullArgument()
 		{
 			Assert.DoesNotThrow(() => _layer.Remove(null));
