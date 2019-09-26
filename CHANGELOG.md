@@ -3,7 +3,9 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/); this project adheres to [Semantic Versioning](http://semver.org/).
 
-## [0.6.0] - unreleased
+## [0.6.0] - 2019.09.26
+
+Quality of life improvements.
 
 ### Added
 - Added `OutlineLayer.Enabled`.
@@ -16,9 +18,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/); this proj
 ### Changed
 - `IOutilneSettings` setters now throw if overriden.
 
+### Fixed
+- Fixed `OutlineLayer.Add` not filtering renderers by the mask passed.
+
 ## [0.5.0] - 2019.09.09
 
-Features editor UI and unit tests.
+Editor UI improvements and unit tests.
 
 ### Added
 - Added `OutlineSettings`, that can be shared between dfferent `OutlineLayer` and `OutlineBehaviour` instances.
@@ -31,7 +36,7 @@ Features editor UI and unit tests.
 
 ## [0.4.0] - 2019.08.31
 
-Features blurred outlines.
+Blurred outlines.
 
 ### Added
 - Added Gauss blurring to outlines.

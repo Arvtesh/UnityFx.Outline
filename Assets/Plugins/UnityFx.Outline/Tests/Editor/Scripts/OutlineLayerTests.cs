@@ -18,7 +18,7 @@ namespace UnityFx.Outline
 		[SetUp]
 		public void Init()
 		{
-			_layer = new OutlineLayer();
+			_layer = new OutlineLayer("TestLayer");
 			Init(_layer);
 		}
 
@@ -34,6 +34,8 @@ namespace UnityFx.Outline
 			Assert.IsFalse(_layer.IsReadOnly);
 			Assert.IsEmpty(_layer);
 			Assert.Zero(_layer.Count);
+			Assert.AreEqual("TestLayer", _layer.Name);
+			Assert.AreEqual(-1, _layer.Index);
 		}
 
 		[Test]
@@ -73,6 +75,25 @@ namespace UnityFx.Outline
 			_layer.Add(new GameObject());
 
 			Assert.IsTrue(_layer.IsChanged);
+		}
+
+		[Test]
+		public void Add_FiltersRenderesByLayer()
+		{
+			var go = new GameObject("r1", typeof(MeshRenderer));
+			var go2 = new GameObject("r2", typeof(MeshRenderer));
+
+			go2.layer = LayerMask.NameToLayer("TransparentFX");
+			go2.transform.SetParent(go.transform, false);
+
+			ICollection<Renderer> r;
+
+			_layer.Add(go, "TransparentFX");
+			_layer.TryGetRenderers(go, out r);
+
+			Assert.AreEqual(1, r.Count);
+			Assert.IsTrue(r.Contains(go.GetComponent<Renderer>()));
+			Assert.IsFalse(r.Contains(go2.GetComponent<Renderer>()));
 		}
 
 		[Test]

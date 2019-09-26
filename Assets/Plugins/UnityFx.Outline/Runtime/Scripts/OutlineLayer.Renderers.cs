@@ -53,7 +53,7 @@ namespace UnityFx.Outline
 					{
 						foreach (var renderer in renderers)
 						{
-							if ((renderer.gameObject.layer & ignoreLayerMask) == 0)
+							if (((1 << renderer.gameObject.layer) & ignoreLayerMask) == 0)
 							{
 								_renderers.Add(renderer);
 							}
