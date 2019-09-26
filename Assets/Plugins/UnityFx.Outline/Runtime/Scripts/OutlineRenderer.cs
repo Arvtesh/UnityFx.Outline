@@ -103,7 +103,7 @@ namespace UnityFx.Outline
 		/// <summary>
 		/// Adds commands for rendering single outline object.
 		/// </summary>
-		public void RenderSingleObject(IList<Renderer> renderers, OutlineMaterialSet materials)
+		public void RenderSingleObject(IEnumerable<Renderer> renderers, OutlineMaterialSet materials)
 		{
 			if (renderers == null)
 			{
@@ -118,15 +118,13 @@ namespace UnityFx.Outline
 			_commandBuffer.SetRenderTarget(_maskRtId);
 			_commandBuffer.ClearRenderTarget(false, true, Color.black);
 
-			for (var i = 0; i < renderers.Count; ++i)
+			foreach (var r in renderers)
 			{
-				var renderer = renderers[i];
-
-				if (renderer && renderer.gameObject.activeInHierarchy && renderer.enabled)
+				if (r && r.enabled && r.gameObject.activeInHierarchy)
 				{
-					for (var j = 0; j < renderer.sharedMaterials.Length; ++j)
+					for (var j = 0; j < r.sharedMaterials.Length; ++j)
 					{
-						_commandBuffer.DrawRenderer(renderer, materials.RenderMaterial, j);
+						_commandBuffer.DrawRenderer(r, materials.RenderMaterial, j);
 					}
 				}
 			}

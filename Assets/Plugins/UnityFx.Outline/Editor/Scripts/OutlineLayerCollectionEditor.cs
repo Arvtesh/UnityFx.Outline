@@ -29,8 +29,23 @@ namespace UnityFx.Outline
 				for (var i = 0; i < _layers.Count; i++)
 				{
 					EditorGUILayout.Space();
+
 					var rect = EditorGUILayout.BeginHorizontal();
-					EditorGUILayout.PrefixLabel("Layer #" + i.ToString());
+					var enabled = EditorGUILayout.ToggleLeft("Layer #" + i.ToString(), _layers[i].Enabled);
+
+					if (enabled != _layers[i].Enabled)
+					{
+						if (enabled)
+						{
+							Undo.RecordObject(_layers, "Enable Layer");
+						}
+						else
+						{
+							Undo.RecordObject(_layers, "Disable Layer");
+						}
+
+						_layers[i].Enabled = enabled;
+					}
 
 					GUILayout.FlexibleSpace();
 
@@ -48,6 +63,22 @@ namespace UnityFx.Outline
 					rect.yMax += 2;
 
 					GUI.Box(rect, GUIContent.none);
+
+					var name = EditorGUILayout.TextField("Layer Name", _layers[i].NameTag);
+
+					if (name != _layers[i].NameTag)
+					{
+						Undo.RecordObject(_layers, "Set Layer Name");
+						_layers[i].NameTag = name;
+					}
+
+					var priority = EditorGUILayout.IntField("Layer Priority", _layers[i].Priority);
+
+					if (priority != _layers[i].Priority)
+					{
+						Undo.RecordObject(_layers, "Set Layer Priority");
+						_layers[i].Priority = priority;
+					}
 
 					OutlineEditorUtility.Render(_layers[i], _layers);
 				}

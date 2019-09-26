@@ -2,7 +2,7 @@
 // See the LICENSE.md file in the project root for more information.
 
 using System;
-using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using UnityEngine;
 using UnityEngine.Rendering;
 
@@ -25,13 +25,36 @@ namespace UnityFx.Outline
 		private OutlineResources _outlineResources;
 		[SerializeField]
 		private OutlineLayerCollection _outlineLayers;
+		[SerializeField, HideInInspector]
+		private CameraEvent _cameraEvent = OutlineRenderer.RenderEvent;
 
 		private CommandBuffer _commandBuffer;
 		private bool _changed;
 
+#if UNITY_EDITOR
+
+		private int _commandBufferUpdateCounter;
+
+#endif
+
 		#endregion
 
 		#region interface
+
+#if UNITY_EDITOR
+
+		/// <summary>
+		/// Gets number of the command buffer updates since its creation. Only available in editor.
+		/// </summary>
+		public int NumberOfCommandBufferUpdates
+		{
+			get
+			{
+				return _commandBufferUpdateCounter;
+			}
+		}
+
+#endif
 
 		/// <summary>
 		/// Gets or sets resources used by the effect implementation.
@@ -67,11 +90,7 @@ namespace UnityFx.Outline
 		{
 			get
 			{
-				if (_outlineLayers == null)
-				{
-					_outlineLayers = ScriptableObject.CreateInstance<OutlineLayerCollection>();
-				}
-
+				CreateLayersIfNeeded();
 				return _outlineLayers;
 			}
 			set
@@ -90,6 +109,35 @@ namespace UnityFx.Outline
 		}
 
 		/// <summary>
+		/// Gets or sets <see cref="CameraEvent"/> used to render the outlines.
+		/// </summary>
+		public CameraEvent RenderEvent
+		{
+			get
+			{
+				return _cameraEvent;
+			}
+			set
+			{
+				if (_cameraEvent != value)
+				{
+					if (_commandBuffer != null)
+					{
+						var camera = GetComponent<Camera>();
+
+						if (camera)
+						{
+							camera.RemoveCommandBuffer(_cameraEvent, _commandBuffer);
+							camera.AddCommandBuffer(value, _commandBuffer);
+						}
+					}
+
+					_cameraEvent = value;
+				}
+			}
+		}
+
+		/// <summary>
 		/// Shares <see cref="OutlineLayers"/> with another <see cref="OutlineEffect"/> instance.
 		/// </summary>
 		/// <param name="other">Effect to share <see cref="OutlineLayers"/> with.</param>
@@ -98,10 +146,7 @@ namespace UnityFx.Outline
 		{
 			if (other)
 			{
-				if (_outlineLayers == null)
-				{
-					_outlineLayers = ScriptableObject.CreateInstance<OutlineLayerCollection>();
-				}
+				CreateLayersIfNeeded();
 
 				other._outlineLayers = _outlineLayers;
 				other._changed = true;
@@ -133,11 +178,20 @@ namespace UnityFx.Outline
 
 			if (camera)
 			{
-				_commandBuffer = new CommandBuffer();
-				_commandBuffer.name = string.Format("{0} - {1}", GetType().Name, name);
+				_commandBuffer = new CommandBuffer
+				{
+					name = string.Format("{0} - {1}", GetType().Name, name)
+				};
+
 				_changed = true;
 
-				camera.AddCommandBuffer(OutlineRenderer.RenderEvent, _commandBuffer);
+#if UNITY_EDITOR
+
+				_commandBufferUpdateCounter = 0;
+
+#endif
+
+				camera.AddCommandBuffer(_cameraEvent, _commandBuffer);
 			}
 		}
 
@@ -147,7 +201,7 @@ namespace UnityFx.Outline
 
 			if (camera)
 			{
-				camera.RemoveCommandBuffer(OutlineRenderer.RenderEvent, _commandBuffer);
+				camera.RemoveCommandBuffer(_cameraEvent, _commandBuffer);
 			}
 
 			if (_commandBuffer != null)
@@ -182,6 +236,7 @@ namespace UnityFx.Outline
 
 		private void OnDestroy()
 		{
+			// TODO: Find a way to do this once per OutlineLayerCollection instance.
 			if (_outlineLayers)
 			{
 				_outlineLayers.Reset();
@@ -213,13 +268,7 @@ namespace UnityFx.Outline
 			{
 				using (var renderer = new OutlineRenderer(_commandBuffer, BuiltinRenderTextureType.CameraTarget))
 				{
-					for (var i = 0; i < _outlineLayers.Count; ++i)
-					{
-						if (_outlineLayers[i] != null)
-						{
-							_outlineLayers[i].Render(renderer, _outlineResources);
-						}
-					}
+					_outlineLayers.Render(renderer, _outlineResources);
 				}
 			}
 			else
@@ -228,11 +277,21 @@ namespace UnityFx.Outline
 			}
 
 			_changed = false;
+
+#if UNITY_EDITOR
+
+			_commandBufferUpdateCounter++;
+
+#endif
 		}
 
-		private void OnChanged(object sender, EventArgs args)
+		private void CreateLayersIfNeeded()
 		{
-			_changed = true;
+			if (ReferenceEquals(_outlineLayers, null))
+			{
+				_outlineLayers = ScriptableObject.CreateInstance<OutlineLayerCollection>();
+				_outlineLayers.name = "OutlineLayers";
+			}
 		}
 
 		#endregion

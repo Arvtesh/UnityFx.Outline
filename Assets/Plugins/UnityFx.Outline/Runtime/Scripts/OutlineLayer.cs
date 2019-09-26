@@ -5,6 +5,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Text;
 using UnityEngine;
 
 namespace UnityFx.Outline
@@ -16,15 +17,21 @@ namespace UnityFx.Outline
 	/// <seealso cref="OutlineLayerCollection"/>
 	/// <seealso cref="OutlineEffect"/>
 	[Serializable]
-	public sealed class OutlineLayer : ICollection<GameObject>, IOutlineSettingsEx, IChangeTracking
+	public sealed partial class OutlineLayer : ICollection<GameObject>, IOutlineSettingsEx, IChangeTracking
 	{
 		#region data
 
 		[SerializeField, HideInInspector]
 		private OutlineSettingsInstance _settings = new OutlineSettingsInstance();
+		[SerializeField, HideInInspector]
+		private string _name;
+		[SerializeField, HideInInspector]
+		private int _zOrder;
+		[SerializeField, HideInInspector]
+		private bool _enabled = true;
 
 		private OutlineLayerCollection _parentCollection;
-		private Dictionary<GameObject, Renderer[]> _outlineObjects = new Dictionary<GameObject, Renderer[]>();
+		private Dictionary<GameObject, RendererCollection> _outlineObjects = new Dictionary<GameObject, RendererCollection>();
 		private bool _changed;
 
 		#endregion
@@ -32,10 +39,96 @@ namespace UnityFx.Outline
 		#region interface
 
 		/// <summary>
+		/// Gets the layer name.
+		/// </summary>
+		public string Name
+		{
+			get
+			{
+				if (string.IsNullOrEmpty(_name))
+				{
+					return "OutlineLayer #" + Index.ToString();
+				}
+
+				return _name;
+			}
+		}
+
+		/// <summary>
+		/// Gets or sets a value indicating whether the layer is enabled.
+		/// </summary>
+		/// <seealso cref="Priority"/>
+		public bool Enabled
+		{
+			get
+			{
+				return _enabled;
+			}
+			set
+			{
+				if (_enabled != value)
+				{
+					_enabled = value;
+					_changed = true;
+				}
+			}
+		}
+
+		/// <summary>
+		/// Gets or sets the layer priority. Layers with greater <see cref="Priority"/> values are rendered on top of layers with lower priority.
+		/// Layers with equal priorities are rendered according to index in parent collection.
+		/// </summary>
+		/// <seealso cref="Enabled"/>
+		public int Priority
+		{
+			get
+			{
+				return _zOrder;
+			}
+			set
+			{
+				if (_zOrder != value)
+				{
+					if (_parentCollection != null)
+					{
+						_parentCollection.SetOrderChanged();
+					}
+
+					_zOrder = value;
+					_changed = true;
+				}
+			}
+		}
+
+		/// <summary>
+		/// Gets index of the layer in parent collection.
+		/// </summary>
+		public int Index
+		{
+			get
+			{
+				if (_parentCollection != null)
+				{
+					return _parentCollection.IndexOf(this);
+				}
+
+				return -1;
+			}
+		}
+
+		/// <summary>
 		/// Initializes a new instance of the <see cref="OutlineLayer"/> class.
 		/// </summary>
 		public OutlineLayer()
 		{
+		}
+
+		/// <summary>
+		/// Initializes a new instance of the <see cref="OutlineLayer"/> class.
+		/// </summary>
+		public OutlineLayer(string name)
+		{
+			_name = name;
 		}
 
 		/// <summary>
@@ -53,6 +146,21 @@ namespace UnityFx.Outline
 		}
 
 		/// <summary>
+		/// Initializes a new instance of the <see cref="OutlineLayer"/> class.
+		/// </summary>
+		/// <exception cref="ArgumentNullException">Thrown if <paramref name="settings"/> is <see langword="null"/>.</exception>
+		public OutlineLayer(string name, OutlineSettings settings)
+		{
+			if (settings == null)
+			{
+				throw new ArgumentNullException("settings");
+			}
+
+			_name = name;
+			_settings.OutlineSettings = settings;
+		}
+
+		/// <summary>
 		/// Adds a new object to the layer.
 		/// </summary>
 		/// <exception cref="ArgumentNullException">Thrown if <paramref name="go"/> is <see langword="null"/>.</exception>
@@ -65,38 +173,58 @@ namespace UnityFx.Outline
 
 			if (!_outlineObjects.ContainsKey(go))
 			{
-				var renderers = go.GetComponentsInChildren<Renderer>();
-
-				if (renderers != null)
-				{
-					if (renderers.Length > 0 && ignoreLayerMask != 0)
-					{
-						var filteredRenderers = new List<Renderer>(renderers.Length);
-
-						for (var i = 0; i < renderers.Length; ++i)
-						{
-							if ((renderers[i].gameObject.layer & ignoreLayerMask) == 0)
-							{
-								filteredRenderers.Add(renderers[i]);
-							}
-						}
-
-						renderers = filteredRenderers.ToArray();
-					}
-				}
-				else
-				{
-					renderers = new Renderer[0];
-				}
-
-				_outlineObjects.Add(go, renderers);
+				_outlineObjects.Add(go, new RendererCollection(go, ignoreLayerMask));
 				_changed = true;
 			}
+		}
+
+		/// <summary>
+		/// Adds a new object to the layer.
+		/// </summary>
+		/// <exception cref="ArgumentNullException">Thrown if <paramref name="go"/> is <see langword="null"/>.</exception>
+		public void Add(GameObject go, string ignoreLayer)
+		{
+			Add(go, 1 << LayerMask.NameToLayer(ignoreLayer));
+		}
+
+		/// <summary>
+		/// Attempts to get renderers assosiated with the specified <see cref="GameObject"/>.
+		/// </summary>
+		/// <exception cref="ArgumentNullException">Thrown if <paramref name="go"/> is <see langword="null"/>.</exception>
+		public bool TryGetRenderers(GameObject go, out ICollection<Renderer> renderers)
+		{
+			if (go == null)
+			{
+				throw new ArgumentNullException("go");
+			}
+
+			RendererCollection result;
+
+			if (_outlineObjects.TryGetValue(go, out result))
+			{
+				renderers = result;
+				return true;
+			}
+
+			renderers = null;
+			return false;
 		}
 
 		#endregion
 
 		#region internals
+
+		internal string NameTag
+		{
+			get
+			{
+				return _name;
+			}
+			set
+			{
+				_name = value;
+			}
+		}
 
 		internal OutlineLayerCollection ParentCollection
 		{
@@ -131,13 +259,16 @@ namespace UnityFx.Outline
 
 		internal void Render(OutlineRenderer renderer, OutlineResources resources)
 		{
-			_settings.SetResources(resources);
-
-			foreach (var kvp in _outlineObjects)
+			if (_enabled)
 			{
-				if (kvp.Key)
+				_settings.SetResources(resources);
+
+				foreach (var kvp in _outlineObjects)
 				{
-					renderer.RenderSingleObject(kvp.Value, _settings.OutlineMaterials);
+					if (kvp.Key && kvp.Key.activeInHierarchy)
+					{
+						renderer.RenderSingleObject(kvp.Value, _settings.OutlineMaterials);
+					}
 				}
 			}
 		}
@@ -317,6 +448,52 @@ namespace UnityFx.Outline
 		{
 			_settings.AcceptChanges();
 			_changed = false;
+		}
+
+		#endregion
+
+		#region Object
+
+		public override string ToString()
+		{
+			var text = new StringBuilder();
+
+			if (string.IsNullOrEmpty(_name))
+			{
+				text.Append("OutlineLayer");
+			}
+			else
+			{
+				text.Append(_name);
+			}
+
+			if (_parentCollection != null)
+			{
+				text.Append(" #");
+				text.Append(_parentCollection.IndexOf(this));
+			}
+
+			if (_zOrder > 0)
+			{
+				text.Append(" z");
+				text.Append(_zOrder);
+			}
+
+			if (_outlineObjects.Count > 0)
+			{
+				text.Append(" (");
+
+				foreach (var go in _outlineObjects.Keys)
+				{
+					text.Append(go.name);
+					text.Append(", ");
+				}
+
+				text.Remove(text.Length - 2, 2);
+				text.Append(")");
+			}
+
+			return string.Format("{0}", text);
 		}
 
 		#endregion

@@ -106,8 +106,18 @@ namespace UnityFx.Outline
 				EditorGUI.indentLevel += 1;
 				EditorGUILayout.PrefixLabel("Layer #" + layerIndex.ToString());
 				EditorGUI.indentLevel -= 1;
-				EditorGUILayout.IntField(layer.OutlineWidth, GUILayout.MaxWidth(100));
-				EditorGUILayout.ColorField(layer.OutlineColor, GUILayout.MinWidth(100));
+
+				if (layer.Enabled)
+				{
+					EditorGUILayout.LabelField(layer.OutlineMode == OutlineMode.Solid ? layer.OutlineMode.ToString() : string.Format("Blurred ({0})", layer.OutlineIntensity), GUILayout.MaxWidth(70));
+					EditorGUILayout.IntField(layer.OutlineWidth, GUILayout.MaxWidth(100));
+					EditorGUILayout.ColorField(layer.OutlineColor, GUILayout.MinWidth(100));
+				}
+				else
+				{
+					EditorGUILayout.LabelField("Disabled.");
+				}
+
 				EditorGUILayout.EndHorizontal();
 
 				if (showObjects)

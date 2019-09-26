@@ -19,15 +19,18 @@ MonoBehaviour:
       _outlineWidth: 5
       _outlineIntensity: 2
       _outlineMode: 0
+    _enabled: 1
   - _settings:
       _outlineSettings: {fileID: 0}
       _outlineColor: {r: 1, g: 1, b: 0, a: 1}
       _outlineWidth: 15
       _outlineIntensity: 2
       _outlineMode: 1
+    _enabled: 1
   - _settings:
       _outlineSettings: {fileID: 0}
       _outlineColor: {r: 1, g: 0, b: 1, a: 1}
       _outlineWidth: 4
       _outlineIntensity: 2
       _outlineMode: 0
+    _enabled: 1

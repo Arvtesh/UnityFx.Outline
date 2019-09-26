@@ -4,70 +4,68 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.ComponentModel;
 using UnityEngine;
 
 namespace UnityFx.Outline
 {
-	partial class OutlineBehaviour
+	partial class OutlineLayer
 	{
 		#region interface
 		#endregion
 
 		#region implementation
 
-		[ExecuteInEditMode]
-		[DisallowMultipleComponent]
-		private class OutlineRendererHelper : MonoBehaviour
-		{
-			private OutlineBehaviour _parent;
-
-			public void SetParent(OutlineBehaviour parent)
-			{
-				_parent = parent;
-			}
-
-			private void OnWillRenderObject()
-			{
-				if (isActiveAndEnabled && _parent)
-				{
-					_parent.OnWillRenderObject();
-				}
-			}
-		}
-
 		private sealed class RendererCollection : ICollection<Renderer>
 		{
 			#region data
 
 			private readonly List<Renderer> _renderers = new List<Renderer>();
-			private readonly OutlineBehaviour _parent;
 			private readonly GameObject _go;
 
 			#endregion
 
 			#region interface
 
-			internal RendererCollection(OutlineBehaviour parent)
+			internal RendererCollection(GameObject parent)
+			{
+				Debug.Assert(parent);
+				_go = parent;
+			}
+
+			internal RendererCollection(GameObject parent, int ignoreMask)
 			{
 				Debug.Assert(parent);
 
-				_parent = parent;
-				_go = parent.gameObject;
+				_go = parent;
+				Reset(ignoreMask);
 			}
 
-			public void Reset()
+			public void Reset(int ignoreLayerMask)
 			{
-				foreach (var r in _renderers)
-				{
-					Release(r);
-				}
-
 				_renderers.Clear();
-				_parent.GetComponentsInChildren(true, _renderers);
 
-				foreach (var r in _renderers)
+				var renderers = _go.GetComponentsInChildren<Renderer>();
+
+				if (renderers != null)
 				{
-					Init(r);
+					if (ignoreLayerMask != 0)
+					{
+						foreach (var renderer in renderers)
+						{
+							if (((1 << renderer.gameObject.layer) & ignoreLayerMask) == 0)
+							{
+								_renderers.Add(renderer);
+							}
+						}
+					}
+					else
+					{
+						foreach (var renderer in renderers)
+						{
+							_renderers.Add(renderer);
+						}
+					}
 				}
 			}
 
@@ -94,29 +92,17 @@ namespace UnityFx.Outline
 			public void Add(Renderer renderer)
 			{
 				Validate(renderer);
-				Init(renderer);
 
 				_renderers.Add(renderer);
 			}
 
 			public bool Remove(Renderer renderer)
 			{
-				if (_renderers.Remove(renderer))
-				{
-					Release(renderer);
-					return true;
-				}
-
-				return false;
+				return _renderers.Remove(renderer);
 			}
 
 			public void Clear()
 			{
-				foreach (var r in _renderers)
-				{
-					Release(r);
-				}
-
 				_renderers.Clear();
 			}
 
@@ -161,44 +147,7 @@ namespace UnityFx.Outline
 				}
 			}
 
-			private void Init(Renderer r)
-			{
-				if (r && r.gameObject != _go)
-				{
-					var c = r.GetComponent<OutlineRendererHelper>();
-
-					if (c == null)
-					{
-						c = r.gameObject.AddComponent<OutlineRendererHelper>();
-					}
-
-					c.SetParent(_parent);
-				}
-			}
-
-			private void Release(Renderer r)
-			{
-				if (r)
-				{
-					var c = r.GetComponent<OutlineRendererHelper>();
-
-					if (c)
-					{
-						DestroyImmediate(c);
-					}
-				}
-			}
-
 			#endregion
-		}
-
-		private void CreateRenderersIfNeeded()
-		{
-			if (_renderers == null)
-			{
-				_renderers = new RendererCollection(this);
-				_renderers.Reset();
-			}
 		}
 
 		#endregion

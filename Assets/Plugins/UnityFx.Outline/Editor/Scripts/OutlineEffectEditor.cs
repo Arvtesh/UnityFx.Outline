@@ -5,7 +5,8 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEditor;
-using UnityEngine;
+using UnityEditor.SceneManagement;
+using UnityEngine.Rendering;
 
 namespace UnityFx.Outline
 {
@@ -13,6 +14,7 @@ namespace UnityFx.Outline
 	public class OutlineEffectEditor : Editor
 	{
 		private OutlineEffect _effect;
+		private bool _debugOpened;
 		private bool _previewOpened;
 
 		private void OnEnable()
@@ -24,6 +26,25 @@ namespace UnityFx.Outline
 		{
 			base.OnInspectorGUI();
 
+			EditorGUI.BeginChangeCheck();
+			var e = (CameraEvent)EditorGUILayout.EnumPopup("Render Event", _effect.RenderEvent);
+
+			if (e != _effect.RenderEvent)
+			{
+				Undo.RecordObject(_effect, "Set Render Event");
+				_effect.RenderEvent = e;
+			}
+
+			if (EditorGUI.EndChangeCheck())
+			{
+				EditorUtility.SetDirty(_effect.gameObject);
+
+				if (!EditorApplication.isPlayingOrWillChangePlaymode)
+				{
+					EditorSceneManager.MarkSceneDirty(_effect.gameObject.scene);
+				}
+			}
+
 			if (_effect.OutlineLayers.Count > 0)
 			{
 				_previewOpened = EditorGUILayout.Foldout(_previewOpened, "Preview", true);
@@ -32,6 +53,17 @@ namespace UnityFx.Outline
 				{
 					OutlineEditorUtility.RenderPreview(_effect.OutlineLayers, true);
 				}
+			}
+
+			_debugOpened = EditorGUILayout.Foldout(_debugOpened, "Debug", true);
+
+			if (_debugOpened)
+			{
+				EditorGUI.BeginDisabledGroup(true);
+				EditorGUI.indentLevel += 1;
+				EditorGUILayout.IntField("Command buffer updates", _effect.NumberOfCommandBufferUpdates);
+				EditorGUI.indentLevel -= 1;
+				EditorGUI.EndDisabledGroup();
 			}
 		}
 	}

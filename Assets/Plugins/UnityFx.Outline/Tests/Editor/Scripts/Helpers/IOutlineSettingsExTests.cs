@@ -74,5 +74,25 @@ namespace UnityFx.Outline
 				Assert.IsFalse(_changeTracking.IsChanged);
 			}
 		}
+
+		[Test]
+		public void OutlineSettings_MakesOtherSettersThrow()
+		{
+			var settings = ScriptableObject.CreateInstance<OutlineSettings>();
+
+			try
+			{
+				_settings.OutlineSettings = settings;
+
+				Assert.Throws<InvalidOperationException>(() => _settings.OutlineColor = Color.blue);
+				Assert.Throws<InvalidOperationException>(() => _settings.OutlineWidth = 12);
+				Assert.Throws<InvalidOperationException>(() => _settings.OutlineMode = OutlineMode.Blurred);
+				Assert.Throws<InvalidOperationException>(() => _settings.OutlineIntensity = 17);
+			}
+			finally
+			{
+				UnityEngine.Object.DestroyImmediate(settings);
+			}
+		}
 	}
 }
