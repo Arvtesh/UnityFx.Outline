@@ -18,7 +18,7 @@ namespace UnityFx.Outline
 		[SetUp]
 		public void Init()
 		{
-			_layer = new OutlineLayer();
+			_layer = new OutlineLayer("TestLayer");
 			Init(_layer);
 		}
 
@@ -34,6 +34,8 @@ namespace UnityFx.Outline
 			Assert.IsFalse(_layer.IsReadOnly);
 			Assert.IsEmpty(_layer);
 			Assert.Zero(_layer.Count);
+			Assert.AreEqual("TestLayer", _layer.Name);
+			Assert.AreEqual(-1, _layer.Index);
 		}
 
 		[Test]
