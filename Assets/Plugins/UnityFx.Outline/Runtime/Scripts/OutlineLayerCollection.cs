@@ -52,6 +52,19 @@ namespace UnityFx.Outline
 			}
 		}
 
+		/// <summary>
+		/// Renders all layers.
+		/// </summary>
+		public void Render(OutlineRenderer renderer, OutlineResources resources)
+		{
+			UpdateSortedLayersIdNeeded();
+
+			foreach (var layer in _sortedLayers)
+			{
+				layer.Render(renderer, resources);
+			}
+		}
+
 		#endregion
 
 		#region internals
@@ -75,16 +88,6 @@ namespace UnityFx.Outline
 			foreach (var layer in _layers)
 			{
 				layer.UpdateChanged();
-			}
-		}
-
-		internal void Render(OutlineRenderer renderer, OutlineResources resources)
-		{
-			UpdateSortedLayersIdNeeded();
-
-			foreach (var layer in _sortedLayers)
-			{
-				layer.Render(renderer, resources);
 			}
 		}
 

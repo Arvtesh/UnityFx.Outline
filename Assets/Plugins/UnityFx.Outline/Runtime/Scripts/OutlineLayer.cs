@@ -210,6 +210,25 @@ namespace UnityFx.Outline
 			return false;
 		}
 
+		/// <summary>
+		/// Renders the layers.
+		/// </summary>
+		public void Render(OutlineRenderer renderer, OutlineResources resources)
+		{
+			if (_enabled)
+			{
+				_settings.SetResources(resources);
+
+				foreach (var kvp in _outlineObjects)
+				{
+					if (kvp.Key && kvp.Key.activeInHierarchy)
+					{
+						renderer.RenderSingleObject(kvp.Value, _settings.OutlineMaterials);
+					}
+				}
+			}
+		}
+
 		#endregion
 
 		#region internals
@@ -254,22 +273,6 @@ namespace UnityFx.Outline
 			else
 			{
 				throw new InvalidOperationException("OutlineLayer can only belong to a single OutlineLayerCollection.");
-			}
-		}
-
-		internal void Render(OutlineRenderer renderer, OutlineResources resources)
-		{
-			if (_enabled)
-			{
-				_settings.SetResources(resources);
-
-				foreach (var kvp in _outlineObjects)
-				{
-					if (kvp.Key && kvp.Key.activeInHierarchy)
-					{
-						renderer.RenderSingleObject(kvp.Value, _settings.OutlineMaterials);
-					}
-				}
 			}
 		}
 

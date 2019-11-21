@@ -10,7 +10,7 @@ namespace UnityFx.Outline
 	/// This asset is used to store references to shaders and other resources needed at runtime without having to use a Resources folder.
 	/// </summary>
 	[CreateAssetMenu(fileName = "OutlineResources", menuName = "UnityFx/Outline/Outline Resources")]
-	public class OutlineResources : ScriptableObject
+	public sealed class OutlineResources : ScriptableObject
 	{
 		private Material _renderMaterial;
 
