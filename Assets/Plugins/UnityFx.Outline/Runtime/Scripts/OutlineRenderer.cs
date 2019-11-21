@@ -27,8 +27,8 @@ namespace UnityFx.Outline
 	{
 		#region data
 
-		private readonly int _maskRtId;
-		private readonly int _hPassRtId;
+		private static readonly int _maskRtId = Shader.PropertyToID("_MaskTex");
+		private static readonly int _hPassRtId = Shader.PropertyToID("_HPassTex");
 
 		private readonly RenderTargetIdentifier _source;
 		private readonly RenderTargetIdentifier _destination;
@@ -43,7 +43,7 @@ namespace UnityFx.Outline
 		/// <summary>
 		/// A <see cref="CameraEvent"/> outline rendering should be assosiated with.
 		/// </summary>
-		public const CameraEvent RenderEvent = CameraEvent.BeforeImageEffects;
+		public const CameraEvent RenderEvent = CameraEvent.AfterImageEffects;
 
 		/// <summary>
 		/// Name of the outline effect.
@@ -99,9 +99,6 @@ namespace UnityFx.Outline
 			Debug.Assert(commandBuffer != null);
 
 			_disposed = false;
-			_maskRtId = Shader.PropertyToID("_MaskTex");
-			_hPassRtId = Shader.PropertyToID("_HPassTex");
-
 			_source = src;
 			_destination = dst;
 
@@ -131,47 +128,10 @@ namespace UnityFx.Outline
 				throw new ObjectDisposedException(GetType().Name);
 			}
 
-			var maskRt = new RenderTargetIdentifier(_maskRtId);
-			var hPassRt = new RenderTargetIdentifier(_hPassRtId);
-			var activeRt = new RenderTargetIdentifier(BuiltinRenderTextureType.CurrentActive);
-
-			// Set global shader parameters.
-			_commandBuffer.SetGlobalFloatArray(materials.GaussSamplesNameId, materials.GaussSamples);
-
-			// Render the object.
-#if UNITY_2018_2_OR_NEWER
-			_commandBuffer.SetRenderTarget(maskRt, RenderBufferLoadAction.DontCare, RenderBufferStoreAction.Store);
-#else
-			_commandBuffer.SetRenderTarget(maskRt);
-#endif
-			_commandBuffer.ClearRenderTarget(false, true, Color.black);
-
-			foreach (var r in renderers)
-			{
-				if (r && r.enabled && r.gameObject.activeInHierarchy)
-				{
-					for (var j = 0; j < r.sharedMaterials.Length; ++j)
-					{
-						_commandBuffer.DrawRenderer(r, materials.RenderMaterial, j);
-					}
-				}
-			}
-
-			// Render H-pass.
-#if UNITY_2018_2_OR_NEWER
-			_commandBuffer.SetRenderTarget(hPassRt, RenderBufferLoadAction.DontCare, RenderBufferStoreAction.Store);
-#else
-			_commandBuffer.SetRenderTarget(hPassRt);
-#endif
-			_commandBuffer.Blit(maskRt, activeRt, materials.HPassMaterial);
-
-			// V-pass and blend.
-#if UNITY_2018_2_OR_NEWER
-			_commandBuffer.SetRenderTarget(_destination, RenderBufferLoadAction.DontCare, RenderBufferStoreAction.Store);
-#else
-			_commandBuffer.SetRenderTarget(_destination);
-#endif
-			_commandBuffer.Blit(_source, activeRt, materials.VPassBlendMaterial);
+			Init(materials);
+			RenderObject(renderers, materials);
+			Blit(_maskRtId, _hPassRtId, materials.HPassMaterial);
+			Blit(_source, _destination, materials.VPassBlendMaterial);
 		}
 
 		/// <summary>
@@ -194,44 +154,10 @@ namespace UnityFx.Outline
 				throw new ObjectDisposedException(GetType().Name);
 			}
 
-			var maskRt = new RenderTargetIdentifier(_maskRtId);
-			var hPassRt = new RenderTargetIdentifier(_hPassRtId);
-			var activeRt = new RenderTargetIdentifier(BuiltinRenderTextureType.CurrentActive);
-
-			// Set global shader parameters.
-			_commandBuffer.SetGlobalFloatArray(materials.GaussSamplesNameId, materials.GaussSamples);
-
-			// Render the object.
-#if UNITY_2018_2_OR_NEWER
-			_commandBuffer.SetRenderTarget(maskRt, RenderBufferLoadAction.DontCare, RenderBufferStoreAction.Store);
-#else
-			_commandBuffer.SetRenderTarget(maskRt);
-#endif
-			_commandBuffer.ClearRenderTarget(false, true, Color.black);
-
-			if (renderer && renderer.gameObject.activeInHierarchy && renderer.enabled)
-			{
-				for (var i = 0; i < renderer.sharedMaterials.Length; ++i)
-				{
-					_commandBuffer.DrawRenderer(renderer, materials.RenderMaterial, i);
-				}
-			}
-
-			// Render H-pass.
-#if UNITY_2018_2_OR_NEWER
-			_commandBuffer.SetRenderTarget(hPassRt, RenderBufferLoadAction.DontCare, RenderBufferStoreAction.Store);
-#else
-			_commandBuffer.SetRenderTarget(hPassRt);
-#endif
-			_commandBuffer.Blit(maskRt, activeRt, materials.HPassMaterial);
-
-			// V-pass and blend.
-#if UNITY_2018_2_OR_NEWER
-			_commandBuffer.SetRenderTarget(_destination, RenderBufferLoadAction.DontCare, RenderBufferStoreAction.Store);
-#else
-			_commandBuffer.SetRenderTarget(_destination);
-#endif
-			_commandBuffer.Blit(_source, activeRt, materials.VPassBlendMaterial);
+			Init(materials);
+			RenderObject(renderer, materials);
+			Blit(_maskRtId, _hPassRtId, materials.HPassMaterial);
+			Blit(_source, _destination, materials.VPassBlendMaterial);
 		}
 
 		/// <summary>
@@ -290,6 +216,64 @@ namespace UnityFx.Outline
 		#endregion
 
 		#region implementation
+
+		private void Init(OutlineMaterialSet materials)
+		{
+			_commandBuffer.SetGlobalFloatArray(materials.GaussSamplesNameId, materials.GaussSamples);
+
+#if UNITY_2018_2_OR_NEWER
+			_commandBuffer.SetRenderTarget(_maskRtId, RenderBufferLoadAction.DontCare, RenderBufferStoreAction.Store);
+#else
+			_commandBuffer.SetRenderTarget(_maskRtId);
+#endif
+			_commandBuffer.ClearRenderTarget(false, true, Color.clear);
+
+		}
+
+		private void RenderObject(IEnumerable<Renderer> renderers, OutlineMaterialSet materials)
+		{
+			foreach (var r in renderers)
+			{
+				if (r && r.enabled && r.gameObject.activeInHierarchy)
+				{
+					for (var j = 0; j < r.sharedMaterials.Length; ++j)
+					{
+						_commandBuffer.DrawRenderer(r, materials.RenderMaterial, j);
+					}
+				}
+			}
+		}
+
+		private void RenderObject(Renderer renderer, OutlineMaterialSet materials)
+		{
+			if (renderer && renderer.gameObject.activeInHierarchy && renderer.enabled)
+			{
+				for (var i = 0; i < renderer.sharedMaterials.Length; ++i)
+				{
+					_commandBuffer.DrawRenderer(renderer, materials.RenderMaterial, i);
+				}
+			}
+		}
+
+		private void Blit(RenderTargetIdentifier source, RenderTargetIdentifier destination, Material mat)
+		{
+#if UNITY_2018_2_OR_NEWER
+			_commandBuffer.SetRenderTarget(destination, RenderBufferLoadAction.DontCare, RenderBufferStoreAction.Store);
+#else
+			_commandBuffer.SetRenderTarget(destination);
+#endif
+
+			// NOTE: Have to clear render target before blitting to avoid Tile GPU perf. warnings.
+			// https://forum.unity.com/threads/rendertexture-not-working-on-mobile.484105/#post-3153721
+			if (!source.Equals(destination))
+			{
+				_commandBuffer.ClearRenderTarget(true, true, Color.clear);
+			}
+
+			// TODO: Use DrawMesh with special copy material to render one full-screen triangle instead of 2 triangles used in Blit.
+			_commandBuffer.Blit(source, BuiltinRenderTextureType.CurrentActive, mat);
+		}
+
 		#endregion
 	}
 }
