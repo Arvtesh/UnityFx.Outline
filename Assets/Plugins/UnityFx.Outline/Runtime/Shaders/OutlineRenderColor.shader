@@ -7,16 +7,18 @@ Shader "UnityFx/Outline/RenderColor"
 {
 	SubShader
 	{
+		Cull Off
 		ZWrite Off
 		ZTest Always
 		Lighting Off
 
 		Pass
 		{
-			CGPROGRAM
+			HLSLPROGRAM
 
 			#pragma vertex vert
 			#pragma fragment frag
+			#include "UnityCG.cginc"
 
 			struct v2f
 			{
@@ -35,7 +37,7 @@ Shader "UnityFx/Outline/RenderColor"
 				return half4(1, 1, 1, 1);
 			}
 
-			ENDCG
+			ENDHLSL
 		}
 	}
 }

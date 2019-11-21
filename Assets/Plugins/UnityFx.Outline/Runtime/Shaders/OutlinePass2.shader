@@ -18,7 +18,7 @@ Shader "UnityFx/Outline/VPassBlend"
 
 		Pass
 		{
-			CGPROGRAM
+			HLSLPROGRAM
 
 			#pragma vertex vert
 			#pragma fragment frag
@@ -69,7 +69,7 @@ Shader "UnityFx/Outline/VPassBlend"
 				return float4(_Color.rgb, saturate(_Color.a * intensity));
 			}
 
-			ENDCG
+			ENDHLSL
 		}
 	}
 }

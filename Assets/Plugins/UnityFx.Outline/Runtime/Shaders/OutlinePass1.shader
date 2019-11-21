@@ -12,13 +12,14 @@ Shader "UnityFx/Outline/HPass"
 
 	SubShader
 	{
+		Cull Off
 		ZWrite Off
 		ZTest Always
 		Lighting Off
 
 		Pass
 		{
-			CGPROGRAM
+			HLSLPROGRAM
 
 			#pragma vertex vert
 			#pragma fragment frag
@@ -59,7 +60,7 @@ Shader "UnityFx/Outline/HPass"
 				return intensity;
 			}
 
-			ENDCG
+			ENDHLSL
 		}
 	}
 }
