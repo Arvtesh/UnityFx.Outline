@@ -25,7 +25,7 @@ Shader "UnityFx/Outline/HPass"
 			#pragma fragment frag
 			#include "UnityCG.cginc"
 
-			sampler2D _MaskTex;
+			UNITY_DECLARE_TEX2D(_MaskTex);
 			float2 _MaskTex_TexelSize;
 			int _Width;
 			float _GaussSamples[32];
@@ -54,7 +54,7 @@ Shader "UnityFx/Outline/HPass"
 
 				for (int k = -n; k <= n; k += 1)
 				{
-					intensity += tex2D(_MaskTex, i.uvs.xy + float2(k * TX_x, 0)).r * _GaussSamples[abs(k)];
+					intensity += UNITY_SAMPLE_TEX2D(_MaskTex, i.uvs.xy + float2(k * TX_x, 0)).r * _GaussSamples[abs(k)];
 				}
 
 				return intensity;

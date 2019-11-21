@@ -24,9 +24,9 @@ Shader "UnityFx/Outline/VPassBlend"
 			#pragma fragment frag
 			#include "UnityCG.cginc"
 
-			sampler2D _MaskTex;
+			UNITY_DECLARE_TEX2D(_MaskTex);
 			float2 _MaskTex_TexelSize;
-			sampler2D _HPassTex;
+			UNITY_DECLARE_TEX2D(_HPassTex);
 			float2 _HPassTex_TexelSize;
 			float4 _Color;
 			float _Intensity;
@@ -51,7 +51,7 @@ Shader "UnityFx/Outline/VPassBlend"
 
 			float4 frag(v2f i) : COLOR
 			{
-				if (tex2D(_MaskTex, i.uvs.xy).r > 0)
+				if (UNITY_SAMPLE_TEX2D(_MaskTex, i.uvs.xy).r > 0)
 				{
 					discard;
 				}
@@ -62,7 +62,7 @@ Shader "UnityFx/Outline/VPassBlend"
 
 				for (int k = -n; k <= _Width; k += 1)
 				{
-					intensity += tex2D(_HPassTex, i.uvs.xy + float2(0, k * TX_y)).r * _GaussSamples[abs(k)];
+					intensity += UNITY_SAMPLE_TEX2D(_HPassTex, i.uvs.xy + float2(0, k * TX_y)).r * _GaussSamples[abs(k)];
 				}
 
 				intensity = _Intensity > 99 ? step(0.01, intensity) : intensity * _Intensity;
