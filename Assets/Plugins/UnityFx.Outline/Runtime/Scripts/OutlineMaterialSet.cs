@@ -14,6 +14,10 @@ namespace UnityFx.Outline
 	{
 		#region data
 
+		private const string _renderMaterialName = "Outline - SimpleRender";
+		private const string _hPassMaterialName = "Outline - HPassRender";
+		private const string _vPassMaterialName = "Outline - VPassBlendRender";
+
 		private readonly OutlineResources _outlineResources;
 		private readonly Material _renderMaterial;
 		private readonly Material _hPassMaterial;
@@ -125,9 +129,9 @@ namespace UnityFx.Outline
 			}
 
 			_outlineResources = resources;
-			_renderMaterial = new Material(resources.RenderShader);
-			_hPassMaterial = new Material(resources.HPassShader);
-			_vPassMaterial = new Material(resources.VPassBlendShader);
+			_renderMaterial = CreateRenderMaterial(resources.RenderShader);
+			_hPassMaterial = CreateHPassMaterial(resources.HPassShader);
+			_vPassMaterial = CreateVPassMaterial(resources.VPassBlendShader);
 
 			_hPassMaterial.SetInt(WidthNameId, _width);
 			_vPassMaterial.SetInt(WidthNameId, _width);
@@ -146,8 +150,8 @@ namespace UnityFx.Outline
 
 			_outlineResources = resources;
 			_renderMaterial = renderMaterial;
-			_hPassMaterial = new Material(resources.HPassShader);
-			_vPassMaterial = new Material(resources.VPassBlendShader);
+			_hPassMaterial = CreateHPassMaterial(resources.HPassShader);
+			_vPassMaterial = CreateVPassMaterial(resources.VPassBlendShader);
 
 			_hPassMaterial.SetInt(WidthNameId, _width);
 			_vPassMaterial.SetInt(WidthNameId, _width);
@@ -175,6 +179,33 @@ namespace UnityFx.Outline
 			SetWidth(settings.OutlineWidth);
 			SetMode(settings.OutlineMode);
 			UpdateGaussSamples();
+		}
+
+		internal static Material CreateRenderMaterial(Shader shader)
+		{
+			return new Material(shader)
+			{
+				name = _renderMaterialName,
+				hideFlags = HideFlags.HideAndDontSave
+			};
+		}
+
+		internal static Material CreateHPassMaterial(Shader shader)
+		{
+			return new Material(shader)
+			{
+				name = _hPassMaterialName,
+				hideFlags = HideFlags.HideAndDontSave
+			};
+		}
+
+		internal static Material CreateVPassMaterial(Shader shader)
+		{
+			return new Material(shader)
+			{
+				name = _vPassMaterialName,
+				hideFlags = HideFlags.HideAndDontSave
+			};
 		}
 
 		#endregion

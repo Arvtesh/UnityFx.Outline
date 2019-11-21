@@ -57,7 +57,7 @@ namespace UnityFx.Outline
 		{
 			if (_renderMaterial == null)
 			{
-				_renderMaterial = new Material(RenderShader);
+				_renderMaterial = OutlineMaterialSet.CreateRenderMaterial(RenderShader);
 			}
 
 			return new OutlineMaterialSet(this, _renderMaterial);
