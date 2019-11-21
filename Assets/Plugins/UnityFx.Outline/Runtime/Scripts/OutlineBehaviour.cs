@@ -171,6 +171,8 @@ namespace UnityFx.Outline
 
 			if (_outlineResources != null && _renderers != null && (_outlineSettings.IsChanged || _commandBuffer.sizeInBytes == 0))
 			{
+				_commandBuffer.Clear();
+
 				using (var renderer = new OutlineRenderer(_commandBuffer, BuiltinRenderTextureType.CameraTarget))
 				{
 					renderer.RenderSingleObject(_renderers, _outlineSettings.OutlineMaterials);

@@ -266,6 +266,8 @@ namespace UnityFx.Outline
 		{
 			if (_outlineResources && _outlineResources.IsValid)
 			{
+				_commandBuffer.Clear();
+
 				using (var renderer = new OutlineRenderer(_commandBuffer, BuiltinRenderTextureType.CameraTarget))
 				{
 					_outlineLayers.Render(renderer, _outlineResources);

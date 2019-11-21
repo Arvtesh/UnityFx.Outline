@@ -29,7 +29,9 @@ namespace UnityFx.Outline
 
 		private readonly int _maskRtId;
 		private readonly int _hPassRtId;
-		private readonly RenderTargetIdentifier _renderTarget;
+
+		private readonly RenderTargetIdentifier _source;
+		private readonly RenderTargetIdentifier _destination;
 		private readonly CommandBuffer _commandBuffer;
 
 		private bool _disposed;
@@ -76,25 +78,34 @@ namespace UnityFx.Outline
 		/// <summary>
 		/// Initializes a new instance of the <see cref="OutlineRenderer"/> struct.
 		/// </summary>
-		public OutlineRenderer(CommandBuffer commandBuffer, BuiltinRenderTextureType dst)
-			: this(commandBuffer, new RenderTargetIdentifier(dst))
+		public OutlineRenderer(CommandBuffer commandBuffer, BuiltinRenderTextureType rt)
+			: this(commandBuffer, rt, rt)
 		{
 		}
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="OutlineRenderer"/> struct.
 		/// </summary>
-		public OutlineRenderer(CommandBuffer commandBuffer, RenderTargetIdentifier dst)
+		public OutlineRenderer(CommandBuffer commandBuffer, RenderTargetIdentifier rt)
+			: this(commandBuffer, rt, rt)
+		{
+		}
+
+		/// <summary>
+		/// Initializes a new instance of the <see cref="OutlineRenderer"/> struct.
+		/// </summary>
+		public OutlineRenderer(CommandBuffer commandBuffer, RenderTargetIdentifier src, RenderTargetIdentifier dst)
 		{
 			Debug.Assert(commandBuffer != null);
 
 			_disposed = false;
 			_maskRtId = Shader.PropertyToID("_MaskTex");
 			_hPassRtId = Shader.PropertyToID("_HPassTex");
-			_renderTarget = dst;
+
+			_source = src;
+			_destination = dst;
 
 			_commandBuffer = commandBuffer;
-			_commandBuffer.Clear();
 			_commandBuffer.BeginSample(EffectName);
 			_commandBuffer.GetTemporaryRT(_maskRtId, -1, -1, 0, FilterMode.Bilinear, RenderTextureFormat.R8);
 			_commandBuffer.GetTemporaryRT(_hPassRtId, -1, -1, 0, FilterMode.Bilinear, RenderTextureFormat.R8);
@@ -115,7 +126,24 @@ namespace UnityFx.Outline
 				throw new ArgumentNullException("materials");
 			}
 
-			_commandBuffer.SetRenderTarget(_maskRtId);
+			if (_disposed)
+			{
+				throw new ObjectDisposedException(GetType().Name);
+			}
+
+			var maskRt = new RenderTargetIdentifier(_maskRtId);
+			var hPassRt = new RenderTargetIdentifier(_hPassRtId);
+			var activeRt = new RenderTargetIdentifier(BuiltinRenderTextureType.CurrentActive);
+
+			// Set global shader parameters.
+			_commandBuffer.SetGlobalFloatArray(materials.GaussSamplesNameId, materials.GaussSamples);
+
+			// Render the object.
+#if UNITY_2018_2_OR_NEWER
+			_commandBuffer.SetRenderTarget(maskRt, RenderBufferLoadAction.DontCare, RenderBufferStoreAction.Store);
+#else
+			_commandBuffer.SetRenderTarget(maskRt);
+#endif
 			_commandBuffer.ClearRenderTarget(false, true, Color.black);
 
 			foreach (var r in renderers)
@@ -129,10 +157,21 @@ namespace UnityFx.Outline
 				}
 			}
 
-			_commandBuffer.SetGlobalFloatArray(materials.GaussSamplesNameId, materials.GaussSamples);
-			_commandBuffer.SetGlobalTexture(_maskRtId, _maskRtId);
-			_commandBuffer.Blit(_maskRtId, _hPassRtId, materials.HPassMaterial);
-			_commandBuffer.Blit(_hPassRtId, _renderTarget, materials.VPassBlendMaterial);
+			// Render H-pass.
+#if UNITY_2018_2_OR_NEWER
+			_commandBuffer.SetRenderTarget(hPassRt, RenderBufferLoadAction.DontCare, RenderBufferStoreAction.Store);
+#else
+			_commandBuffer.SetRenderTarget(hPassRt);
+#endif
+			_commandBuffer.Blit(maskRt, activeRt, materials.HPassMaterial);
+
+			// V-pass and blend.
+#if UNITY_2018_2_OR_NEWER
+			_commandBuffer.SetRenderTarget(_destination, RenderBufferLoadAction.DontCare, RenderBufferStoreAction.Store);
+#else
+			_commandBuffer.SetRenderTarget(_destination);
+#endif
+			_commandBuffer.Blit(_source, activeRt, materials.VPassBlendMaterial);
 		}
 
 		/// <summary>
@@ -150,7 +189,24 @@ namespace UnityFx.Outline
 				throw new ArgumentNullException("materials");
 			}
 
-			_commandBuffer.SetRenderTarget(_maskRtId);
+			if (_disposed)
+			{
+				throw new ObjectDisposedException(GetType().Name);
+			}
+
+			var maskRt = new RenderTargetIdentifier(_maskRtId);
+			var hPassRt = new RenderTargetIdentifier(_hPassRtId);
+			var activeRt = new RenderTargetIdentifier(BuiltinRenderTextureType.CurrentActive);
+
+			// Set global shader parameters.
+			_commandBuffer.SetGlobalFloatArray(materials.GaussSamplesNameId, materials.GaussSamples);
+
+			// Render the object.
+#if UNITY_2018_2_OR_NEWER
+			_commandBuffer.SetRenderTarget(maskRt, RenderBufferLoadAction.DontCare, RenderBufferStoreAction.Store);
+#else
+			_commandBuffer.SetRenderTarget(maskRt);
+#endif
 			_commandBuffer.ClearRenderTarget(false, true, Color.black);
 
 			if (renderer && renderer.gameObject.activeInHierarchy && renderer.enabled)
@@ -161,10 +217,21 @@ namespace UnityFx.Outline
 				}
 			}
 
-			_commandBuffer.SetGlobalFloatArray(materials.GaussSamplesNameId, materials.GaussSamples);
-			_commandBuffer.SetGlobalTexture(_maskRtId, _maskRtId);
-			_commandBuffer.Blit(_maskRtId, _hPassRtId, materials.HPassMaterial);
-			_commandBuffer.Blit(_hPassRtId, _renderTarget, materials.VPassBlendMaterial);
+			// Render H-pass.
+#if UNITY_2018_2_OR_NEWER
+			_commandBuffer.SetRenderTarget(hPassRt, RenderBufferLoadAction.DontCare, RenderBufferStoreAction.Store);
+#else
+			_commandBuffer.SetRenderTarget(hPassRt);
+#endif
+			_commandBuffer.Blit(maskRt, activeRt, materials.HPassMaterial);
+
+			// V-pass and blend.
+#if UNITY_2018_2_OR_NEWER
+			_commandBuffer.SetRenderTarget(_destination, RenderBufferLoadAction.DontCare, RenderBufferStoreAction.Store);
+#else
+			_commandBuffer.SetRenderTarget(_destination);
+#endif
+			_commandBuffer.Blit(_source, activeRt, materials.VPassBlendMaterial);
 		}
 
 		/// <summary>
