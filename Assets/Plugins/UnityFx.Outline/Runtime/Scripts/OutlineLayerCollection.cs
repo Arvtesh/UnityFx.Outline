@@ -47,7 +47,7 @@ namespace UnityFx.Outline
 		{
 			get
 			{
-				UpdateSortedLayersIdNeeded();
+				UpdateSortedLayersIfNeeded();
 				return _sortedLayers.ToArray();
 			}
 		}
@@ -57,7 +57,7 @@ namespace UnityFx.Outline
 		/// </summary>
 		public void Render(OutlineRenderer renderer, OutlineResources resources)
 		{
-			UpdateSortedLayersIdNeeded();
+			UpdateSortedLayersIfNeeded();
 
 			foreach (var layer in _sortedLayers)
 			{
@@ -330,7 +330,7 @@ namespace UnityFx.Outline
 
 		#region implementation
 
-		private void UpdateSortedLayersIdNeeded()
+		private void UpdateSortedLayersIfNeeded()
 		{
 			if (_orderChanged)
 			{
