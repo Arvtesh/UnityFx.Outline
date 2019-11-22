@@ -34,8 +34,6 @@ namespace UnityFx.Outline
 		private readonly RenderTargetIdentifier _destination;
 		private readonly CommandBuffer _commandBuffer;
 
-		private bool _disposed;
-
 		#endregion
 
 		#region interface
@@ -98,7 +96,6 @@ namespace UnityFx.Outline
 		{
 			Debug.Assert(commandBuffer != null);
 
-			_disposed = false;
 			_source = src;
 			_destination = dst;
 
@@ -123,11 +120,6 @@ namespace UnityFx.Outline
 				throw new ArgumentNullException("materials");
 			}
 
-			if (_disposed)
-			{
-				throw new ObjectDisposedException(GetType().Name);
-			}
-
 			Init(materials);
 			RenderObject(renderers, materials);
 			Blit(_maskRtId, _hPassRtId, materials.HPassMaterial);
@@ -147,11 +139,6 @@ namespace UnityFx.Outline
 			if (materials == null)
 			{
 				throw new ArgumentNullException("materials");
-			}
-
-			if (_disposed)
-			{
-				throw new ObjectDisposedException(GetType().Name);
 			}
 
 			Init(materials);
@@ -204,13 +191,9 @@ namespace UnityFx.Outline
 		/// <inheritdoc/>
 		public void Dispose()
 		{
-			if (!_disposed)
-			{
-				_disposed = true;
-				_commandBuffer.ReleaseTemporaryRT(_hPassRtId);
-				_commandBuffer.ReleaseTemporaryRT(_maskRtId);
-				_commandBuffer.EndSample(EffectName);
-			}
+			_commandBuffer.ReleaseTemporaryRT(_hPassRtId);
+			_commandBuffer.ReleaseTemporaryRT(_maskRtId);
+			_commandBuffer.EndSample(EffectName);
 		}
 
 		#endregion
@@ -265,10 +248,7 @@ namespace UnityFx.Outline
 
 			// NOTE: Have to clear render target before blitting to avoid Tile GPU perf. warnings.
 			// https://forum.unity.com/threads/rendertexture-not-working-on-mobile.484105/#post-3153721
-			if (!source.Equals(destination))
-			{
-				_commandBuffer.ClearRenderTarget(true, true, Color.clear);
-			}
+			//_commandBuffer.ClearRenderTarget(false, true, Color.clear);
 
 			// TODO: Use DrawMesh with special copy material to render one full-screen triangle instead of 2 triangles used in Blit.
 			_commandBuffer.Blit(source, BuiltinRenderTextureType.CurrentActive, mat);
