@@ -54,7 +54,7 @@ Npm package is available at [npmjs.com](https://www.npmjs.com/package/com.unityf
     }
   ],
   "dependencies": {
-    "com.unityfx.outline": "0.6.0"
+    "com.unityfx.outline": "0.7.0"
   }
 }
 ```
@@ -81,7 +81,7 @@ layer.Add(myGo);
 outlineEffect.OutlineLayers.Add(layer);
 ```
 
-This can be done at runtime or while editing a scene. If you choose to assign the script in runtime make sure `OutlineEffect.OutlineResources` is initialied. Disabling `OutlineEffect` script disables outlining for the camera (and frees all resources used).
+This can be done at runtime or while editing a scene. If you choose to assign the script in runtime make sure `OutlineEffect.OutlineResources` is initialized. Disabling `OutlineEffect` script disables outlining for the camera (and frees all resources used).
 
 Multiple `OutlineEffect` scripts can share outline layers rendered. To achieve that assign the same layer set to all `OutlineEffect` instances:
 
@@ -113,20 +113,26 @@ outlineBehaviour.OutlineIntensity = 10;
 There are a number of helper classes that can be used for writing highly customized outline implementations (if neither `OutlineBehaviour` nor `OutlineEffect` does not suit your needs).
 All outline implementations use following helpers:
 - `OutlineRenderer` is basically a wrapper around `CommandBuffer` for low-level outline rendering.
-- `OutlineMaterialSet` is a set of materials used by `OutlineRenderer` for rendering.
+- `OutlineSettings` is a set of outline settings.
 
 Using these helpers is quite easy to create new outline tools. For instance, the following code renders a blue outline around object the script is attached to in `myCamera`:
 
 ```csharp
 var commandBuffer = new CommandBuffer();
 var renderers = GetComponentsInChildren<Renderer>();
-var materials = outlineResources.CreateMaterialSet();
 
-materials.OutlineColor = Color.blue;
+// Any implementation of `IOutlineSettings` interface can be used here instead of `OutlineSettings`.
+var settings = ScriptableObject.CreateInstance<OutlineSettings>();
+
+settings.OutlineColor = Color.blue;
+settings.OutlineWidth = 12;
+
+// Get outline assets instance. In real app this usually comes from MonoBehaviour's serialized fields.
+var resources = GetMyResources();
 
 using (var renderer = new OutlineRenderer(commandBuffer, BuiltinRenderTextureType.CameraTarget))
 {
-  renderer.RenderSingleObject(renderers, materials);
+  renderer.Render(renderers, resources, settings);
 }
 
 myCamera.AddCommandBuffer(OutlineRenderer.RenderEvent, commandBuffer);
