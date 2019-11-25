@@ -25,8 +25,8 @@ Shader "UnityFx/Outline/VPassBlend"
 		{
 			HLSLPROGRAM
 
-			#pragma vertex vert
-			#pragma fragment frag
+			#pragma vertex Vert
+			#pragma fragment Frag
 			#include "UnityCG.cginc"
 
 			UNITY_DECLARE_TEX2D(_MaskTex);
@@ -44,11 +44,9 @@ Shader "UnityFx/Outline/VPassBlend"
 				float2 uvs : TEXCOORD0;
 			};
 
-			v2f vert(appdata_base v)
+			v2f Vert(appdata_base v)
 			{
 				v2f o;
-
-				//o.pos = UnityObjectToClipPos(v.vertex);
 
 				o.pos = float4(v.vertex.xy, 0.0, 1.0);
 				o.uvs = ComputeScreenPos(o.pos);
@@ -56,7 +54,7 @@ Shader "UnityFx/Outline/VPassBlend"
 				return o;
 			}
 
-			float4 frag(v2f i) : COLOR
+			float4 Frag(v2f i) : COLOR
 			{
 				if (UNITY_SAMPLE_TEX2D(_MaskTex, i.uvs.xy).r > 0)
 				{

@@ -16,8 +16,8 @@ Shader "UnityFx/Outline/RenderColor"
 		{
 			HLSLPROGRAM
 
-			#pragma vertex vert
-			#pragma fragment frag
+			#pragma vertex Vert
+			#pragma fragment Frag
 			#include "UnityCG.cginc"
 
 			struct v2f
@@ -25,14 +25,14 @@ Shader "UnityFx/Outline/RenderColor"
 				float4 pos: POSITION;
 			};
 
-			v2f vert(v2f i)
+			v2f Vert(v2f i)
 			{
 				v2f o;
 				o.pos = UnityObjectToClipPos(i.pos);
 				return o;
 			}
 
-			half4 frag(): COLOR0
+			half4 Frag(): COLOR0
 			{
 				return half4(1, 1, 1, 1);
 			}
