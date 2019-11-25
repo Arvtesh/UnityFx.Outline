@@ -5,6 +5,23 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/); this proj
 
 ## [0.7.0] - unreleased
 
+`MaterialPropertyBlock`-based rendering.
+
+### Added
+- Moved to for `MaterialPropertyBlock`-based rendering. This is in-line with Unity post processing stack and is more performant approach.
+
+### Changed
+- `IOutlineSettings` now implements `IEquatable`.
+- Changed all outline shaders to use HLSL-based macros.
+- Modified all shaders to ignore MVP vertex transform to be compatible with the new rendering model.
+- Exposed rendering APIs for `OutlineLayer` and `OutlineLayerCollection`.
+
+### Fixed
+- Fixed `TiledGPUPerformanceWarning` on mobile targets.
+
+### Removed
+- Removed `OutlineMaterialSet` class. It is not used in `MaterialPropertyBlock`-based effect rendering.
+
 ## [0.6.0] - 2019.09.26
 
 Quality of life improvements.
