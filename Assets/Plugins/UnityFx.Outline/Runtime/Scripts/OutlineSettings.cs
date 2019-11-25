@@ -27,6 +27,20 @@ namespace UnityFx.Outline
 		#endregion
 
 		#region interface
+
+		public static bool Equals(IOutlineSettings lhs, IOutlineSettings rhs)
+		{
+			if (lhs == null || rhs == null)
+			{
+				return false;
+			}
+
+			return lhs.OutlineColor == rhs.OutlineColor &&
+				lhs.OutlineWidth == rhs.OutlineWidth &&
+				lhs.OutlineMode == rhs.OutlineMode &&
+				Mathf.Approximately(lhs.OutlineIntensity, rhs.OutlineIntensity);
+		}
+
 		#endregion
 
 		#region IOutlineSettings
@@ -81,6 +95,32 @@ namespace UnityFx.Outline
 			{
 				_outlineMode = value;
 			}
+		}
+
+		#endregion
+
+		#region IEquatable
+
+		/// <inheritdoc/>
+		public bool Equals(IOutlineSettings other)
+		{
+			return Equals(this, other);
+		}
+
+		#endregion
+
+		#region Object
+
+		/// <inheritdoc/>
+		public override bool Equals(object other)
+		{
+			return Equals(this, other as IOutlineSettings);
+		}
+
+		/// <inheritdoc/>
+		public override int GetHashCode()
+		{
+			return base.GetHashCode();
 		}
 
 		#endregion

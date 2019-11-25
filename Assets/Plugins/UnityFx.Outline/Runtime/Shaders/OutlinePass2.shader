@@ -14,6 +14,11 @@ Shader "UnityFx/Outline/VPassBlend"
 
 	SubShader
 	{
+		Cull Off
+		ZWrite Off
+		ZTest Always
+		Lighting Off
+
 		Blend SrcAlpha OneMinusSrcAlpha
 
 		Pass
@@ -43,7 +48,9 @@ Shader "UnityFx/Outline/VPassBlend"
 			{
 				v2f o;
 
-				o.pos = UnityObjectToClipPos(v.vertex);
+				//o.pos = UnityObjectToClipPos(v.vertex);
+
+				o.pos = float4(v.vertex.xy, 0.0, 1.0);
 				o.uvs = ComputeScreenPos(o.pos);
 
 				return o;

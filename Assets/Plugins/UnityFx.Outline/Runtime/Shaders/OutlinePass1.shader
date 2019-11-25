@@ -40,7 +40,9 @@ Shader "UnityFx/Outline/HPass"
 			{
 				v2f o;
 
-				o.pos = UnityObjectToClipPos(v.vertex);
+				//o.pos = UnityObjectToClipPos(v.vertex);
+
+				o.pos = float4(v.vertex.xy, 0.0, 1.0);
 				o.uvs = ComputeScreenPos(o.pos);
 
 				return o;

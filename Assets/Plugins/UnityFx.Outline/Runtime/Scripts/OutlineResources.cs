@@ -12,7 +12,39 @@ namespace UnityFx.Outline
 	[CreateAssetMenu(fileName = "OutlineResources", menuName = "UnityFx/Outline/Outline Resources")]
 	public sealed class OutlineResources : ScriptableObject
 	{
+		#region data
+
 		private Material _renderMaterial;
+		private Material _hPassMaterial;
+		private Material _vPassMaterial;
+		private MaterialPropertyBlock _hPassProperties;
+		private MaterialPropertyBlock _vPassProperties;
+		private Mesh _fullscreenTriangleMesh;
+		private float[][] _gaussSmples;
+
+		#endregion
+
+		#region interface
+
+		/// <summary>
+		/// Hashed name of the outline color shader parameter.
+		/// </summary>
+		public readonly int ColorNameId = Shader.PropertyToID("_Color");
+
+		/// <summary>
+		/// Hashed name of the outline width shader parameter.
+		/// </summary>
+		public readonly int WidthNameId = Shader.PropertyToID("_Width");
+
+		/// <summary>
+		/// Hashed name of the outline intensity shader parameter.
+		/// </summary>
+		public readonly int IntensityNameId = Shader.PropertyToID("_Intensity");
+
+		/// <summary>
+		/// Hashed name of the outline width shader parameter.
+		/// </summary>
+		public readonly int GaussSamplesNameId = Shader.PropertyToID("_GaussSamples");
 
 		/// <summary>
 		/// Gets or sets a <see cref="Shader"/> that renders objects outlined with a solid while color.
@@ -25,9 +57,134 @@ namespace UnityFx.Outline
 		public Shader HPassShader;
 
 		/// <summary>
-		/// Gets or sets a <see cref="Shader"/> that renders outline around the mask, that was generated with <see cref="RenderShader"/> (pass 2).
+		/// Gets or sets a <see cref="Shader"/> that renders outline around the mask, that was generated with <see cref="RenderShader"/> and <see cref="HPassShader"/> (pass 2).
 		/// </summary>
 		public Shader VPassBlendShader;
+
+		/// <summary>
+		/// Gets a <see cref="RenderShader"/>-based material.
+		/// </summary>
+		public Material RenderMaterial
+		{
+			get
+			{
+				if (_renderMaterial == null)
+				{
+					_renderMaterial = new Material(RenderShader)
+					{
+						name = "Outline - SimpleRender",
+						hideFlags = HideFlags.HideAndDontSave
+					};
+				}
+
+				return _renderMaterial;
+			}
+		}
+
+		/// <summary>
+		/// Gets a <see cref="HPassShader"/>-based material.
+		/// </summary>
+		public Material HPassMaterial
+		{
+			get
+			{
+				if (_hPassMaterial == null)
+				{
+					_hPassMaterial = new Material(HPassShader)
+					{
+						name = "Outline - HPassRender",
+						hideFlags = HideFlags.HideAndDontSave
+					};
+				}
+
+				return _hPassMaterial;
+			}
+		}
+
+		/// <summary>
+		/// Gets a <see cref="VPassBlendShader"/>-based material.
+		/// </summary>
+		public Material VPassBlendMaterial
+		{
+			get
+			{
+				if (_vPassMaterial == null)
+				{
+					_vPassMaterial = new Material(VPassBlendShader)
+					{
+						name = "Outline - VPassBlendRender",
+						hideFlags = HideFlags.HideAndDontSave
+					};
+				}
+
+				return _vPassMaterial;
+			}
+		}
+
+		/// <summary>
+		/// Gets a <see cref="MaterialPropertyBlock"/> for <see cref="HPassMaterial"/>.
+		/// </summary>
+		public MaterialPropertyBlock HPassProperties
+		{
+			get
+			{
+				if (_hPassProperties == null)
+				{
+					_hPassProperties = new MaterialPropertyBlock();
+				}
+
+				return _hPassProperties;
+			}
+		}
+
+		/// <summary>
+		/// Gets a <see cref="MaterialPropertyBlock"/> for <see cref="VPassBlendMaterial"/>.
+		/// </summary>
+		public MaterialPropertyBlock VPassBlendProperties
+		{
+			get
+			{
+				if (_vPassProperties == null)
+				{
+					_vPassProperties = new MaterialPropertyBlock();
+				}
+
+				return _vPassProperties;
+			}
+		}
+
+		/// <summary>
+		/// Gets or sets a fullscreen triangle mesh.
+		/// </summary>
+		public Mesh FullscreenTriangleMesh
+		{
+			get
+			{
+				if (_fullscreenTriangleMesh == null)
+				{
+					_fullscreenTriangleMesh = new Mesh()
+					{
+						name = "Outline - FullscreenTriangle",
+						hideFlags = HideFlags.HideAndDontSave,
+						vertices = new Vector3[] { new Vector3(-1f, -1f, 0f), new Vector3(-1f,  3f, 0f), new Vector3( 3f, -1f, 0f) },
+						triangles = new int[] {0, 1, 2 }
+					};
+
+					_fullscreenTriangleMesh.UploadMeshData(true);
+				}
+
+				return _fullscreenTriangleMesh;
+			}
+			set
+			{
+				if (value == null)
+				{
+					throw new ArgumentNullException("FullscreenTriangleMesh");
+				}
+
+				_fullscreenTriangleMesh = value;
+			}
+		}
 
 		/// <summary>
 		/// Gets a value indicating whether the instance is in valid state.
@@ -41,6 +198,24 @@ namespace UnityFx.Outline
 		}
 
 		/// <summary>
+		/// Gets cached gauss samples for the specified outline <paramref name="width"/>.
+		/// </summary>
+		public float[] GetGaussSamples(int width)
+		{
+			if (_gaussSmples == null)
+			{
+				_gaussSmples = new float[OutlineRenderer.MaxWidth][];
+			}
+
+			if (_gaussSmples[width] == null)
+			{
+				_gaussSmples[width] = OutlineRenderer.GetGaussSamples(width, null);
+			}
+
+			return _gaussSmples[width];
+		}
+
+		/// <summary>
 		/// Resets the resources to defaults.
 		/// </summary>
 		public void ResetToDefaults()
@@ -50,17 +225,6 @@ namespace UnityFx.Outline
 			VPassBlendShader = Shader.Find("UnityFx/Outline/VPassBlend");
 		}
 
-		/// <summary>
-		/// Gets a new <see cref="OutlineMaterialSet"/> instance for the resources.
-		/// </summary>
-		public OutlineMaterialSet CreateMaterialSet()
-		{
-			if (_renderMaterial == null)
-			{
-				_renderMaterial = OutlineMaterialSet.CreateRenderMaterial(RenderShader);
-			}
-
-			return new OutlineMaterialSet(this, _renderMaterial);
-		}
+		#endregion
 	}
 }

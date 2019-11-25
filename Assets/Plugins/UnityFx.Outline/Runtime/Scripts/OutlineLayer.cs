@@ -223,7 +223,7 @@ namespace UnityFx.Outline
 				{
 					if (kvp.Key && kvp.Key.activeInHierarchy)
 					{
-						renderer.RenderSingleObject(kvp.Value, _settings.OutlineMaterials);
+						renderer.Render(kvp.Value, _settings.OutlineResources, _settings);
 					}
 				}
 			}
@@ -455,8 +455,19 @@ namespace UnityFx.Outline
 
 		#endregion
 
+		#region IEquatable
+
+		/// <inheritdoc/>
+		public bool Equals(IOutlineSettings other)
+		{
+			return OutlineSettings.Equals(this, other);
+		}
+
+		#endregion
+
 		#region Object
 
+		/// <inheritdoc/>
 		public override string ToString()
 		{
 			var text = new StringBuilder();
@@ -497,6 +508,18 @@ namespace UnityFx.Outline
 			}
 
 			return string.Format("{0}", text);
+		}
+
+		/// <inheritdoc/>
+		public override bool Equals(object other)
+		{
+			return OutlineSettings.Equals(this, other as IOutlineSettings);
+		}
+
+		/// <inheritdoc/>
+		public override int GetHashCode()
+		{
+			return base.GetHashCode();
 		}
 
 		#endregion

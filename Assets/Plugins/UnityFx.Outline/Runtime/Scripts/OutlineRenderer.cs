@@ -22,11 +22,12 @@ namespace UnityFx.Outline
 	/// 	renderer.RenderSingleObject(outlineRenderers, renderMaterial, postProcessMaterial);
 	/// }
 	/// </example>
-	/// <seealso cref="OutlineMaterialSet"/>
+	/// <seealso cref="OutlineResources"/>
 	public struct OutlineRenderer : IDisposable
 	{
 		#region data
 
+		private static readonly int _mainRtId = Shader.PropertyToID("_MainTex");
 		private static readonly int _maskRtId = Shader.PropertyToID("_MaskTex");
 		private static readonly int _hPassRtId = Shader.PropertyToID("_HPassTex");
 
@@ -41,7 +42,7 @@ namespace UnityFx.Outline
 		/// <summary>
 		/// A <see cref="CameraEvent"/> outline rendering should be assosiated with.
 		/// </summary>
-		public const CameraEvent RenderEvent = CameraEvent.AfterImageEffects;
+		public const CameraEvent RenderEvent = CameraEvent.BeforeImageEffects;
 
 		/// <summary>
 		/// Name of the outline effect.
@@ -106,45 +107,55 @@ namespace UnityFx.Outline
 		}
 
 		/// <summary>
-		/// Adds commands for rendering single outline object.
+		/// Renders outline around a single object.
 		/// </summary>
-		public void RenderSingleObject(IEnumerable<Renderer> renderers, OutlineMaterialSet materials)
+		public void Render(IEnumerable<Renderer> renderers, OutlineResources resources, IOutlineSettings settings)
 		{
 			if (renderers == null)
 			{
 				throw new ArgumentNullException("renderers");
 			}
 
-			if (materials == null)
+			if (resources == null)
 			{
-				throw new ArgumentNullException("materials");
+				throw new ArgumentNullException("resources");
 			}
 
-			Init(materials);
-			RenderObject(renderers, materials);
-			Blit(_maskRtId, _hPassRtId, materials.HPassMaterial);
-			Blit(_source, _destination, materials.VPassBlendMaterial);
+			if (settings == null)
+			{
+				throw new ArgumentNullException("settings");
+			}
+
+			Init(resources, settings);
+			RenderObject(renderers, resources.RenderMaterial);
+			RenderHPass(resources, settings);
+			RenderVPassBlend(resources, settings);
 		}
 
 		/// <summary>
-		/// Adds commands for rendering single outline object.
+		/// Renders outline around a single object.
 		/// </summary>
-		public void RenderSingleObject(Renderer renderer, OutlineMaterialSet materials)
+		public void Render(Renderer renderer, OutlineResources resources, IOutlineSettings settings)
 		{
 			if (renderer == null)
 			{
-				throw new ArgumentNullException("renderer");
+				throw new ArgumentNullException("renderers");
 			}
 
-			if (materials == null)
+			if (resources == null)
 			{
-				throw new ArgumentNullException("materials");
+				throw new ArgumentNullException("resources");
 			}
 
-			Init(materials);
-			RenderObject(renderer, materials);
-			Blit(_maskRtId, _hPassRtId, materials.HPassMaterial);
-			Blit(_source, _destination, materials.VPassBlendMaterial);
+			if (settings == null)
+			{
+				throw new ArgumentNullException("settings");
+			}
+
+			Init(resources, settings);
+			RenderObject(renderer, resources.RenderMaterial);
+			RenderHPass(resources, settings);
+			RenderVPassBlend(resources, settings);
 		}
 
 		/// <summary>
@@ -200,10 +211,13 @@ namespace UnityFx.Outline
 
 		#region implementation
 
-		private void Init(OutlineMaterialSet materials)
+		private void Init(OutlineResources resources, IOutlineSettings settings)
 		{
-			_commandBuffer.SetGlobalFloatArray(materials.GaussSamplesNameId, materials.GaussSamples);
+			_commandBuffer.SetGlobalFloatArray(resources.GaussSamplesNameId, resources.GetGaussSamples(settings.OutlineWidth));
+		}
 
+		private void RenderObject(IEnumerable<Renderer> renderers, Material mat)
+		{
 #if UNITY_2018_2_OR_NEWER
 			_commandBuffer.SetRenderTarget(_maskRtId, RenderBufferLoadAction.DontCare, RenderBufferStoreAction.Store);
 #else
@@ -211,47 +225,85 @@ namespace UnityFx.Outline
 #endif
 			_commandBuffer.ClearRenderTarget(false, true, Color.clear);
 
-		}
-
-		private void RenderObject(IEnumerable<Renderer> renderers, OutlineMaterialSet materials)
-		{
 			foreach (var r in renderers)
 			{
 				if (r && r.enabled && r.gameObject.activeInHierarchy)
 				{
 					for (var j = 0; j < r.sharedMaterials.Length; ++j)
 					{
-						_commandBuffer.DrawRenderer(r, materials.RenderMaterial, j);
+						_commandBuffer.DrawRenderer(r, mat, j);
 					}
 				}
 			}
 		}
 
-		private void RenderObject(Renderer renderer, OutlineMaterialSet materials)
+		private void RenderObject(Renderer renderer, Material mat)
 		{
+#if UNITY_2018_2_OR_NEWER
+			_commandBuffer.SetRenderTarget(_maskRtId, RenderBufferLoadAction.DontCare, RenderBufferStoreAction.Store);
+#else
+			_commandBuffer.SetRenderTarget(_maskRtId);
+#endif
+			_commandBuffer.ClearRenderTarget(false, true, Color.clear);
+
 			if (renderer && renderer.gameObject.activeInHierarchy && renderer.enabled)
 			{
 				for (var i = 0; i < renderer.sharedMaterials.Length; ++i)
 				{
-					_commandBuffer.DrawRenderer(renderer, materials.RenderMaterial, i);
+					_commandBuffer.DrawRenderer(renderer, mat, i);
 				}
 			}
 		}
 
-		private void Blit(RenderTargetIdentifier source, RenderTargetIdentifier destination, Material mat)
+		private void RenderHPass(OutlineResources resources, IOutlineSettings settings)
 		{
+			// Setup shader parameter overrides.
+			var props = resources.HPassProperties;
+			props.SetFloat(resources.WidthNameId, settings.OutlineWidth);
+
+			// Set source texture as _MainTex to match Blit behavior.
+			_commandBuffer.SetGlobalTexture(_mainRtId, _maskRtId);
+
+			// Set destination texture as render target.
 #if UNITY_2018_2_OR_NEWER
-			_commandBuffer.SetRenderTarget(destination, RenderBufferLoadAction.DontCare, RenderBufferStoreAction.Store);
+			_commandBuffer.SetRenderTarget(_hPassRtId, RenderBufferLoadAction.DontCare, RenderBufferStoreAction.Store);
 #else
-			_commandBuffer.SetRenderTarget(destination);
+			_commandBuffer.SetRenderTarget(_hPassRtId);
 #endif
 
-			// NOTE: Have to clear render target before blitting to avoid Tile GPU perf. warnings.
-			// https://forum.unity.com/threads/rendertexture-not-working-on-mobile.484105/#post-3153721
-			//_commandBuffer.ClearRenderTarget(false, true, Color.clear);
+			// Blit fullscreen triangle.
+			_commandBuffer.DrawMesh(resources.FullscreenTriangleMesh, Matrix4x4.identity, resources.HPassMaterial, 0, 0, props);
+		}
 
-			// TODO: Use DrawMesh with special copy material to render one full-screen triangle instead of 2 triangles used in Blit.
-			_commandBuffer.Blit(source, BuiltinRenderTextureType.CurrentActive, mat);
+		private void RenderVPassBlend(OutlineResources resources, IOutlineSettings settings)
+		{
+			// Setup shader parameter overrides.
+			var props = resources.VPassBlendProperties;
+
+			props.SetFloat(resources.WidthNameId, settings.OutlineWidth);
+			props.SetColor(resources.ColorNameId, settings.OutlineColor);
+
+			if (settings.OutlineMode == OutlineMode.Solid)
+			{
+				props.SetFloat(resources.IntensityNameId, SolidIntensity);
+			}
+			else
+			{
+				props.SetFloat(resources.IntensityNameId, settings.OutlineIntensity);
+			}
+
+			// Set source texture as _MainTex to match Blit behavior.
+			_commandBuffer.SetGlobalTexture(_mainRtId, _source);
+
+			// Set destination texture as render target.
+#if UNITY_2018_2_OR_NEWER
+			_commandBuffer.SetRenderTarget(_destination, RenderBufferLoadAction.DontCare, RenderBufferStoreAction.Store);
+#else
+			_commandBuffer.SetRenderTarget(_destination);
+#endif
+
+			// Blit fullscreen triangle.
+			_commandBuffer.DrawMesh(resources.FullscreenTriangleMesh, Matrix4x4.identity, resources.VPassBlendMaterial, 0, 0, props);
 		}
 
 		#endregion
