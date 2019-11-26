@@ -22,8 +22,9 @@ Supported outline parameters are:
 - Intensity (for blurred outlines).
 
 Supported platforms:
-- Windows standalone;
-- More platforms to test.
+- Windows/Mac standalone;
+- Android;
+- iOS.
 
 Please see [CHANGELOG](CHANGELOG.md) for information on recent changes.
 
@@ -132,11 +133,43 @@ var resources = GetMyResources();
 
 using (var renderer = new OutlineRenderer(commandBuffer, BuiltinRenderTextureType.CameraTarget))
 {
-  renderer.Render(renderers, resources, settings);
+	renderer.Render(renderers, resources, settings);
 }
 
 myCamera.AddCommandBuffer(OutlineRenderer.RenderEvent, commandBuffer);
 ```
+
+### Integration with Unity post processing.
+
+The outline effect can easily be added to [Post Processing stack v2](https://github.com/Unity-Technologies/PostProcessing/tree/v2). A minimal integration example is shown below:
+```csharp
+using System;
+using UnityEngine;
+using UnityEngine.Rendering.PostProcessing;
+using UnityFx.Outline;
+
+[Serializable]
+[PostProcess(typeof(OutlineEffectRenderer), PostProcessEvent.BeforeStack, "MyOutline", false)]
+public sealed class Outline : PostProcessEffectSettings
+{
+	public OutlineResources OutlineResources;
+	public OutlineLayers OutlineLayers;
+}
+
+public sealed class OutlineEffectRenderer : PostProcessEffectRenderer<Outline>
+{
+	public override void Render(PostProcessRenderContext context)
+	{
+		using (var renderer = new OutlineRenderer(context.command, context.source, context.destination))
+		{
+			settings.OutlineLayers.Render(renderer, settings.OutlineResources);
+		}
+	}
+}
+```
+For the sake of simplicity the sample does not include any kind of error checking and no editor integration provided. In real world app the `Outline` class should expose its data to Unity editor either via custom inspector or using parameter overrides. Also, there are quite a few optimizations missing (for example, resusing `RuntimeUtilities.fullscreenTriangle` value as `OutlineResources.FullscreenTriangleMesh`).
+
+More info on writing custom post processing effects can be found [here](https://docs.unity3d.com/Packages/com.unity.postprocessing@2.2/manual/Writing-Custom-Effects.html).
 
 ## Motivation
 The project was initially created to help author with his [Unity3d](https://unity3d.com) projects. There are not many reusable open-source examples of it, so here it is. Hope it will be useful for someone.
