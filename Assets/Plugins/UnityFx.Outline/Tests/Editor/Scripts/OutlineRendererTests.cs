@@ -40,8 +40,8 @@ namespace UnityFx.Outline
 		[Test]
 		public void RenderSingleObject_ThrowsIfNullArguments()
 		{
-			Assert.Throws<ArgumentNullException>(() => _renderer.RenderSingleObject(default(IList<Renderer>), null));
-			Assert.Throws<ArgumentNullException>(() => _renderer.RenderSingleObject(default(Renderer), null));
+			Assert.Throws<ArgumentNullException>(() => _renderer.Render(default(IList<Renderer>), null, null));
+			Assert.Throws<ArgumentNullException>(() => _renderer.Render(default(Renderer), null, null));
 		}
 	}
 }

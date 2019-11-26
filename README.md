@@ -5,7 +5,8 @@ Channel | UnityFx.Outline |
 Github | [![GitHub release](https://img.shields.io/github/release/Arvtesh/UnityFx.Outline.svg?logo=github)](https://github.com/Arvtesh/UnityFx.Outline/releases)
 Npm | [![Npm release](https://img.shields.io/npm/v/com.unityfx.outline.svg)](https://www.npmjs.com/package/com.unityfx.outline) ![npm](https://img.shields.io/npm/dt/com.unityfx.outline)
 
-**Requires Unity 2017 or higher.**
+**Requires Unity 2017 or higher.**<br/>
+**Compatible with [Unity Post-processing Stack v2](https://github.com/Unity-Technologies/PostProcessing/tree/v2).**
 
 ## Synopsis
 ![Outline demo](Docs/OutlineSamples.png "Outline demo")
@@ -13,7 +14,7 @@ Npm | [![Npm release](https://img.shields.io/npm/v/com.unityfx.outline.svg)](htt
 
 *UnityFx.Outline* implements configurable per-object and per-camera outlines. Both solid and blurred outline modes are supported (Gauss blur). The outlines can be easily customized either through scripts or with Unity editor (both in edit-time or runtime).
 
-Implementation is based on Unity [command buffers](https://docs.unity3d.com/ScriptReference/Rendering.CommandBuffer.html), does not require putting objects into layers and has no dependencies.
+Implementation is based on Unity [command buffers](https://docs.unity3d.com/ScriptReference/Rendering.CommandBuffer.html), compatible with [Unity Post-processing Stack v2](https://github.com/Unity-Technologies/PostProcessing/tree/v2), extendable and has no external dependencies.
 
 Supported outline parameters are:
 - Color;
@@ -22,8 +23,9 @@ Supported outline parameters are:
 - Intensity (for blurred outlines).
 
 Supported platforms:
-- Windows standalone;
-- More platforms to test.
+- Windows/Mac standalone;
+- Android;
+- iOS.
 
 Please see [CHANGELOG](CHANGELOG.md) for information on recent changes.
 
@@ -54,7 +56,7 @@ Npm package is available at [npmjs.com](https://www.npmjs.com/package/com.unityf
     }
   ],
   "dependencies": {
-    "com.unityfx.outline": "0.6.0"
+    "com.unityfx.outline": "0.7.0"
   }
 }
 ```
@@ -81,7 +83,7 @@ layer.Add(myGo);
 outlineEffect.OutlineLayers.Add(layer);
 ```
 
-This can be done at runtime or while editing a scene. If you choose to assign the script in runtime make sure `OutlineEffect.OutlineResources` is initialied. Disabling `OutlineEffect` script disables outlining for the camera (and frees all resources used).
+This can be done at runtime or while editing a scene. If you choose to assign the script in runtime make sure `OutlineEffect.OutlineResources` is initialized. Disabling `OutlineEffect` script disables outlining for the camera (and frees all resources used).
 
 Multiple `OutlineEffect` scripts can share outline layers rendered. To achieve that assign the same layer set to all `OutlineEffect` instances:
 
@@ -113,24 +115,62 @@ outlineBehaviour.OutlineIntensity = 10;
 There are a number of helper classes that can be used for writing highly customized outline implementations (if neither `OutlineBehaviour` nor `OutlineEffect` does not suit your needs).
 All outline implementations use following helpers:
 - `OutlineRenderer` is basically a wrapper around `CommandBuffer` for low-level outline rendering.
-- `OutlineMaterialSet` is a set of materials used by `OutlineRenderer` for rendering.
+- `OutlineSettings` is a set of outline settings.
 
 Using these helpers is quite easy to create new outline tools. For instance, the following code renders a blue outline around object the script is attached to in `myCamera`:
 
 ```csharp
 var commandBuffer = new CommandBuffer();
 var renderers = GetComponentsInChildren<Renderer>();
-var materials = outlineResources.CreateMaterialSet();
 
-materials.OutlineColor = Color.blue;
+// Any implementation of `IOutlineSettings` interface can be used here instead of `OutlineSettings`.
+var settings = ScriptableObject.CreateInstance<OutlineSettings>();
+
+settings.OutlineColor = Color.blue;
+settings.OutlineWidth = 12;
+
+// Get outline assets instance. In real app this usually comes from MonoBehaviour's serialized fields.
+var resources = GetMyResources();
 
 using (var renderer = new OutlineRenderer(commandBuffer, BuiltinRenderTextureType.CameraTarget))
 {
-  renderer.RenderSingleObject(renderers, materials);
+  renderer.Render(renderers, resources, settings);
 }
 
 myCamera.AddCommandBuffer(OutlineRenderer.RenderEvent, commandBuffer);
 ```
+
+### Integration with Unity post-processing.
+
+The outline effect can easily be added to [Post-processing Stack v2](https://github.com/Unity-Technologies/PostProcessing/tree/v2). A minimal integration example is shown below:
+```csharp
+using System;
+using UnityEngine;
+using UnityEngine.Rendering.PostProcessing;
+using UnityFx.Outline;
+
+[Serializable]
+[PostProcess(typeof(OutlineEffectRenderer), PostProcessEvent.BeforeStack, "MyOutline", false)]
+public sealed class Outline : PostProcessEffectSettings
+{
+  public OutlineResources OutlineResources;
+  public OutlineLayers OutlineLayers;
+}
+
+public sealed class OutlineEffectRenderer : PostProcessEffectRenderer<Outline>
+{
+  public override void Render(PostProcessRenderContext context)
+  {
+    using (var renderer = new OutlineRenderer(context.command, context.source, context.destination))
+    {
+      settings.OutlineLayers.Render(renderer, settings.OutlineResources);
+    }
+  }
+}
+```
+For the sake of simplicity the sample does not include any kind of error checking and no editor integration provided. In real world app the `Outline` class should expose its data to Unity editor either via custom inspector or using parameter overrides. Also, there are quite a few optimizations missing (for example, resusing `RuntimeUtilities.fullscreenTriangle` value as `OutlineResources.FullscreenTriangleMesh`).
+
+More info on writing custom post processing effects can be found [here](https://docs.unity3d.com/Packages/com.unity.postprocessing@2.2/manual/Writing-Custom-Effects.html).
 
 ## Motivation
 The project was initially created to help author with his [Unity3d](https://unity3d.com) projects. There are not many reusable open-source examples of it, so here it is. Hope it will be useful for someone.
@@ -145,6 +185,7 @@ Please see the links below for extended information on the product:
 - [A great outline tutorial](https://willweissman.wordpress.com/tutorials/shaders/unity-shaderlab-object-outlines/).
 - [Command buffers tutorial](https://lindenreid.wordpress.com/2018/09/13/using-command-buffers-in-unity-selective-bloom/).
 - [Gaussian blur tutorial](https://www.ronja-tutorials.com/2018/08/27/postprocessing-blur.html).
+- [Excellent post-processing tutorial](https://catlikecoding.com/unity/tutorials/scriptable-render-pipeline/post-processing/).
 
 ## Contributing
 Please see [contributing guide](.github/CONTRIBUTING.md) for details.

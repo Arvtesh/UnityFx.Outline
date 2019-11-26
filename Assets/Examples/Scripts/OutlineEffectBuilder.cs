@@ -47,6 +47,14 @@ namespace UnityFx.Outline.Examples
 					_outlineEffect.OutlineLayers.Add(_outlineLayer);
 				}
 			}
+
+			foreach (var go in _outlineGos)
+			{
+				if (go)
+				{
+					_outlineLayer.Add(go);
+				}
+			}
 		}
 
 		private void OnValidate()

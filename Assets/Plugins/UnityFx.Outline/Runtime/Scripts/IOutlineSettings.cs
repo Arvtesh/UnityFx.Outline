@@ -9,7 +9,7 @@ namespace UnityFx.Outline
 	/// <summary>
 	/// Defines outline settings.
 	/// </summary>
-	public interface IOutlineSettings
+	public interface IOutlineSettings : IEquatable<IOutlineSettings>
 	{
 		/// <summary>
 		/// Gets or sets outline color.

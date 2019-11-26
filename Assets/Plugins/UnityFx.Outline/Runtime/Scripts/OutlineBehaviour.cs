@@ -171,9 +171,11 @@ namespace UnityFx.Outline
 
 			if (_outlineResources != null && _renderers != null && (_outlineSettings.IsChanged || _commandBuffer.sizeInBytes == 0))
 			{
+				_commandBuffer.Clear();
+
 				using (var renderer = new OutlineRenderer(_commandBuffer, BuiltinRenderTextureType.CameraTarget))
 				{
-					renderer.RenderSingleObject(_renderers, _outlineSettings.OutlineMaterials);
+					renderer.Render(_renderers, _outlineSettings.OutlineResources, _outlineSettings);
 				}
 
 				_outlineSettings.AcceptChanges();
@@ -293,6 +295,16 @@ namespace UnityFx.Outline
 			{
 				_outlineSettings.OutlineMode = value;
 			}
+		}
+
+		#endregion
+
+		#region IEquatable
+
+		/// <inheritdoc/>
+		public bool Equals(IOutlineSettings other)
+		{
+			return OutlineSettings.Equals(_outlineSettings, other);
 		}
 
 		#endregion

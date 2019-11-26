@@ -3,6 +3,26 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/); this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [0.7.0] - 2019.11.26
+
+`MaterialPropertyBlock`-based rendering and [Unity Post-processing Stack v2](https://github.com/Unity-Technologies/PostProcessing/tree/v2) compatibility.
+
+### Added
+- Moved to for `MaterialPropertyBlock`-based rendering. This is in-line with Unity post-processing Stack and is more performant approach.
+- Significant optimizations made to `OutlineRenderer`.
+
+### Changed
+- `IOutlineSettings` now implements `IEquatable`.
+- Changed all outline shaders to use HLSL-based macros.
+- Modified all shaders to ignore MVP vertex transform to be compatible with the new rendering model.
+- Exposed rendering APIs for `OutlineLayer` and `OutlineLayerCollection`.
+
+### Fixed
+- Fixed `TiledGPUPerformanceWarning` on mobile targets.
+
+### Removed
+- Removed `OutlineMaterialSet` class. It is not used in `MaterialPropertyBlock`-based effect rendering.
+
 ## [0.6.0] - 2019.09.26
 
 Quality of life improvements.

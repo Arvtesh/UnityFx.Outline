@@ -12,19 +12,20 @@ Shader "UnityFx/Outline/HPass"
 
 	SubShader
 	{
+		Cull Off
 		ZWrite Off
 		ZTest Always
 		Lighting Off
 
 		Pass
 		{
-			CGPROGRAM
+			HLSLPROGRAM
 
-			#pragma vertex vert
-			#pragma fragment frag
+			#pragma vertex Vert
+			#pragma fragment Frag
 			#include "UnityCG.cginc"
 
-			sampler2D _MaskTex;
+			UNITY_DECLARE_TEX2D(_MaskTex);
 			float2 _MaskTex_TexelSize;
 			int _Width;
 			float _GaussSamples[32];
@@ -35,17 +36,17 @@ Shader "UnityFx/Outline/HPass"
 				float2 uvs : TEXCOORD0;
 			};
 
-			v2f vert(appdata_base v)
+			v2f Vert(appdata_base v)
 			{
 				v2f o;
 
-				o.pos = UnityObjectToClipPos(v.vertex);
+				o.pos = float4(v.vertex.xy, 0.0, 1.0);
 				o.uvs = ComputeScreenPos(o.pos);
 
 				return o;
 			}
 
-			float frag(v2f i) : COLOR
+			float Frag(v2f i) : COLOR
 			{
 				float TX_x = _MaskTex_TexelSize.x;
 				float intensity;
@@ -53,13 +54,13 @@ Shader "UnityFx/Outline/HPass"
 
 				for (int k = -n; k <= n; k += 1)
 				{
-					intensity += tex2D(_MaskTex, i.uvs.xy + float2(k * TX_x, 0)).r * _GaussSamples[abs(k)];
+					intensity += UNITY_SAMPLE_TEX2D(_MaskTex, i.uvs.xy + float2(k * TX_x, 0)).r * _GaussSamples[abs(k)];
 				}
 
 				return intensity;
 			}
 
-			ENDCG
+			ENDHLSL
 		}
 	}
 }
