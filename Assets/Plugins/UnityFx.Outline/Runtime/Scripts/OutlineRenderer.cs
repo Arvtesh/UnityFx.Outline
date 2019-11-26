@@ -299,7 +299,7 @@ namespace UnityFx.Outline
 
 		private void Init(OutlineResources resources, IOutlineSettings settings)
 		{
-			_commandBuffer.SetGlobalFloatArray(resources.GaussSamplesNameId, resources.GetGaussSamples(settings.OutlineWidth));
+			_commandBuffer.SetGlobalFloatArray(resources.GaussSamplesId, resources.GetGaussSamples(settings.OutlineWidth));
 		}
 
 		private void RenderObject(IEnumerable<Renderer> renderers, Material mat)
@@ -345,7 +345,7 @@ namespace UnityFx.Outline
 		{
 			// Setup shader parameter overrides.
 			var props = resources.HPassProperties;
-			props.SetFloat(resources.WidthNameId, settings.OutlineWidth);
+			props.SetFloat(resources.WidthId, settings.OutlineWidth);
 
 			// Set source texture as _MainTex to match Blit behavior.
 			_commandBuffer.SetGlobalTexture(_mainRtId, _maskRtId);
@@ -366,16 +366,16 @@ namespace UnityFx.Outline
 			// Setup shader parameter overrides.
 			var props = resources.VPassBlendProperties;
 
-			props.SetFloat(resources.WidthNameId, settings.OutlineWidth);
-			props.SetColor(resources.ColorNameId, settings.OutlineColor);
+			props.SetFloat(resources.WidthId, settings.OutlineWidth);
+			props.SetColor(resources.ColorId, settings.OutlineColor);
 
 			if (settings.OutlineMode == OutlineMode.Solid)
 			{
-				props.SetFloat(resources.IntensityNameId, SolidIntensity);
+				props.SetFloat(resources.IntensityId, SolidIntensity);
 			}
 			else
 			{
-				props.SetFloat(resources.IntensityNameId, settings.OutlineIntensity);
+				props.SetFloat(resources.IntensityId, settings.OutlineIntensity);
 			}
 
 			// Set source texture as _MainTex to match Blit behavior.

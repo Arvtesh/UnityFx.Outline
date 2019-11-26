@@ -9,6 +9,7 @@ namespace UnityFx.Outline
 	/// <summary>
 	/// This asset is used to store references to shaders and other resources needed at runtime without having to use a Resources folder.
 	/// </summary>
+	/// <seealso cref="OutlineRenderer"/>
 	[CreateAssetMenu(fileName = "OutlineResources", menuName = "UnityFx/Outline/Outline Resources")]
 	public sealed class OutlineResources : ScriptableObject
 	{
@@ -27,24 +28,24 @@ namespace UnityFx.Outline
 		#region interface
 
 		/// <summary>
-		/// Hashed name of the outline color shader parameter.
+		/// Hashed name of _Color shader parameter.
 		/// </summary>
-		public readonly int ColorNameId = Shader.PropertyToID("_Color");
+		public readonly int ColorId = Shader.PropertyToID("_Color");
 
 		/// <summary>
-		/// Hashed name of the outline width shader parameter.
+		/// Hashed name of _Width shader parameter.
 		/// </summary>
-		public readonly int WidthNameId = Shader.PropertyToID("_Width");
+		public readonly int WidthId = Shader.PropertyToID("_Width");
 
 		/// <summary>
-		/// Hashed name of the outline intensity shader parameter.
+		/// Hashed name of _Intensity shader parameter.
 		/// </summary>
-		public readonly int IntensityNameId = Shader.PropertyToID("_Intensity");
+		public readonly int IntensityId = Shader.PropertyToID("_Intensity");
 
 		/// <summary>
-		/// Hashed name of the outline width shader parameter.
+		/// Hashed name of _GaussSamples shader parameter.
 		/// </summary>
-		public readonly int GaussSamplesNameId = Shader.PropertyToID("_GaussSamples");
+		public readonly int GaussSamplesId = Shader.PropertyToID("_GaussSamples");
 
 		/// <summary>
 		/// Gets or sets a <see cref="Shader"/> that renders objects outlined with a solid while color.
