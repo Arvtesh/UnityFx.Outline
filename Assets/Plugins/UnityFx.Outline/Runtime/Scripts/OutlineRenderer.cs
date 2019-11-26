@@ -9,17 +9,53 @@ using UnityEngine.Rendering;
 namespace UnityFx.Outline
 {
 	/// <summary>
-	/// Helper low-level class for building outline <see cref="CommandBuffer"/>.
+	/// Helper class for outline rendering with <see cref="CommandBuffer"/>.
 	/// </summary>
 	/// <remarks>
-	/// This class is used by higher level outline implementations (<see cref="OutlineEffect"/> and <see cref="OutlineBehaviour"/>).
-	/// It implements <see cref="IDisposable"/> to be used inside <see langword="using"/> block as shown in the code sample. Disposing
-	/// <see cref="OutlineRenderer"/> does not dispose the <see cref="CommandBuffer"/>.
+	/// <para>The class can be used on its own or as part of a higher level systems. It is used
+	/// by higher level outline implementations (<see cref="OutlineEffect"/> and
+	/// <see cref="OutlineBehaviour"/>). It is fully compatible with Unity post processing stack as well.</para>
+	/// <para>The class implements <see cref="IDisposable"/> to be used inside <see langword="using"/>
+	/// block as shown in the code samples. Disposing <see cref="OutlineRenderer"/> does not dispose
+	/// the corresponding <see cref="CommandBuffer"/>.</para>
+	/// <para>Command buffer is not cleared before rendering. It is user responsibility to do so if needed.</para>
 	/// </remarks>
 	/// <example>
+	/// var commandBuffer = new CommandBuffer();
+	/// 
 	/// using (var renderer = new OutlineRenderer(commandBuffer, BuiltinRenderTextureType.CameraTarget))
 	/// {
-	/// 	renderer.RenderSingleObject(outlineRenderers, renderMaterial, postProcessMaterial);
+	/// 	renderer.Render(renderers, resources, settings);
+	/// }
+	///
+	/// camera.AddCommandBuffer(CameraEvent.BeforeImageEffects, commandBuffer);
+	/// </example>
+	/// <example>
+	/// [Preserve]
+	/// public class OutlineEffectRenderer : PostProcessEffectRenderer<Outline>
+	/// {
+	/// 	public override void Init()
+	/// 	{
+	/// 		base.Init();
+	///
+	/// 		// Reuse fullscreen triangle mesh from PostProcessing (do not create own).
+	/// 		settings.OutlineResources.FullscreenTriangleMesh = RuntimeUtilities.fullscreenTriangle;
+	/// 	}
+	///
+	/// 	public override void Render(PostProcessRenderContext context)
+	/// 	{
+	/// 		var resources = settings.OutlineResources;
+	/// 		var layers = settings.OutlineLayers;
+	///
+	/// 		if (resources && resources.IsValid && layers)
+	/// 		{
+	/// 			// No need to setup property sheet parameters, all the rendering staff is handled by the OutlineRenderer.
+	/// 			using (var renderer = new OutlineRenderer(context.command, context.source, context.destination))
+	/// 			{
+	/// 				layers.Render(renderer, resources);
+	/// 			}
+	/// 		}
+	/// 	}
 	/// }
 	/// </example>
 	/// <seealso cref="OutlineResources"/>
@@ -40,7 +76,7 @@ namespace UnityFx.Outline
 		#region interface
 
 		/// <summary>
-		/// A <see cref="CameraEvent"/> outline rendering should be assosiated with.
+		/// A default <see cref="CameraEvent"/> outline rendering should be assosiated with.
 		/// </summary>
 		public const CameraEvent RenderEvent = CameraEvent.BeforeImageEffects;
 
@@ -52,31 +88,42 @@ namespace UnityFx.Outline
 		/// <summary>
 		/// Minimum value of outline width parameter.
 		/// </summary>
+		/// <seealso cref="MaxWidth"/>
 		public const int MinWidth = 1;
 
 		/// <summary>
 		/// Maximum value of outline width parameter.
 		/// </summary>
+		/// <seealso cref="MinWidth"/>
 		public const int MaxWidth = 32;
 
 		/// <summary>
 		/// Minimum value of outline intensity parameter.
 		/// </summary>
+		/// <seealso cref="MaxIntensity"/>
+		/// <seealso cref="SolidIntensity"/>
 		public const int MinIntensity = 1;
 
 		/// <summary>
 		/// Maximum value of outline intensity parameter.
 		/// </summary>
+		/// <seealso cref="MinIntensity"/>
+		/// <seealso cref="SolidIntensity"/>
 		public const int MaxIntensity = 64;
 
 		/// <summary>
 		/// Value of outline intensity parameter that is treated as solid fill.
 		/// </summary>
+		/// <seealso cref="MinIntensity"/>
+		/// <seealso cref="MaxIntensity"/>
 		public const int SolidIntensity = 100;
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="OutlineRenderer"/> struct.
 		/// </summary>
+		/// <param name="commandBuffer">A <see cref="CommandBuffer"/> to render the effect to. It should be cleared manually (if needed) before passing to this method.</param>
+		/// <param name="rt">Render target.</param>
+		/// <exception cref="ArgumentNullException">Thrown if <paramref name="commandBuffer"/> is <see langword="null"/>.</exception>
 		public OutlineRenderer(CommandBuffer commandBuffer, BuiltinRenderTextureType rt)
 			: this(commandBuffer, rt, rt)
 		{
@@ -85,6 +132,9 @@ namespace UnityFx.Outline
 		/// <summary>
 		/// Initializes a new instance of the <see cref="OutlineRenderer"/> struct.
 		/// </summary>
+		/// <param name="commandBuffer">A <see cref="CommandBuffer"/> to render the effect to. It should be cleared manually (if needed) before passing to this method.</param>
+		/// <param name="rt">Render target.</param>
+		/// <exception cref="ArgumentNullException">Thrown if <paramref name="commandBuffer"/> is <see langword="null"/>.</exception>
 		public OutlineRenderer(CommandBuffer commandBuffer, RenderTargetIdentifier rt)
 			: this(commandBuffer, rt, rt)
 		{
@@ -93,9 +143,16 @@ namespace UnityFx.Outline
 		/// <summary>
 		/// Initializes a new instance of the <see cref="OutlineRenderer"/> struct.
 		/// </summary>
+		/// <param name="commandBuffer">A <see cref="CommandBuffer"/> to render the effect to. It should be cleared manually (if needed) before passing to this method.</param>
+		/// <param name="src">Source image. Can be the same as <paramref name="dst"/>.</param>
+		/// <param name="dst">Render target.</param>
+		/// <exception cref="ArgumentNullException">Thrown if <paramref name="commandBuffer"/> is <see langword="null"/>.</exception>
 		public OutlineRenderer(CommandBuffer commandBuffer, RenderTargetIdentifier src, RenderTargetIdentifier dst)
 		{
-			Debug.Assert(commandBuffer != null);
+			if (commandBuffer == null)
+			{
+				throw new ArgumentNullException("commandBuffer");
+			}
 
 			_source = src;
 			_destination = dst;
@@ -135,6 +192,10 @@ namespace UnityFx.Outline
 		/// <summary>
 		/// Renders outline around a single object.
 		/// </summary>
+		/// <param name="renderer">A <see cref="Renderer"/> representing an object to be outlined.</param>
+		/// <param name="resources">Outline resources.</param>
+		/// <param name="settings">Outline settings.</param>
+		/// <exception cref="ArgumentNullException">Thrown if any of the arguments is <see langword="null"/>.</exception>
 		public void Render(Renderer renderer, OutlineResources resources, IOutlineSettings settings)
 		{
 			if (renderer == null)
@@ -199,7 +260,9 @@ namespace UnityFx.Outline
 
 		#region IDisposable
 
-		/// <inheritdoc/>
+		/// <summary>
+		/// Finalizes the effect rendering and releases temporary textures used. Should only be called once.
+		/// </summary>
 		public void Dispose()
 		{
 			_commandBuffer.ReleaseTemporaryRT(_hPassRtId);
