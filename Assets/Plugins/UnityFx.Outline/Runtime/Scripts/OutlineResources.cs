@@ -178,11 +178,6 @@ namespace UnityFx.Outline
 			}
 			set
 			{
-				if (value == null)
-				{
-					throw new ArgumentNullException("FullscreenTriangleMesh");
-				}
-
 				_fullscreenTriangleMesh = value;
 			}
 		}

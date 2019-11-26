@@ -3,12 +3,13 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/); this project adheres to [Semantic Versioning](http://semver.org/).
 
-## [0.7.0] - unreleased
+## [0.7.0] - 2019.11.26
 
-`MaterialPropertyBlock`-based rendering.
+`MaterialPropertyBlock`-based rendering and [Unity Post-processing Stack v2](https://github.com/Unity-Technologies/PostProcessing/tree/v2) compatibility.
 
 ### Added
-- Moved to for `MaterialPropertyBlock`-based rendering. This is in-line with Unity post processing stack and is more performant approach.
+- Moved to for `MaterialPropertyBlock`-based rendering. This is in-line with Unity post-processing Stack and is more performant approach.
+- Significant optimizations made to `OutlineRenderer`.
 
 ### Changed
 - `IOutlineSettings` now implements `IEquatable`.
