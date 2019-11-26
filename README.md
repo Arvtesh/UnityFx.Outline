@@ -5,7 +5,8 @@ Channel | UnityFx.Outline |
 Github | [![GitHub release](https://img.shields.io/github/release/Arvtesh/UnityFx.Outline.svg?logo=github)](https://github.com/Arvtesh/UnityFx.Outline/releases)
 Npm | [![Npm release](https://img.shields.io/npm/v/com.unityfx.outline.svg)](https://www.npmjs.com/package/com.unityfx.outline) ![npm](https://img.shields.io/npm/dt/com.unityfx.outline)
 
-**Requires Unity 2017 or higher.**
+**Requires Unity 2017 or higher.**<br/>
+**Compatible with [Unity Post-processing Stack v2](https://github.com/Unity-Technologies/PostProcessing/tree/v2).**
 
 ## Synopsis
 ![Outline demo](Docs/OutlineSamples.png "Outline demo")
@@ -13,7 +14,7 @@ Npm | [![Npm release](https://img.shields.io/npm/v/com.unityfx.outline.svg)](htt
 
 *UnityFx.Outline* implements configurable per-object and per-camera outlines. Both solid and blurred outline modes are supported (Gauss blur). The outlines can be easily customized either through scripts or with Unity editor (both in edit-time or runtime).
 
-Implementation is based on Unity [command buffers](https://docs.unity3d.com/ScriptReference/Rendering.CommandBuffer.html), does not require putting objects into layers and has no dependencies.
+Implementation is based on Unity [command buffers](https://docs.unity3d.com/ScriptReference/Rendering.CommandBuffer.html), compatible with [Unity Post-processing Stack v2](https://github.com/Unity-Technologies/PostProcessing/tree/v2), extendable and has no external dependencies.
 
 Supported outline parameters are:
 - Color;
@@ -139,9 +140,9 @@ using (var renderer = new OutlineRenderer(commandBuffer, BuiltinRenderTextureTyp
 myCamera.AddCommandBuffer(OutlineRenderer.RenderEvent, commandBuffer);
 ```
 
-### Integration with Unity post processing.
+### Integration with Unity post-processing.
 
-The outline effect can easily be added to [Post Processing stack v2](https://github.com/Unity-Technologies/PostProcessing/tree/v2). A minimal integration example is shown below:
+The outline effect can easily be added to [Post-processing Stack v2](https://github.com/Unity-Technologies/PostProcessing/tree/v2). A minimal integration example is shown below:
 ```csharp
 using System;
 using UnityEngine;
