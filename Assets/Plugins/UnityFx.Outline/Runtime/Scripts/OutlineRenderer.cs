@@ -161,11 +161,34 @@ namespace UnityFx.Outline
 			_commandBuffer.BeginSample(EffectName);
 			_commandBuffer.GetTemporaryRT(_maskRtId, -1, -1, 0, FilterMode.Bilinear, RenderTextureFormat.R8);
 			_commandBuffer.GetTemporaryRT(_hPassRtId, -1, -1, 0, FilterMode.Bilinear, RenderTextureFormat.R8);
+
+			// Need to copy src content into dst if they are not the same. For instance this is the case when rendering
+			// the outline effect as part of Unity Post Processing stack.
+			if (!src.Equals(dst))
+			{
+				if (SystemInfo.copyTextureSupport > CopyTextureSupport.None)
+				{
+					_commandBuffer.CopyTexture(src, dst);
+				}
+				else
+				{
+#if UNITY_2018_2_OR_NEWER
+					_commandBuffer.SetRenderTarget(dst, RenderBufferLoadAction.DontCare, RenderBufferStoreAction.Store);
+#else
+					_commandBuffer.SetRenderTarget(dst);
+#endif
+					_commandBuffer.Blit(src, BuiltinRenderTextureType.CurrentActive);
+				}
+			}
 		}
 
 		/// <summary>
 		/// Renders outline around a single object.
 		/// </summary>
+		/// <param name="renderers">One or more renderers representing a single object to be outlined.</param>
+		/// <param name="resources">Outline resources.</param>
+		/// <param name="settings">Outline settings.</param>
+		/// <exception cref="ArgumentNullException">Thrown if any of the arguments is <see langword="null"/>.</exception>
 		public void Render(IEnumerable<Renderer> renderers, OutlineResources resources, IOutlineSettings settings)
 		{
 			if (renderers == null)
