@@ -133,7 +133,7 @@ var resources = GetMyResources();
 
 using (var renderer = new OutlineRenderer(commandBuffer, BuiltinRenderTextureType.CameraTarget))
 {
-	renderer.Render(renderers, resources, settings);
+  renderer.Render(renderers, resources, settings);
 }
 
 myCamera.AddCommandBuffer(OutlineRenderer.RenderEvent, commandBuffer);
@@ -152,19 +152,19 @@ using UnityFx.Outline;
 [PostProcess(typeof(OutlineEffectRenderer), PostProcessEvent.BeforeStack, "MyOutline", false)]
 public sealed class Outline : PostProcessEffectSettings
 {
-	public OutlineResources OutlineResources;
-	public OutlineLayers OutlineLayers;
+  public OutlineResources OutlineResources;
+  public OutlineLayers OutlineLayers;
 }
 
 public sealed class OutlineEffectRenderer : PostProcessEffectRenderer<Outline>
 {
-	public override void Render(PostProcessRenderContext context)
-	{
-		using (var renderer = new OutlineRenderer(context.command, context.source, context.destination))
-		{
-			settings.OutlineLayers.Render(renderer, settings.OutlineResources);
-		}
-	}
+  public override void Render(PostProcessRenderContext context)
+  {
+    using (var renderer = new OutlineRenderer(context.command, context.source, context.destination))
+    {
+      settings.OutlineLayers.Render(renderer, settings.OutlineResources);
+    }
+  }
 }
 ```
 For the sake of simplicity the sample does not include any kind of error checking and no editor integration provided. In real world app the `Outline` class should expose its data to Unity editor either via custom inspector or using parameter overrides. Also, there are quite a few optimizations missing (for example, resusing `RuntimeUtilities.fullscreenTriangle` value as `OutlineResources.FullscreenTriangleMesh`).
@@ -184,6 +184,7 @@ Please see the links below for extended information on the product:
 - [A great outline tutorial](https://willweissman.wordpress.com/tutorials/shaders/unity-shaderlab-object-outlines/).
 - [Command buffers tutorial](https://lindenreid.wordpress.com/2018/09/13/using-command-buffers-in-unity-selective-bloom/).
 - [Gaussian blur tutorial](https://www.ronja-tutorials.com/2018/08/27/postprocessing-blur.html).
+- [Excellent post-processing tutorial](https://catlikecoding.com/unity/tutorials/scriptable-render-pipeline/post-processing/).
 
 ## Contributing
 Please see [contributing guide](.github/CONTRIBUTING.md) for details.
