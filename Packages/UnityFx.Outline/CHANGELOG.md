@@ -3,6 +3,8 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/); this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [0.8.0] - unreleased
+
 ## [0.7.0] - 2019.11.26
 
 `MaterialPropertyBlock`-based rendering and [Unity Post-processing Stack v2](https://github.com/Unity-Technologies/PostProcessing/tree/v2) compatibility.

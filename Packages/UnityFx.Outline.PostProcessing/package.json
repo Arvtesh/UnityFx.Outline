@@ -6,7 +6,7 @@
     "unity": "2018.1",
     "dependencies": {
         "com.unityfx.outline": "0.7.0",
-        "com.unity.postprocessing": "2.2.1"
+        "com.unity.postprocessing": "2.2.2"
     },
     "keywords": [
         "UnityFx",
