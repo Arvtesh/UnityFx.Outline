@@ -29,9 +29,10 @@ namespace UnityFx.Outline
 				for (var i = 0; i < _layers.Count; i++)
 				{
 					EditorGUILayout.Space();
+					OutlineEditorUtility.RenderDivider(Color.gray);
 
 					var rect = EditorGUILayout.BeginHorizontal();
-					var enabled = EditorGUILayout.ToggleLeft("Layer #" + i.ToString(), _layers[i].Enabled);
+					var enabled = EditorGUILayout.ToggleLeft("Layer #" + i.ToString(), _layers[i].Enabled, EditorStyles.boldLabel);
 
 					if (enabled != _layers[i].Enabled)
 					{
@@ -56,13 +57,6 @@ namespace UnityFx.Outline
 
 					EditorGUILayout.EndHorizontal();
 					EditorGUILayout.Space();
-
-					rect.xMin -= 2;
-					rect.xMax += 2;
-					rect.yMin -= 2;
-					rect.yMax += 2;
-
-					GUI.Box(rect, GUIContent.none);
 
 					var name = EditorGUILayout.TextField("Layer Name", _layers[i].NameTag);
 

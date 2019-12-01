@@ -17,9 +17,9 @@ namespace UnityFx.Outline.PostProcessing
 		{
 			OutlineResources resources;
 
-			if (settings.Resources != null && settings.Resources.value != null)
+			if (settings.Resources.value != null)
 			{
-				resources = settings.Resources.value;
+				resources = settings.Resources;
 			}
 			else
 			{

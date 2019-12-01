@@ -15,12 +15,21 @@ namespace UnityFx.Outline.PostProcessing
 		private OutlineResources _defaultResources;
 
 		[Serializable]
-		public class OutlineLayersParameter : ParameterOverride<OutlineLayerCollection>
+		public class OutlineResourcesParameter : ParameterOverride<OutlineResources>
 		{
+			internal Outline Settings;
+
+			protected override void OnEnable()
+			{
+				if (value == null)
+				{
+					value = Settings._defaultResources;
+				}
+			}
 		}
 
 		[Serializable]
-		public class OutlineResourcesParameter : ParameterOverride<OutlineResources>
+		public class OutlineLayersParameter : ParameterOverride<OutlineLayerCollection>
 		{
 		}
 
@@ -28,25 +37,10 @@ namespace UnityFx.Outline.PostProcessing
 		public OutlineResourcesParameter Resources = new OutlineResourcesParameter();
 		public OutlineLayersParameter Layers = new OutlineLayersParameter();
 
-		private void OnEnable()
+		public Outline()
 		{
-			if (Resources == null)
-			{
-				Resources = new OutlineResourcesParameter();
-			}
-
-			if (Resources.value == null)
-			{
-				if (_defaultResources)
-				{
-					Resources.value = _defaultResources;
-				}
-			}
-
-			if (Layers == null)
-			{
-				Layers = new OutlineLayersParameter();
-			}
+			// NOTE: The better way to do this is implementing OnEnable(), but it is already implemented as private (!!!) method in PostProcessEffectSettings.
+			Resources.Settings = this;
 		}
 
 		public override bool IsEnabledAndSupported(PostProcessRenderContext context)
@@ -61,7 +55,7 @@ namespace UnityFx.Outline.PostProcessing
 
 #endif
 
-			return base.IsEnabledAndSupported(context) && Layers != null && Layers.value != null;
+			return base.IsEnabledAndSupported(context) && Resources != null && Layers != null && Layers.value != null;
 		}
 	}
 }

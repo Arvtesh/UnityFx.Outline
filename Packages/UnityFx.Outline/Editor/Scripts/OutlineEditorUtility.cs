@@ -9,7 +9,7 @@ using UnityEngine;
 
 namespace UnityFx.Outline
 {
-	internal static class OutlineEditorUtility
+	public static class OutlineEditorUtility
 	{
 		public static void RenderDivider(Color color, int thickness = 1, int padding = 5)
 		{
@@ -18,7 +18,6 @@ namespace UnityFx.Outline
 			r.height = thickness;
 			r.y += padding / 2;
 			r.x -= 2;
-			r.width += 6;
 
 			EditorGUI.DrawRect(r, color);
 		}

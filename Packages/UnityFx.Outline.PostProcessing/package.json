@@ -1,8 +1,8 @@
 {
     "name": "com.unityfx.outline.postprocessing",
     "version": "0.1.0",
-    "displayName": "Post-processing outlines for Unity",
-    "description": "Configurable outlines for Unity Post-processing Stack (v2). Both solid and blurred outline modes are supported (Gauss blur).",
+    "displayName": "Post Processing outlines for Unity",
+    "description": "Configurable outlines for Unity post-processing stack (v2). Both solid and blurred outline modes are supported (Gauss blur).",
     "unity": "2018.1",
     "dependencies": {
         "com.unityfx.outline": "0.7.0",
@@ -11,7 +11,7 @@
     "keywords": [
         "UnityFx",
         "UnityFx.Outline",
-        "UnityFx.Outline,PostProcessing",
+        "UnityFx.Outline.PostProcessing",
         "Outline",
         "Post-processing",
         "Post-effect"
