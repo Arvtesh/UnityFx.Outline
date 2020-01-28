@@ -43,6 +43,15 @@ namespace UnityFx.Outline
 			}
 		}
 
+		internal OutlineSettingsInstance()
+		{
+		}
+
+		internal OutlineSettingsInstance(OutlineResources resources)
+		{
+			_resources = resources;
+		}
+
 		internal void SetResources(OutlineResources resources)
 		{
 			if (resources != _resources)

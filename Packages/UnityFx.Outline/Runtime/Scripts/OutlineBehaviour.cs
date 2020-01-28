@@ -78,6 +78,8 @@ namespace UnityFx.Outline
 
 				if (_outlineResources != value)
 				{
+					CreateSettingsIfNeeded();
+
 					_outlineResources = value;
 					_outlineSettings.SetResources(_outlineResources);
 				}
@@ -91,6 +93,7 @@ namespace UnityFx.Outline
 		{
 			get
 			{
+				CreateRenderersIfNeeded();
 				return _renderers;
 			}
 		}
@@ -111,7 +114,10 @@ namespace UnityFx.Outline
 		/// </summary>
 		public void UpdateChanged()
 		{
-			_outlineSettings.UpdateChanged();
+			if (_outlineSettings != null)
+			{
+				_outlineSettings.UpdateChanged();
+			}
 		}
 
 		#endregion
@@ -122,11 +128,16 @@ namespace UnityFx.Outline
 		{
 			CreateRenderersIfNeeded();
 			CreateSettingsIfNeeded();
+
+			_outlineSettings.SetResources(_outlineResources);
 		}
 
 		private void OnDestroy()
 		{
-			_outlineSettings.SetResources(null);
+			if (_outlineSettings != null)
+			{
+				_outlineSettings.SetResources(null);
+			}
 		}
 
 		private void OnEnable()
@@ -212,12 +223,21 @@ namespace UnityFx.Outline
 			CreateRenderersIfNeeded();
 			CreateCommandBufferIfNeeded();
 			CreateSettingsIfNeeded();
+
+			_outlineSettings.SetResources(_outlineResources);
 		}
 
 		private void Reset()
 		{
-			_outlineSettings.SetResources(_outlineResources);
-			_renderers.Reset();
+			if (_outlineSettings != null)
+			{
+				_outlineSettings.SetResources(_outlineResources);
+			}
+
+			if (_renderers != null)
+			{
+				_renderers.Reset();
+			}
 		}
 
 #endif
@@ -233,10 +253,20 @@ namespace UnityFx.Outline
 		{
 			get
 			{
+				if (_outlineSettings == null)
+				{
+					_outlineSettings = new OutlineSettingsInstance();
+				}
+
 				return _outlineSettings.OutlineSettings;
 			}
 			set
 			{
+				if (_outlineSettings == null)
+				{
+					_outlineSettings = new OutlineSettingsInstance();
+				}
+
 				_outlineSettings.OutlineSettings = value;
 			}
 		}
@@ -250,10 +280,12 @@ namespace UnityFx.Outline
 		{
 			get
 			{
+				CreateSettingsIfNeeded();
 				return _outlineSettings.OutlineColor;
 			}
 			set
 			{
+				CreateSettingsIfNeeded();
 				_outlineSettings.OutlineColor = value;
 			}
 		}
@@ -263,10 +295,12 @@ namespace UnityFx.Outline
 		{
 			get
 			{
+				CreateSettingsIfNeeded();
 				return _outlineSettings.OutlineWidth;
 			}
 			set
 			{
+				CreateSettingsIfNeeded();
 				_outlineSettings.OutlineWidth = value;
 			}
 		}
@@ -276,10 +310,12 @@ namespace UnityFx.Outline
 		{
 			get
 			{
+				CreateSettingsIfNeeded();
 				return _outlineSettings.OutlineIntensity;
 			}
 			set
 			{
+				CreateSettingsIfNeeded();
 				_outlineSettings.OutlineIntensity = value;
 			}
 		}
@@ -289,10 +325,12 @@ namespace UnityFx.Outline
 		{
 			get
 			{
+				CreateSettingsIfNeeded();
 				return _outlineSettings.OutlineMode;
 			}
 			set
 			{
+				CreateSettingsIfNeeded();
 				_outlineSettings.OutlineMode = value;
 			}
 		}
@@ -358,10 +396,8 @@ namespace UnityFx.Outline
 		{
 			if (_outlineSettings == null)
 			{
-				_outlineSettings = new OutlineSettingsInstance();
+				_outlineSettings = new OutlineSettingsInstance(_outlineResources);
 			}
-
-			_outlineSettings.SetResources(_outlineResources);
 		}
 
 		#endregion
