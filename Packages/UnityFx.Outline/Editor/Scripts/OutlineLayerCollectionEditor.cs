@@ -31,7 +31,7 @@ namespace UnityFx.Outline
 					EditorGUILayout.Space();
 					OutlineEditorUtility.RenderDivider(Color.gray);
 
-					var rect = EditorGUILayout.BeginHorizontal();
+					EditorGUILayout.BeginHorizontal();
 					var enabled = EditorGUILayout.ToggleLeft("Layer #" + i.ToString(), _layers[i].Enabled, EditorStyles.boldLabel);
 
 					if (enabled != _layers[i].Enabled)
