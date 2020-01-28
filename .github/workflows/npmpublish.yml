@@ -15,7 +15,6 @@ jobs:
           node-version: 12
           registry-url: https://registry.npmjs.org/
       - run: npm publish Packages/UnityFx.Outline
-      - run: npm publish Packages/UnityFx.Outline.PostProcessing
         env:
           NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
 
@@ -28,6 +27,5 @@ jobs:
           node-version: 12
           registry-url: https://npm.pkg.github.com/
       - run: npm publish Packages/UnityFx.Outline
-      - run: npm publish Packages/UnityFx.Outline.PostProcessing
         env:
           NODE_AUTH_TOKEN: ${{secrets.GITHUB_TOKEN}}
