@@ -3,7 +3,12 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/); this project adheres to [Semantic Versioning](http://semver.org/).
 
-## [0.8.0] - unreleased
+## [0.7.1] - 2020.01.28
+
+Bugfixes and project layout changes.
+
+### Fixed
+- Fixed `OutlineBehaviour` to allow changing its state while its `GameObject` is inactive.
 
 ## [0.7.0] - 2019.11.26
 
