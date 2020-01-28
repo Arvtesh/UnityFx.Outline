@@ -1,0 +1,15 @@
+{
+    "name": "UnityFx.Outline.PostProcessing",
+    "references": [
+        "Unity.Postprocessing.Runtime",
+        "UnityFx.Outline"
+    ],
+    "optionalUnityReferences": [],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": []
+}
