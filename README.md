@@ -8,6 +8,8 @@ Npm | [![Npm release](https://img.shields.io/npm/v/com.unityfx.outline.svg)](htt
 **Requires Unity 2017 or higher.**<br/>
 **Compatible with [Unity Post-processing Stack v2](https://github.com/Unity-Technologies/PostProcessing/tree/v2).**
 
+**Please ask any questions and leave feedback at the [Unity forums](https://forum.unity.com/threads/screen-space-outline-effect-for-unity-free.836908/).**
+
 ## Synopsis
 ![Outline demo](Docs/OutlineSamples.png "Outline demo")
 ![Outline demo](Docs/MotusOutline.png "Outline demo")
@@ -177,7 +179,7 @@ The project was initially created to help author with his [Unity3d](https://unit
 
 ## Documentation
 Please see the links below for extended information on the product:
-- [Unity forums](https://forum.unity.com/threads/TODO/).
+- [Unity forums](https://forum.unity.com/threads/screen-space-outline-effect-for-unity-free.836908/).
 - [CHANGELOG](CHANGELOG.md).
 - [SUPPORT](.github/SUPPORT.md).
 
