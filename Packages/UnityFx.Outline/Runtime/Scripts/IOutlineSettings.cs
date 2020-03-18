@@ -36,5 +36,10 @@ namespace UnityFx.Outline
 		/// <seealso cref="OutlineWidth"/>
 		/// <seealso cref="OutlineColor"/>
 		OutlineMode OutlineMode { get; set; }
+
+		/// <summary>
+		/// Gets or sets a value indicating whether depth-testing is enabled.
+		/// </summary>
+		bool DepthTestEnabled { get; set; }
 	}
 }

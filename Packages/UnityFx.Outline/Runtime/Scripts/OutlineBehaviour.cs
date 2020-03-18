@@ -335,6 +335,21 @@ namespace UnityFx.Outline
 			}
 		}
 
+		/// <inheritdoc/>
+		public bool DepthTestEnabled
+		{
+			get
+			{
+				CreateSettingsIfNeeded();
+				return _outlineSettings.DepthTestEnabled;
+			}
+			set
+			{
+				CreateSettingsIfNeeded();
+				_outlineSettings.DepthTestEnabled = value;
+			}
+		}
+
 		#endregion
 
 		#region IEquatable

@@ -25,6 +25,8 @@ namespace UnityFx.Outline
 		private float _outlineIntensity = 2;
 		[SerializeField, HideInInspector]
 		private OutlineMode _outlineMode;
+		[SerializeField, HideInInspector]
+		private bool _depthTestEnabled;
 
 #pragma warning restore 0649
 
@@ -101,6 +103,7 @@ namespace UnityFx.Outline
 						_outlineWidth = _outlineSettings.OutlineWidth;
 						_outlineIntensity = _outlineSettings.OutlineIntensity;
 						_outlineMode = _outlineSettings.OutlineMode;
+						_depthTestEnabled = _outlineSettings.DepthTestEnabled;
 						_changed = true;
 					}
 				}
@@ -186,6 +189,25 @@ namespace UnityFx.Outline
 				if (_outlineMode != value)
 				{
 					_outlineMode = value;
+					_changed = true;
+				}
+			}
+		}
+
+		/// <inheritdoc/>
+		public bool DepthTestEnabled
+		{
+			get
+			{
+				return _depthTestEnabled;
+			}
+			set
+			{
+				ThrowIfSettingsAssigned();
+
+				if (_depthTestEnabled != value)
+				{
+					_depthTestEnabled = value;
 					_changed = true;
 				}
 			}

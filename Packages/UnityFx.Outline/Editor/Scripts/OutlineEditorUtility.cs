@@ -93,6 +93,14 @@ namespace UnityFx.Outline
 				Undo.RecordObject(undoContext, "Blur");
 				settings.OutlineMode = blurred ? OutlineMode.Blurred : OutlineMode.Solid;
 			}
+
+			var depthTestEnabled = EditorGUILayout.Toggle("Depth Test", settings.DepthTestEnabled);
+
+			if (depthTestEnabled != settings.DepthTestEnabled)
+			{
+				Undo.RecordObject(undoContext, "Depth Test");
+				settings.DepthTestEnabled = depthTestEnabled;
+			}
 		}
 
 		public static void RenderPreview(OutlineLayer layer, int layerIndex, bool showObjects)
