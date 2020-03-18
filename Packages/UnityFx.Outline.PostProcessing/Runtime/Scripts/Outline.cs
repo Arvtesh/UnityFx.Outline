@@ -11,8 +11,12 @@ namespace UnityFx.Outline.PostProcessing
 	[PostProcess(typeof(OutlineEffectRenderer), PostProcessEvent.BeforeStack, "UnityFx/Outline", false)]
 	public sealed class Outline : PostProcessEffectSettings
 	{
+#pragma warning disable 0649
+
 		[SerializeField]
 		private OutlineResources _defaultResources;
+
+#pragma warning restore 0649
 
 		[Serializable]
 		public class OutlineResourcesParameter : ParameterOverride<OutlineResources>
