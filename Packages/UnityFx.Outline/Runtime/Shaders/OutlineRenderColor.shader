@@ -9,7 +9,7 @@ Shader "UnityFx/Outline/RenderColor"
 	{
 		Cull Off
 		ZWrite Off
-		ZTest Always
+		ZTest LEqual
 		Lighting Off
 
 		Pass

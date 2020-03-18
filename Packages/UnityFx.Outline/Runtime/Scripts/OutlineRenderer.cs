@@ -59,7 +59,7 @@ namespace UnityFx.Outline
 	/// }
 	/// </example>
 	/// <seealso cref="OutlineResources"/>
-	public struct OutlineRenderer : IDisposable
+	public readonly struct OutlineRenderer : IDisposable
 	{
 		#region data
 
@@ -207,7 +207,7 @@ namespace UnityFx.Outline
 			}
 
 			Init(resources, settings);
-			RenderObject(renderers, resources.RenderMaterial);
+			RenderObject(renderers, settings, resources.RenderMaterial);
 			RenderHPass(resources, settings);
 			RenderVPassBlend(resources, settings);
 		}
@@ -237,7 +237,7 @@ namespace UnityFx.Outline
 			}
 
 			Init(resources, settings);
-			RenderObject(renderer, resources.RenderMaterial);
+			RenderObject(renderer, settings, resources.RenderMaterial);
 			RenderHPass(resources, settings);
 			RenderVPassBlend(resources, settings);
 		}
@@ -302,14 +302,32 @@ namespace UnityFx.Outline
 			_commandBuffer.SetGlobalFloatArray(resources.GaussSamplesId, resources.GetGaussSamples(settings.OutlineWidth));
 		}
 
-		private void RenderObject(IEnumerable<Renderer> renderers, Material mat)
+		private void RenderObjectClear(bool depthTestEnabled)
 		{
+			if (depthTestEnabled)
+			{
+				// NOTE: Use the camera depth buffer when rendering the mask. Shader only reads from the depth buffer (ZWrite Off).
 #if UNITY_2018_2_OR_NEWER
-			_commandBuffer.SetRenderTarget(_maskRtId, RenderBufferLoadAction.DontCare, RenderBufferStoreAction.Store);
+				_commandBuffer.SetRenderTarget(_maskRtId, RenderBufferLoadAction.DontCare, RenderBufferStoreAction.Store, BuiltinRenderTextureType.Depth, RenderBufferLoadAction.Load, RenderBufferStoreAction.DontCare);
 #else
-			_commandBuffer.SetRenderTarget(_maskRtId);
+				_commandBuffer.SetRenderTarget(_maskRtId, BuiltinRenderTextureType.Depth);
 #endif
+			}
+			else
+			{
+#if UNITY_2018_2_OR_NEWER
+				_commandBuffer.SetRenderTarget(_maskRtId, RenderBufferLoadAction.DontCare, RenderBufferStoreAction.Store);
+#else
+				_commandBuffer.SetRenderTarget(_maskRtId);
+#endif
+			}
+
 			_commandBuffer.ClearRenderTarget(false, true, Color.clear);
+		}
+
+		private void RenderObject(IEnumerable<Renderer> renderers, IOutlineSettings settings, Material mat)
+		{
+			RenderObjectClear(settings.DepthTestEnabled);
 
 			foreach (var r in renderers)
 			{
@@ -323,14 +341,9 @@ namespace UnityFx.Outline
 			}
 		}
 
-		private void RenderObject(Renderer renderer, Material mat)
+		private void RenderObject(Renderer renderer, IOutlineSettings settings, Material mat)
 		{
-#if UNITY_2018_2_OR_NEWER
-			_commandBuffer.SetRenderTarget(_maskRtId, RenderBufferLoadAction.DontCare, RenderBufferStoreAction.Store);
-#else
-			_commandBuffer.SetRenderTarget(_maskRtId);
-#endif
-			_commandBuffer.ClearRenderTarget(false, true, Color.clear);
+			RenderObjectClear(settings.DepthTestEnabled);
 
 			if (renderer && renderer.gameObject.activeInHierarchy && renderer.enabled)
 			{

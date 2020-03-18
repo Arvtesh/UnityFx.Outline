@@ -70,12 +70,14 @@ namespace UnityFx.Outline
 				if (_outlineColor != _outlineSettings.OutlineColor ||
 					_outlineWidth != _outlineSettings.OutlineWidth ||
 					_outlineIntensity != _outlineSettings.OutlineIntensity ||
-					_outlineMode != _outlineSettings.OutlineMode)
+					_outlineMode != _outlineSettings.OutlineMode ||
+					_depthTestEnabled != _outlineSettings.DepthTestEnabled)
 				{
 					_outlineColor = _outlineSettings.OutlineColor;
 					_outlineWidth = _outlineSettings.OutlineWidth;
 					_outlineIntensity = _outlineSettings.OutlineIntensity;
 					_outlineMode = _outlineSettings.OutlineMode;
+					_depthTestEnabled = _outlineSettings.DepthTestEnabled;
 					_changed = true;
 				}
 			}
