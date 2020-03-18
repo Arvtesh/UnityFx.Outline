@@ -192,7 +192,6 @@ namespace UnityFx.Outline
 #endif
 
 				camera.AddCommandBuffer(_cameraEvent, _commandBuffer);
-				camera.depthTextureMode |= DepthTextureMode.Depth;
 			}
 		}
 
