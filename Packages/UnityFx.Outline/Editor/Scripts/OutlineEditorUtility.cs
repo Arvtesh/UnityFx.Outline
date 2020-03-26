@@ -71,7 +71,8 @@ namespace UnityFx.Outline
 				settings.OutlineWidth = width;
 			}
 
-			var blurred = EditorGUILayout.Toggle("Blurred", settings.OutlineMode == OutlineMode.Blurred);
+			var prevBlurred = (settings.OutlineRenderMode & OutlineRenderFlags.Blurred) != 0;
+			var blurred = EditorGUILayout.Toggle("Blurred", prevBlurred);
 
 			if (blurred)
 			{
@@ -88,18 +89,35 @@ namespace UnityFx.Outline
 				EditorGUI.indentLevel -= 1;
 			}
 
-			if (blurred != (settings.OutlineMode == OutlineMode.Blurred))
+			if (blurred != prevBlurred)
 			{
 				Undo.RecordObject(undoContext, "Blur");
-				settings.OutlineMode = blurred ? OutlineMode.Blurred : OutlineMode.Solid;
+
+				if (blurred)
+				{
+					settings.OutlineRenderMode |= OutlineRenderFlags.Blurred;
+				}
+				else
+				{
+					settings.OutlineRenderMode &= ~OutlineRenderFlags.Blurred;
+				}
 			}
 
-			var depthTestEnabled = EditorGUILayout.Toggle("Depth Test", settings.DepthTestEnabled);
+			var prevDepthTestEnabled = (settings.OutlineRenderMode & OutlineRenderFlags.EnableDepthTesting) != 0;
+			var depthTestEnabled = EditorGUILayout.Toggle("Depth Test", prevDepthTestEnabled);
 
-			if (depthTestEnabled != settings.DepthTestEnabled)
+			if (depthTestEnabled != prevDepthTestEnabled)
 			{
 				Undo.RecordObject(undoContext, "Depth Test");
-				settings.DepthTestEnabled = depthTestEnabled;
+
+				if (depthTestEnabled)
+				{
+					settings.OutlineRenderMode |= OutlineRenderFlags.EnableDepthTesting;
+				}
+				else
+				{
+					settings.OutlineRenderMode &= ~OutlineRenderFlags.EnableDepthTesting;
+				}
 			}
 		}
 
@@ -116,7 +134,7 @@ namespace UnityFx.Outline
 
 				if (layer.Enabled)
 				{
-					EditorGUILayout.LabelField(layer.OutlineMode == OutlineMode.Solid ? layer.OutlineMode.ToString() : string.Format("Blurred ({0})", layer.OutlineIntensity), GUILayout.MaxWidth(70));
+					EditorGUILayout.LabelField(layer.OutlineRenderMode == OutlineRenderFlags.Solid ? layer.OutlineRenderMode.ToString() : string.Format("Blurred ({0})", layer.OutlineIntensity), GUILayout.MaxWidth(70));
 					EditorGUILayout.IntField(layer.OutlineWidth, GUILayout.MaxWidth(100));
 					EditorGUILayout.ColorField(layer.OutlineColor, GUILayout.MinWidth(100));
 				}

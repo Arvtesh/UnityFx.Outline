@@ -108,11 +108,11 @@ namespace UnityFx.Outline
 		[Test]
 		public void OutlineMode_SetsValue()
 		{
-			_settings.OutlineMode = OutlineMode.Blurred;
-			Assert.AreEqual(OutlineMode.Blurred, _settings.OutlineMode);
+			_settings.OutlineRenderMode = OutlineRenderFlags.Blurred;
+			Assert.AreEqual(OutlineRenderFlags.Blurred, _settings.OutlineRenderMode);
 
-			_settings.OutlineMode = OutlineMode.Solid;
-			Assert.AreEqual(OutlineMode.Solid, _settings.OutlineMode);
+			_settings.OutlineRenderMode = OutlineRenderFlags.Solid;
+			Assert.AreEqual(OutlineRenderFlags.Solid, _settings.OutlineRenderMode);
 		}
 
 		[Test]
@@ -121,7 +121,7 @@ namespace UnityFx.Outline
 			if (_changeTracking != null)
 			{
 				_changeTracking.AcceptChanges();
-				_settings.OutlineMode = OutlineMode.Blurred;
+				_settings.OutlineRenderMode = OutlineRenderFlags.Blurred;
 
 				Assert.IsTrue(_changeTracking.IsChanged);
 			}
@@ -133,7 +133,7 @@ namespace UnityFx.Outline
 			if (_changeTracking != null)
 			{
 				_changeTracking.AcceptChanges();
-				_settings.OutlineMode = _settings.OutlineMode;
+				_settings.OutlineRenderMode = _settings.OutlineRenderMode;
 
 				Assert.IsFalse(_changeTracking.IsChanged);
 			}

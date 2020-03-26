@@ -22,9 +22,7 @@ namespace UnityFx.Outline
 		[SerializeField, HideInInspector]
 		private float _outlineIntensity = 2;
 		[SerializeField, HideInInspector]
-		private OutlineMode _outlineMode;
-		[SerializeField, HideInInspector]
-		private bool _depthTestEnabled;
+		private OutlineRenderFlags _outlineMode;
 
 		#endregion
 
@@ -39,8 +37,7 @@ namespace UnityFx.Outline
 
 			return lhs.OutlineColor == rhs.OutlineColor &&
 				lhs.OutlineWidth == rhs.OutlineWidth &&
-				lhs.OutlineMode == rhs.OutlineMode &&
-				lhs.DepthTestEnabled == rhs.DepthTestEnabled &&
+				lhs.OutlineRenderMode == rhs.OutlineRenderMode &&
 				Mathf.Approximately(lhs.OutlineIntensity, rhs.OutlineIntensity);
 		}
 
@@ -88,7 +85,7 @@ namespace UnityFx.Outline
 		}
 
 		/// <inheritdoc/>
-		public OutlineMode OutlineMode
+		public OutlineRenderFlags OutlineRenderMode
 		{
 			get
 			{
@@ -97,19 +94,6 @@ namespace UnityFx.Outline
 			set
 			{
 				_outlineMode = value;
-			}
-		}
-
-		/// <inheritdoc/>
-		public bool DepthTestEnabled
-		{
-			get
-			{
-				return _depthTestEnabled;
-			}
-			set
-			{
-				_depthTestEnabled = value;
 			}
 		}
 

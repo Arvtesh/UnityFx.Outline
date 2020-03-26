@@ -86,7 +86,7 @@ namespace UnityFx.Outline
 
 				Assert.Throws<InvalidOperationException>(() => _settings.OutlineColor = Color.blue);
 				Assert.Throws<InvalidOperationException>(() => _settings.OutlineWidth = 12);
-				Assert.Throws<InvalidOperationException>(() => _settings.OutlineMode = OutlineMode.Blurred);
+				Assert.Throws<InvalidOperationException>(() => _settings.OutlineRenderMode = OutlineRenderFlags.Blurred);
 				Assert.Throws<InvalidOperationException>(() => _settings.OutlineIntensity = 17);
 			}
 			finally

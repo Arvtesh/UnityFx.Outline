@@ -6,18 +6,24 @@ using System;
 namespace UnityFx.Outline
 {
 	/// <summary>
-	/// Enumerates outline modes.
+	/// Enumerates outline render modes.
 	/// </summary>
-	public enum OutlineMode
+	[Flags]
+	public enum OutlineRenderFlags
 	{
 		/// <summary>
 		/// Outline frame is a solid line.
 		/// </summary>
-		Solid,
+		Solid = 0,
 
 		/// <summary>
 		/// Outline frame is blurred.
 		/// </summary>
-		Blurred
+		Blurred = 1,
+
+		/// <summary>
+		/// Enabled depth testing when rendering object outlines. Only visible parts of objects are outlined.
+		/// </summary>
+		EnableDepthTesting = 0x100
 	}
 }

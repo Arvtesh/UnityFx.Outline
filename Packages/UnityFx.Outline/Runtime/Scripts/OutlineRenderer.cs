@@ -327,7 +327,7 @@ namespace UnityFx.Outline
 
 		private void RenderObject(IEnumerable<Renderer> renderers, IOutlineSettings settings, Material mat)
 		{
-			RenderObjectClear(settings.DepthTestEnabled);
+			RenderObjectClear((settings.OutlineRenderMode & OutlineRenderFlags.EnableDepthTesting) != 0);
 
 			foreach (var r in renderers)
 			{
@@ -343,7 +343,7 @@ namespace UnityFx.Outline
 
 		private void RenderObject(Renderer renderer, IOutlineSettings settings, Material mat)
 		{
-			RenderObjectClear(settings.DepthTestEnabled);
+			RenderObjectClear((settings.OutlineRenderMode & OutlineRenderFlags.EnableDepthTesting) != 0);
 
 			if (renderer && renderer.gameObject.activeInHierarchy && renderer.enabled)
 			{
@@ -382,13 +382,13 @@ namespace UnityFx.Outline
 			props.SetFloat(resources.WidthId, settings.OutlineWidth);
 			props.SetColor(resources.ColorId, settings.OutlineColor);
 
-			if (settings.OutlineMode == OutlineMode.Solid)
+			if ((settings.OutlineRenderMode & OutlineRenderFlags.Blurred) != 0)
 			{
-				props.SetFloat(resources.IntensityId, SolidIntensity);
+				props.SetFloat(resources.IntensityId, settings.OutlineIntensity);
 			}
 			else
 			{
-				props.SetFloat(resources.IntensityId, settings.OutlineIntensity);
+				props.SetFloat(resources.IntensityId, SolidIntensity);
 			}
 
 			// Set source texture as _MainTex to match Blit behavior.

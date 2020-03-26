@@ -339,28 +339,15 @@ namespace UnityFx.Outline
 		}
 
 		/// <inheritdoc/>
-		public OutlineMode OutlineMode
+		public OutlineRenderFlags OutlineRenderMode
 		{
 			get
 			{
-				return _settings.OutlineMode;
+				return _settings.OutlineRenderMode;
 			}
 			set
 			{
-				_settings.OutlineMode = value;
-			}
-		}
-
-		/// <inheritdoc/>
-		public bool DepthTestEnabled
-		{
-			get
-			{
-				return _settings.DepthTestEnabled;
-			}
-			set
-			{
-				_settings.DepthTestEnabled = value;
+				_settings.OutlineRenderMode = value;
 			}
 		}
 

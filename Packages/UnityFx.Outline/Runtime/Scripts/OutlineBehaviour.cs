@@ -321,32 +321,17 @@ namespace UnityFx.Outline
 		}
 
 		/// <inheritdoc/>
-		public OutlineMode OutlineMode
+		public OutlineRenderFlags OutlineRenderMode
 		{
 			get
 			{
 				CreateSettingsIfNeeded();
-				return _outlineSettings.OutlineMode;
+				return _outlineSettings.OutlineRenderMode;
 			}
 			set
 			{
 				CreateSettingsIfNeeded();
-				_outlineSettings.OutlineMode = value;
-			}
-		}
-
-		/// <inheritdoc/>
-		public bool DepthTestEnabled
-		{
-			get
-			{
-				CreateSettingsIfNeeded();
-				return _outlineSettings.DepthTestEnabled;
-			}
-			set
-			{
-				CreateSettingsIfNeeded();
-				_outlineSettings.DepthTestEnabled = value;
+				_outlineSettings.OutlineRenderMode = value;
 			}
 		}
 
