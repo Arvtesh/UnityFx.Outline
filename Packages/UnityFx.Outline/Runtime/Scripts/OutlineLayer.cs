@@ -223,7 +223,7 @@ namespace UnityFx.Outline
 				{
 					if (kvp.Key && kvp.Key.activeInHierarchy)
 					{
-						renderer.Render(kvp.Value, _settings.OutlineResources, _settings);
+						renderer.Render(kvp.Value.GetList(), _settings.OutlineResources, _settings);
 					}
 				}
 			}

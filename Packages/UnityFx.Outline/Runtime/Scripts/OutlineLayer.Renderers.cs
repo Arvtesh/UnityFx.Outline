@@ -41,6 +41,11 @@ namespace UnityFx.Outline
 				Reset(ignoreMask);
 			}
 
+			internal List<Renderer> GetList()
+			{
+				return _renderers;
+			}
+
 			public void Reset(int ignoreLayerMask)
 			{
 				_renderers.Clear();

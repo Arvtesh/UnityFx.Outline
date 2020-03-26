@@ -186,7 +186,7 @@ namespace UnityFx.Outline
 
 				using (var renderer = new OutlineRenderer(_commandBuffer, BuiltinRenderTextureType.CameraTarget))
 				{
-					renderer.Render(_renderers, _outlineSettings.OutlineResources, _outlineSettings);
+					renderer.Render(_renderers.GetList(), _outlineSettings.OutlineResources, _outlineSettings);
 				}
 
 				_outlineSettings.AcceptChanges();

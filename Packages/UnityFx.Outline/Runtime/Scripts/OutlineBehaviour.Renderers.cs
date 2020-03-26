@@ -55,6 +55,11 @@ namespace UnityFx.Outline
 				_go = parent.gameObject;
 			}
 
+			internal List<Renderer> GetList()
+			{
+				return _renderers;
+			}
+
 			public void Reset()
 			{
 				foreach (var r in _renderers)

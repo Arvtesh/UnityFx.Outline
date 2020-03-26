@@ -183,12 +183,46 @@ namespace UnityFx.Outline
 		}
 
 		/// <summary>
+		/// Renders outline around a single object. This version allows enumeration of <paramref name="renderers"/> with no GC allocations.
+		/// </summary>
+		/// <param name="renderers">One or more renderers representing a single object to be outlined.</param>
+		/// <param name="resources">Outline resources.</param>
+		/// <param name="settings">Outline settings.</param>
+		/// <exception cref="ArgumentNullException">Thrown if any of the arguments is <see langword="null"/>.</exception>
+		/// <seealso cref="Render(IEnumerable{Renderer}, OutlineResources, IOutlineSettings)"/>
+		/// <seealso cref="Render(Renderer, OutlineResources, IOutlineSettings)"/>
+		public void Render(IList<Renderer> renderers, OutlineResources resources, IOutlineSettings settings)
+		{
+			if (renderers == null)
+			{
+				throw new ArgumentNullException("renderers");
+			}
+
+			if (resources == null)
+			{
+				throw new ArgumentNullException("resources");
+			}
+
+			if (settings == null)
+			{
+				throw new ArgumentNullException("settings");
+			}
+
+			Init(resources, settings);
+			RenderObject(resources, settings, renderers);
+			RenderHPass(resources, settings);
+			RenderVPassBlend(resources, settings);
+		}
+
+		/// <summary>
 		/// Renders outline around a single object.
 		/// </summary>
 		/// <param name="renderers">One or more renderers representing a single object to be outlined.</param>
 		/// <param name="resources">Outline resources.</param>
 		/// <param name="settings">Outline settings.</param>
 		/// <exception cref="ArgumentNullException">Thrown if any of the arguments is <see langword="null"/>.</exception>
+		/// <seealso cref="Render(IList{Renderer}, OutlineResources, IOutlineSettings)"/>
+		/// <seealso cref="Render(Renderer, OutlineResources, IOutlineSettings)"/>
 		public void Render(IEnumerable<Renderer> renderers, OutlineResources resources, IOutlineSettings settings)
 		{
 			if (renderers == null)
@@ -207,7 +241,7 @@ namespace UnityFx.Outline
 			}
 
 			Init(resources, settings);
-			RenderObject(renderers, settings, resources.RenderMaterial);
+			RenderObject(resources, settings, renderers);
 			RenderHPass(resources, settings);
 			RenderVPassBlend(resources, settings);
 		}
@@ -219,6 +253,8 @@ namespace UnityFx.Outline
 		/// <param name="resources">Outline resources.</param>
 		/// <param name="settings">Outline settings.</param>
 		/// <exception cref="ArgumentNullException">Thrown if any of the arguments is <see langword="null"/>.</exception>
+		/// <seealso cref="Render(IList{Renderer}, OutlineResources, IOutlineSettings)"/>
+		/// <seealso cref="Render(IEnumerable{Renderer}, OutlineResources, IOutlineSettings)"/>
 		public void Render(Renderer renderer, OutlineResources resources, IOutlineSettings settings)
 		{
 			if (renderer == null)
@@ -237,7 +273,7 @@ namespace UnityFx.Outline
 			}
 
 			Init(resources, settings);
-			RenderObject(renderer, settings, resources.RenderMaterial);
+			RenderObject(resources, settings, renderer);
 			RenderHPass(resources, settings);
 			RenderVPassBlend(resources, settings);
 		}
@@ -325,31 +361,62 @@ namespace UnityFx.Outline
 			_commandBuffer.ClearRenderTarget(false, true, Color.clear);
 		}
 
-		private void RenderObject(IEnumerable<Renderer> renderers, IOutlineSettings settings, Material mat)
+		private void RenderObject(OutlineResources resources, IOutlineSettings settings, IList<Renderer> renderers)
 		{
 			RenderObjectClear((settings.OutlineRenderMode & OutlineRenderFlags.EnableDepthTesting) != 0);
 
-			foreach (var r in renderers)
+			for (var i = 0; i < renderers.Count; ++i)
 			{
+				var r = renderers[i];
+
 				if (r && r.enabled && r.gameObject.activeInHierarchy)
 				{
-					for (var j = 0; j < r.sharedMaterials.Length; ++j)
+					// NOTE: Accessing Renderer.sharedMaterials triggers GC.Alloc. That's why we use a temporary
+					// list of materials, cached with the outline resources.
+					r.GetMaterials(resources.TmpMaterials);
+
+					for (var j = 0; j < resources.TmpMaterials.Count; ++j)
 					{
-						_commandBuffer.DrawRenderer(r, mat, j);
+						_commandBuffer.DrawRenderer(r, resources.RenderMaterial, j);
 					}
 				}
 			}
 		}
 
-		private void RenderObject(Renderer renderer, IOutlineSettings settings, Material mat)
+		private void RenderObject(OutlineResources resources, IOutlineSettings settings, IEnumerable<Renderer> renderers)
+		{
+			RenderObjectClear((settings.OutlineRenderMode & OutlineRenderFlags.EnableDepthTesting) != 0);
+
+			// NOTE: Calling IEnumerable.GetEnumerator() triggers GC.Alloc.
+			foreach (var r in renderers)
+			{
+				if (r && r.enabled && r.gameObject.activeInHierarchy)
+				{
+					// NOTE: Accessing Renderer.sharedMaterials triggers GC.Alloc. That's why we use a temporary
+					// list of materials, cached with the outline resources.
+					r.GetMaterials(resources.TmpMaterials);
+
+					for (var j = 0; j < resources.TmpMaterials.Count; ++j)
+					{
+						_commandBuffer.DrawRenderer(r, resources.RenderMaterial, j);
+					}
+				}
+			}
+		}
+
+		private void RenderObject(OutlineResources resources, IOutlineSettings settings, Renderer renderer)
 		{
 			RenderObjectClear((settings.OutlineRenderMode & OutlineRenderFlags.EnableDepthTesting) != 0);
 
 			if (renderer && renderer.gameObject.activeInHierarchy && renderer.enabled)
 			{
-				for (var i = 0; i < renderer.sharedMaterials.Length; ++i)
+				// NOTE: Accessing Renderer.sharedMaterials triggers GC.Alloc. That's why we use a temporary
+				// list of materials, cached with the outline resources.
+				renderer.GetMaterials(resources.TmpMaterials);
+
+				for (var i = 0; i < resources.TmpMaterials.Count; ++i)
 				{
-					_commandBuffer.DrawRenderer(renderer, mat, i);
+					_commandBuffer.DrawRenderer(renderer, resources.RenderMaterial, i);
 				}
 			}
 		}

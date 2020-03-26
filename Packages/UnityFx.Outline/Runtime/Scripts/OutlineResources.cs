@@ -2,6 +2,7 @@
 // See the LICENSE.md file in the project root for more information.
 
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace UnityFx.Outline
@@ -21,7 +22,7 @@ namespace UnityFx.Outline
 		private MaterialPropertyBlock _hPassProperties;
 		private MaterialPropertyBlock _vPassProperties;
 		private Mesh _fullscreenTriangleMesh;
-		private float[][] _gaussSmples;
+		private float[][] _gaussSamples;
 
 		#endregion
 
@@ -46,6 +47,11 @@ namespace UnityFx.Outline
 		/// Hashed name of _GaussSamples shader parameter.
 		/// </summary>
 		public readonly int GaussSamplesId = Shader.PropertyToID("_GaussSamples");
+
+		/// <summary>
+		/// Temp materials list. Used by <see cref="OutlineRenderer"/> to avoid GC allocations.
+		/// </summary>
+		public readonly List<Material> TmpMaterials = new List<Material>();
 
 		/// <summary>
 		/// Gets or sets a <see cref="Shader"/> that renders objects outlined with a solid while color.
@@ -198,17 +204,17 @@ namespace UnityFx.Outline
 		/// </summary>
 		public float[] GetGaussSamples(int width)
 		{
-			if (_gaussSmples == null)
+			if (_gaussSamples == null)
 			{
-				_gaussSmples = new float[OutlineRenderer.MaxWidth][];
+				_gaussSamples = new float[OutlineRenderer.MaxWidth][];
 			}
 
-			if (_gaussSmples[width] == null)
+			if (_gaussSamples[width] == null)
 			{
-				_gaussSmples[width] = OutlineRenderer.GetGaussSamples(width, null);
+				_gaussSamples[width] = OutlineRenderer.GetGaussSamples(width, null);
 			}
 
-			return _gaussSmples[width];
+			return _gaussSamples[width];
 		}
 
 		/// <summary>
