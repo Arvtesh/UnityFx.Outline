@@ -3,6 +3,16 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/); this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [0.8.0] - unreleased
+
+Added depth testing support and performance optimizations.
+
+### Added
+- Added support for depth testing when rendering outlines. When enabled, outlines are only rendered around the visible object parts.
+
+### Fixed
+- Get rid of GC allocatinos during command buffer updates.
+
 ## [0.7.1] - 2020.01.28
 
 Bugfixes and project layout changes.
