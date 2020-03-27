@@ -8,10 +8,14 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/); this proj
 Added depth testing support and performance optimizations.
 
 ### Added
-- Added support for depth testing when rendering outlines. When enabled, outlines are only rendered around the visible object parts.
+- Added support for depth testing when rendering outlines. When enabled, outlines are only rendered around the visible object parts ([#1](https://github.com/Arvtesh/UnityFx.Outline/issues/1)).
 
 ### Fixed
 - Get rid of GC allocatinos during command buffer updates.
+- Fixed compiler warning in post-processing compatibility package (0649).
+
+### Removed
+- Removed change tracking support in package entities ([#2](https://github.com/Arvtesh/UnityFx.Outline/issues/2)).
 
 ## [0.7.1] - 2020.01.28
 
