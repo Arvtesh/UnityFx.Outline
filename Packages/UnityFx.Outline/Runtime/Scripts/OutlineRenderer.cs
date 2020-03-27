@@ -59,7 +59,7 @@ namespace UnityFx.Outline
 	/// }
 	/// </example>
 	/// <seealso cref="OutlineResources"/>
-	public readonly struct OutlineRenderer : IDisposable
+	public struct OutlineRenderer : IDisposable
 	{
 		#region data
 
@@ -373,7 +373,7 @@ namespace UnityFx.Outline
 				{
 					// NOTE: Accessing Renderer.sharedMaterials triggers GC.Alloc. That's why we use a temporary
 					// list of materials, cached with the outline resources.
-					r.GetMaterials(resources.TmpMaterials);
+					r.GetSharedMaterials(resources.TmpMaterials);
 
 					for (var j = 0; j < resources.TmpMaterials.Count; ++j)
 					{
@@ -394,7 +394,7 @@ namespace UnityFx.Outline
 				{
 					// NOTE: Accessing Renderer.sharedMaterials triggers GC.Alloc. That's why we use a temporary
 					// list of materials, cached with the outline resources.
-					r.GetMaterials(resources.TmpMaterials);
+					r.GetSharedMaterials(resources.TmpMaterials);
 
 					for (var j = 0; j < resources.TmpMaterials.Count; ++j)
 					{
@@ -412,7 +412,7 @@ namespace UnityFx.Outline
 			{
 				// NOTE: Accessing Renderer.sharedMaterials triggers GC.Alloc. That's why we use a temporary
 				// list of materials, cached with the outline resources.
-				renderer.GetMaterials(resources.TmpMaterials);
+				renderer.GetSharedMaterials(resources.TmpMaterials);
 
 				for (var i = 0; i < resources.TmpMaterials.Count; ++i)
 				{
