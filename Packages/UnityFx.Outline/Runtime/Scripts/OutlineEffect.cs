@@ -29,7 +29,6 @@ namespace UnityFx.Outline
 		private CameraEvent _cameraEvent = OutlineRenderer.RenderEvent;
 
 		private CommandBuffer _commandBuffer;
-		private bool _changed;
 
 #if UNITY_EDITOR
 
@@ -73,11 +72,7 @@ namespace UnityFx.Outline
 					throw new ArgumentNullException("OutlineResources");
 				}
 
-				if (_outlineResources != value)
-				{
-					_outlineResources = value;
-					_changed = true;
-				}
+				_outlineResources = value;
 			}
 		}
 
@@ -100,11 +95,7 @@ namespace UnityFx.Outline
 					throw new ArgumentNullException("OutlineLayers");
 				}
 
-				if (_outlineLayers != value)
-				{
-					_outlineLayers = value;
-					_changed = true;
-				}
+				_outlineLayers = value;
 			}
 		}
 
@@ -149,18 +140,6 @@ namespace UnityFx.Outline
 				CreateLayersIfNeeded();
 
 				other._outlineLayers = _outlineLayers;
-				other._changed = true;
-			}
-		}
-
-		/// <summary>
-		/// Detects changes in nested assets and updates outline if needed. The actual update might not be invoked until the next frame.
-		/// </summary>
-		public void UpdateChanged()
-		{
-			if (_outlineLayers)
-			{
-				_outlineLayers.UpdateChanged();
 			}
 		}
 
@@ -182,8 +161,6 @@ namespace UnityFx.Outline
 				{
 					name = string.Format("{0} - {1}", GetType().Name, name)
 				};
-
-				_changed = true;
 
 #if UNITY_EDITOR
 
@@ -213,24 +190,9 @@ namespace UnityFx.Outline
 
 		private void Update()
 		{
-#if UNITY_EDITOR
-
-			UpdateChanged();
-
-#endif
-
-			if (_outlineLayers && (_changed || _outlineLayers.IsChanged))
-			{
-				FillCommandBuffer();
-			}
-		}
-
-		private void LateUpdate()
-		{
-			// TODO: Find a way to do this once per OutlineLayerCollection instance.
 			if (_outlineLayers)
 			{
-				_outlineLayers.AcceptChanges();
+				FillCommandBuffer();
 			}
 		}
 
@@ -245,15 +207,9 @@ namespace UnityFx.Outline
 
 #if UNITY_EDITOR
 
-		private void OnValidate()
-		{
-			_changed = true;
-		}
-
 		private void Reset()
 		{
 			_outlineLayers = null;
-			_changed = true;
 		}
 
 #endif
@@ -273,8 +229,6 @@ namespace UnityFx.Outline
 					_outlineLayers.Render(renderer, _outlineResources);
 				}
 			}
-
-			_changed = false;
 
 #if UNITY_EDITOR
 

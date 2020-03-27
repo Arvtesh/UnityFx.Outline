@@ -2,13 +2,12 @@
 // See the LICENSE.md file in the project root for more information.
 
 using System;
-using System.ComponentModel;
 using UnityEngine;
 
 namespace UnityFx.Outline
 {
 	[Serializable]
-	internal class OutlineSettingsInstance : IOutlineSettingsEx, IChangeTracking
+	internal class OutlineSettingsInstance : IOutlineSettingsEx
 	{
 		#region data
 
@@ -29,7 +28,6 @@ namespace UnityFx.Outline
 #pragma warning restore 0649
 
 		private OutlineResources _resources;
-		private bool _changed = true;
 
 		#endregion
 
@@ -41,6 +39,10 @@ namespace UnityFx.Outline
 			{
 				return _resources;
 			}
+			set
+			{
+				_resources = value;
+			}
 		}
 
 		internal OutlineSettingsInstance()
@@ -50,33 +52,6 @@ namespace UnityFx.Outline
 		internal OutlineSettingsInstance(OutlineResources resources)
 		{
 			_resources = resources;
-		}
-
-		internal void SetResources(OutlineResources resources)
-		{
-			if (resources != _resources)
-			{
-				_resources = resources;
-				_changed = true;
-			}
-		}
-
-		internal void UpdateChanged()
-		{
-			if (_outlineSettings != null)
-			{
-				if (_outlineColor != _outlineSettings.OutlineColor ||
-					_outlineWidth != _outlineSettings.OutlineWidth ||
-					_outlineIntensity != _outlineSettings.OutlineIntensity ||
-					_outlineMode != _outlineSettings.OutlineRenderMode)
-				{
-					_outlineColor = _outlineSettings.OutlineColor;
-					_outlineWidth = _outlineSettings.OutlineWidth;
-					_outlineIntensity = _outlineSettings.OutlineIntensity;
-					_outlineMode = _outlineSettings.OutlineRenderMode;
-					_changed = true;
-				}
-			}
 		}
 
 		#endregion
@@ -91,19 +66,7 @@ namespace UnityFx.Outline
 			}
 			set
 			{
-				if (_outlineSettings != value)
-				{
-					_outlineSettings = value;
-
-					if (_outlineSettings != null)
-					{
-						_outlineColor = _outlineSettings.OutlineColor;
-						_outlineWidth = _outlineSettings.OutlineWidth;
-						_outlineIntensity = _outlineSettings.OutlineIntensity;
-						_outlineMode = _outlineSettings.OutlineRenderMode;
-						_changed = true;
-					}
-				}
+				_outlineSettings = value;
 			}
 		}
 
@@ -116,17 +79,16 @@ namespace UnityFx.Outline
 		{
 			get
 			{
+				if (!ReferenceEquals(_outlineSettings, null))
+				{
+					return _outlineSettings.OutlineColor;
+				}
+
 				return _outlineColor;
 			}
 			set
 			{
-				ThrowIfSettingsAssigned();
-
-				if (_outlineColor != value)
-				{
-					_outlineColor = value;
-					_changed = true;
-				}
+				_outlineColor = value;
 			}
 		}
 
@@ -135,19 +97,16 @@ namespace UnityFx.Outline
 		{
 			get
 			{
+				if (!ReferenceEquals(_outlineSettings, null))
+				{
+					return _outlineSettings.OutlineWidth;
+				}
+
 				return _outlineWidth;
 			}
 			set
 			{
-				ThrowIfSettingsAssigned();
-
-				value = Mathf.Clamp(value, OutlineRenderer.MinWidth, OutlineRenderer.MaxWidth);
-
-				if (_outlineWidth != value)
-				{
-					_outlineWidth = value;
-					_changed = true;
-				}
+				_outlineWidth = Mathf.Clamp(value, OutlineRenderer.MinWidth, OutlineRenderer.MaxWidth);
 			}
 		}
 
@@ -156,19 +115,16 @@ namespace UnityFx.Outline
 		{
 			get
 			{
+				if (!ReferenceEquals(_outlineSettings, null))
+				{
+					return _outlineSettings.OutlineIntensity;
+				}
+
 				return _outlineIntensity;
 			}
 			set
 			{
-				ThrowIfSettingsAssigned();
-
-				value = Mathf.Clamp(value, OutlineRenderer.MinIntensity, OutlineRenderer.MaxIntensity);
-
-				if (_outlineIntensity != value)
-				{
-					_outlineIntensity = value;
-					_changed = true;
-				}
+				_outlineIntensity = Mathf.Clamp(value, OutlineRenderer.MinIntensity, OutlineRenderer.MaxIntensity);
 			}
 		}
 
@@ -177,37 +133,17 @@ namespace UnityFx.Outline
 		{
 			get
 			{
+				if (!ReferenceEquals(_outlineSettings, null))
+				{
+					return _outlineSettings.OutlineRenderMode;
+				}
+
 				return _outlineMode;
 			}
 			set
 			{
-				ThrowIfSettingsAssigned();
-
-				if (_outlineMode != value)
-				{
-					_outlineMode = value;
-					_changed = true;
-				}
+				_outlineMode = value;
 			}
-		}
-
-		#endregion
-
-		#region IChangeTracking
-
-		/// <inheritdoc/>
-		public bool IsChanged
-		{
-			get
-			{
-				return _changed;
-			}
-		}
-
-		/// <inheritdoc/>
-		public void AcceptChanges()
-		{
-			_changed = false;
 		}
 
 		#endregion
@@ -222,15 +158,6 @@ namespace UnityFx.Outline
 		#endregion
 
 		#region implementation
-
-		private void ThrowIfSettingsAssigned()
-		{
-			if (_outlineSettings)
-			{
-				throw new InvalidOperationException("The outline parameters cannot be altered when OutlineSettings is set.");
-			}
-		}
-
 		#endregion
 	}
 }

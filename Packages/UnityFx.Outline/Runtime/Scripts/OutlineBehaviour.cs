@@ -81,7 +81,7 @@ namespace UnityFx.Outline
 					CreateSettingsIfNeeded();
 
 					_outlineResources = value;
-					_outlineSettings.SetResources(_outlineResources);
+					_outlineSettings.OutlineResources = _outlineResources;
 				}
 			}
 		}
@@ -109,17 +109,6 @@ namespace UnityFx.Outline
 			}
 		}
 
-		/// <summary>
-		/// Detects changes in nested assets and updates outline if needed. The actual update might not be invoked until the next frame.
-		/// </summary>
-		public void UpdateChanged()
-		{
-			if (_outlineSettings != null)
-			{
-				_outlineSettings.UpdateChanged();
-			}
-		}
-
 		#endregion
 
 		#region MonoBehaviour
@@ -129,14 +118,14 @@ namespace UnityFx.Outline
 			CreateRenderersIfNeeded();
 			CreateSettingsIfNeeded();
 
-			_outlineSettings.SetResources(_outlineResources);
+			_outlineSettings.OutlineResources = _outlineResources;
 		}
 
 		private void OnDestroy()
 		{
 			if (_outlineSettings != null)
 			{
-				_outlineSettings.SetResources(null);
+				_outlineSettings.OutlineResources = null;
 			}
 		}
 
@@ -174,13 +163,7 @@ namespace UnityFx.Outline
 				_cameraMapUpdateTimer = 0;
 			}
 
-#if UNITY_EDITOR
-
-			UpdateChanged();
-
-#endif
-
-			if (_outlineResources != null && _renderers != null && (_outlineSettings.IsChanged || _commandBuffer.sizeInBytes == 0))
+			if (_outlineResources != null && _renderers != null)
 			{
 				_commandBuffer.Clear();
 
@@ -188,8 +171,6 @@ namespace UnityFx.Outline
 				{
 					renderer.Render(_renderers.GetList(), _outlineSettings.OutlineResources, _outlineSettings);
 				}
-
-				_outlineSettings.AcceptChanges();
 
 #if UNITY_EDITOR
 
@@ -224,14 +205,14 @@ namespace UnityFx.Outline
 			CreateCommandBufferIfNeeded();
 			CreateSettingsIfNeeded();
 
-			_outlineSettings.SetResources(_outlineResources);
+			_outlineSettings.OutlineResources = _outlineResources;
 		}
 
 		private void Reset()
 		{
 			if (_outlineSettings != null)
 			{
-				_outlineSettings.SetResources(_outlineResources);
+				_outlineSettings.OutlineResources = _outlineResources;
 			}
 
 			if (_renderers != null)

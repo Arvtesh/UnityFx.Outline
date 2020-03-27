@@ -30,7 +30,6 @@ namespace UnityFx.Outline
 		[Test]
 		public void DefaultStateIsValid()
 		{
-			Assert.IsTrue(_layer.IsChanged);
 			Assert.IsFalse(_layer.IsReadOnly);
 			Assert.IsEmpty(_layer);
 			Assert.Zero(_layer.Count);
@@ -45,36 +44,11 @@ namespace UnityFx.Outline
 		}
 
 		[Test]
-		public void Add_DoesNotSetChangedOnError()
-		{
-			_layer.AcceptChanges();
-
-			try
-			{
-				_layer.Add(null);
-			}
-			catch
-			{
-			}
-
-			Assert.IsFalse(_layer.IsChanged);
-		}
-
-		[Test]
 		public void Add_SetsCount()
 		{
 			_layer.Add(new GameObject());
 
 			Assert.AreEqual(1, _layer.Count);
-		}
-
-		[Test]
-		public void Add_SetsChanged()
-		{
-			_layer.AcceptChanges();
-			_layer.Add(new GameObject());
-
-			Assert.IsTrue(_layer.IsChanged);
 		}
 
 		[Test]
@@ -103,36 +77,6 @@ namespace UnityFx.Outline
 		}
 
 		[Test]
-		public void Remove_DoesNotSetChangedOnError()
-		{
-			_layer.AcceptChanges();
-			_layer.Remove(null);
-
-			Assert.IsFalse(_layer.IsChanged);
-		}
-
-		[Test]
-		public void Remove_DoesNotSetChangedIfNotfound()
-		{
-			_layer.AcceptChanges();
-			_layer.Remove(new GameObject());
-
-			Assert.IsFalse(_layer.IsChanged);
-		}
-
-		[Test]
-		public void Remove_SetsChanged()
-		{
-			var go = new GameObject();
-
-			_layer.Add(go);
-			_layer.AcceptChanges();
-			_layer.Remove(go);
-
-			Assert.IsTrue(_layer.IsChanged);
-		}
-
-		[Test]
 		public void Remove_SetsCount()
 		{
 			var go = new GameObject();
@@ -153,44 +97,9 @@ namespace UnityFx.Outline
 		}
 
 		[Test]
-		public void Clear_SetsChanged()
-		{
-			_layer.Add(new GameObject());
-			_layer.AcceptChanges();
-			_layer.Clear();
-
-			Assert.IsTrue(_layer.IsChanged);
-		}
-
-		[Test]
-		public void Clear_DoesNotSetChangedIfEmpty()
-		{
-			_layer.AcceptChanges();
-			_layer.Clear();
-
-			Assert.IsFalse(_layer.IsChanged);
-		}
-
-		[Test]
 		public void Contains_DoesNotThrowIfArgumentIsNull()
 		{
 			_layer.Contains(null);
-		}
-
-		[Test]
-		public void Contains_DoesNotSetChangedOnError()
-		{
-			_layer.AcceptChanges();
-
-			try
-			{
-				_layer.Contains(null);
-			}
-			catch
-			{
-			}
-
-			Assert.IsFalse(_layer.IsChanged);
 		}
 
 		[Test]
@@ -203,31 +112,6 @@ namespace UnityFx.Outline
 			_layer.Add(go);
 
 			Assert.IsTrue(_layer.Contains(go));
-		}
-
-		[Test]
-		public void Contains_DoesNotSetChanged()
-		{
-			var go = new GameObject();
-
-			_layer.AcceptChanges();
-			_layer.Contains(go);
-
-			Assert.IsFalse(_layer.IsChanged);
-
-			_layer.Add(go);
-			_layer.AcceptChanges();
-			_layer.Contains(go);
-
-			Assert.IsFalse(_layer.IsChanged);
-		}
-
-		[Test]
-		public void AcceptChanges_ResetsChanged()
-		{
-			_layer.AcceptChanges();
-
-			Assert.IsFalse(_layer.IsChanged);
 		}
 	}
 }

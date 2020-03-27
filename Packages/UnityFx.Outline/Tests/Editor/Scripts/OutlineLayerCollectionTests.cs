@@ -30,7 +30,6 @@ namespace UnityFx.Outline
 		[Test]
 		public void DefaultStateIsValid()
 		{
-			Assert.IsTrue(_layerCollection.IsChanged);
 			Assert.IsFalse(_layerCollection.IsReadOnly);
 			Assert.IsEmpty(_layerCollection);
 			Assert.Zero(_layerCollection.Count);
@@ -60,36 +59,11 @@ namespace UnityFx.Outline
 		}
 
 		[Test]
-		public void Add_DoesNotSetChangedOnError()
-		{
-			_layerCollection.AcceptChanges();
-
-			try
-			{
-				_layerCollection.Add(null);
-			}
-			catch
-			{
-			}
-
-			Assert.IsFalse(_layerCollection.IsChanged);
-		}
-
-		[Test]
 		public void Add_SetsCount()
 		{
 			_layerCollection.Add(new OutlineLayer());
 
 			Assert.AreEqual(1, _layerCollection.Count);
-		}
-
-		[Test]
-		public void Add_SetsChanged()
-		{
-			_layerCollection.AcceptChanges();
-			_layerCollection.Add(new OutlineLayer());
-
-			Assert.IsTrue(_layerCollection.IsChanged);
 		}
 
 		[Test]
@@ -116,22 +90,6 @@ namespace UnityFx.Outline
 		}
 
 		[Test]
-		public void Insert_DoesNotSetChangedOnError()
-		{
-			_layerCollection.AcceptChanges();
-
-			try
-			{
-				_layerCollection.Insert(0, null);
-			}
-			catch
-			{
-			}
-
-			Assert.IsFalse(_layerCollection.IsChanged);
-		}
-
-		[Test]
 		public void Insert_SetsCount()
 		{
 			_layerCollection.Insert(0, new OutlineLayer());
@@ -140,48 +98,9 @@ namespace UnityFx.Outline
 		}
 
 		[Test]
-		public void Insert_SetsChanged()
-		{
-			_layerCollection.AcceptChanges();
-			_layerCollection.Insert(0, new OutlineLayer());
-
-			Assert.IsTrue(_layerCollection.IsChanged);
-		}
-
-		[Test]
 		public void Remove_DoesNotThrowOnNullArgument()
 		{
 			Assert.DoesNotThrow(() => _layerCollection.Remove(null));
-		}
-
-		[Test]
-		public void Remove_DoesNotSetChangedOnError()
-		{
-			_layerCollection.AcceptChanges();
-			_layerCollection.Remove(null);
-
-			Assert.IsFalse(_layerCollection.IsChanged);
-		}
-
-		[Test]
-		public void Remove_DoesNotSetChangedIfNotfound()
-		{
-			_layerCollection.AcceptChanges();
-			_layerCollection.Remove(new OutlineLayer());
-
-			Assert.IsFalse(_layerCollection.IsChanged);
-		}
-
-		[Test]
-		public void Remove_SetsChanged()
-		{
-			var layer = new OutlineLayer();
-
-			_layerCollection.Add(layer);
-			_layerCollection.AcceptChanges();
-			_layerCollection.Remove(layer);
-
-			Assert.IsTrue(_layerCollection.IsChanged);
 		}
 
 		[Test]
@@ -205,44 +124,9 @@ namespace UnityFx.Outline
 		}
 
 		[Test]
-		public void Clear_SetsChanged()
-		{
-			_layerCollection.Add(new OutlineLayer());
-			_layerCollection.AcceptChanges();
-			_layerCollection.Clear();
-
-			Assert.IsTrue(_layerCollection.IsChanged);
-		}
-
-		[Test]
-		public void Clear_DoesNotSetChangedIfEmpty()
-		{
-			_layerCollection.AcceptChanges();
-			_layerCollection.Clear();
-
-			Assert.IsFalse(_layerCollection.IsChanged);
-		}
-
-		[Test]
 		public void Contains_DoesNotThrowIfArgumentIsNull()
 		{
 			_layerCollection.Contains(null);
-		}
-
-		[Test]
-		public void Contains_DoesNotSetChangedOnError()
-		{
-			_layerCollection.AcceptChanges();
-
-			try
-			{
-				_layerCollection.Contains(null);
-			}
-			catch
-			{
-			}
-
-			Assert.IsFalse(_layerCollection.IsChanged);
 		}
 
 		[Test]
@@ -255,45 +139,6 @@ namespace UnityFx.Outline
 			_layerCollection.Add(layer);
 
 			Assert.IsTrue(_layerCollection.Contains(layer));
-		}
-
-		[Test]
-		public void Contains_DoesNotSetChanged()
-		{
-			var layer = new OutlineLayer();
-
-			_layerCollection.AcceptChanges();
-			_layerCollection.Contains(layer);
-
-			Assert.IsFalse(_layerCollection.IsChanged);
-
-			_layerCollection.Add(layer);
-			_layerCollection.AcceptChanges();
-			_layerCollection.Contains(layer);
-
-			Assert.IsFalse(_layerCollection.IsChanged);
-		}
-
-		[Test]
-		public void IsChanged_TracksLayerChanges()
-		{
-			var layer = new OutlineLayer();
-
-			_layerCollection.Add(layer);
-			_layerCollection.AcceptChanges();
-
-			layer.OutlineWidth = 17;
-
-			Assert.IsTrue(_layerCollection.IsChanged);
-		}
-
-		[Test]
-		public void AcceptChanges_ResetsChanged()
-		{
-			_layerCollection.Add(new OutlineLayer());
-			_layerCollection.AcceptChanges();
-
-			Assert.IsFalse(_layerCollection.IsChanged);
 		}
 
 		[Test]

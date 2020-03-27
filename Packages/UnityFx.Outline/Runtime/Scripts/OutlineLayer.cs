@@ -4,7 +4,6 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Text;
 using UnityEngine;
 
@@ -17,7 +16,7 @@ namespace UnityFx.Outline
 	/// <seealso cref="OutlineLayerCollection"/>
 	/// <seealso cref="OutlineEffect"/>
 	[Serializable]
-	public sealed partial class OutlineLayer : ICollection<GameObject>, IOutlineSettingsEx, IChangeTracking
+	public sealed partial class OutlineLayer : ICollection<GameObject>, IOutlineSettingsEx
 	{
 		#region data
 
@@ -32,7 +31,6 @@ namespace UnityFx.Outline
 
 		private OutlineLayerCollection _parentCollection;
 		private Dictionary<GameObject, RendererCollection> _outlineObjects = new Dictionary<GameObject, RendererCollection>();
-		private bool _changed;
 
 		#endregion
 
@@ -66,11 +64,7 @@ namespace UnityFx.Outline
 			}
 			set
 			{
-				if (_enabled != value)
-				{
-					_enabled = value;
-					_changed = true;
-				}
+				_enabled = value;
 			}
 		}
 
@@ -95,7 +89,6 @@ namespace UnityFx.Outline
 					}
 
 					_zOrder = value;
-					_changed = true;
 				}
 			}
 		}
@@ -174,7 +167,6 @@ namespace UnityFx.Outline
 			if (!_outlineObjects.ContainsKey(go))
 			{
 				_outlineObjects.Add(go, new RendererCollection(go, ignoreLayerMask));
-				_changed = true;
 			}
 		}
 
@@ -217,13 +209,13 @@ namespace UnityFx.Outline
 		{
 			if (_enabled)
 			{
-				_settings.SetResources(resources);
+				_settings.OutlineResources = resources;
 
 				foreach (var kvp in _outlineObjects)
 				{
 					if (kvp.Key && kvp.Key.activeInHierarchy)
 					{
-						renderer.Render(kvp.Value.GetList(), _settings.OutlineResources, _settings);
+						renderer.Render(kvp.Value.GetList(), resources, _settings);
 					}
 				}
 			}
@@ -255,13 +247,8 @@ namespace UnityFx.Outline
 
 		internal void Reset()
 		{
-			_settings.SetResources(null);
+			_settings.OutlineResources = null;
 			_outlineObjects.Clear();
-		}
-
-		internal void UpdateChanged()
-		{
-			_settings.UpdateChanged();
 		}
 
 		internal void SetCollection(OutlineLayerCollection collection)
@@ -382,10 +369,9 @@ namespace UnityFx.Outline
 		/// <inheritdoc/>
 		public bool Remove(GameObject go)
 		{
-			if (go != null && _outlineObjects.Remove(go))
+			if (!ReferenceEquals(go, null))
 			{
-				_changed = true;
-				return true;
+				return _outlineObjects.Remove(go);
 			}
 
 			return false;
@@ -405,11 +391,7 @@ namespace UnityFx.Outline
 		/// <inheritdoc/>
 		public void Clear()
 		{
-			if (_outlineObjects.Count > 0)
-			{
-				_outlineObjects.Clear();
-				_changed = true;
-			}
+			_outlineObjects.Clear();
 		}
 
 		/// <inheritdoc/>
@@ -431,26 +413,6 @@ namespace UnityFx.Outline
 		IEnumerator IEnumerable.GetEnumerator()
 		{
 			return _outlineObjects.Keys.GetEnumerator();
-		}
-
-		#endregion
-
-		#region IChangeTracking
-
-		/// <inheritdoc/>
-		public bool IsChanged
-		{
-			get
-			{
-				return _changed || _settings.IsChanged;
-			}
-		}
-
-		/// <inheritdoc/>
-		public void AcceptChanges()
-		{
-			_settings.AcceptChanges();
-			_changed = false;
 		}
 
 		#endregion

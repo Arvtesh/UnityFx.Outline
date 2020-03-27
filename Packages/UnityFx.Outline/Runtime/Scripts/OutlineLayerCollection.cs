@@ -4,7 +4,6 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.ComponentModel;
 using UnityEngine;
 
 namespace UnityFx.Outline
@@ -16,7 +15,7 @@ namespace UnityFx.Outline
 	/// <seealso cref="OutlineEffect"/>
 	/// <seealso cref="OutlineSettings"/>
 	[CreateAssetMenu(fileName = "OutlineLayerCollection", menuName = "UnityFx/Outline/Outline Layer Collection")]
-	public sealed class OutlineLayerCollection : ScriptableObject, IList<OutlineLayer>, IChangeTracking
+	public sealed class OutlineLayerCollection : ScriptableObject, IList<OutlineLayer>
 	{
 		#region data
 
@@ -34,7 +33,6 @@ namespace UnityFx.Outline
 		private List<OutlineLayer> _sortedLayers = new List<OutlineLayer>();
 		private OutlineLayerComparer _sortComparer = new OutlineLayerComparer();
 		private bool _orderChanged = true;
-		private bool _changed = true;
 
 		#endregion
 
@@ -72,7 +70,6 @@ namespace UnityFx.Outline
 		internal void SetOrderChanged()
 		{
 			_orderChanged = true;
-			_changed = true;
 		}
 
 		internal void Reset()
@@ -80,14 +77,6 @@ namespace UnityFx.Outline
 			foreach (var layer in _layers)
 			{
 				layer.Reset();
-			}
-		}
-
-		internal void UpdateChanged()
-		{
-			foreach (var layer in _layers)
-			{
-				layer.UpdateChanged();
 			}
 		}
 
@@ -136,7 +125,6 @@ namespace UnityFx.Outline
 					_layers[layerIndex] = value;
 
 					_orderChanged = true;
-					_changed = true;
 				}
 			}
 		}
@@ -167,7 +155,6 @@ namespace UnityFx.Outline
 				_layers.Insert(index, layer);
 
 				_orderChanged = true;
-				_changed = true;
 			}
 		}
 
@@ -180,7 +167,6 @@ namespace UnityFx.Outline
 				_layers.RemoveAt(index);
 
 				_orderChanged = true;
-				_changed = true;
 			}
 		}
 
@@ -219,9 +205,7 @@ namespace UnityFx.Outline
 				layer.SetCollection(this);
 
 				_layers.Add(layer);
-
 				_orderChanged = true;
-				_changed = true;
 			}
 		}
 
@@ -233,7 +217,6 @@ namespace UnityFx.Outline
 				layer.SetCollection(null);
 
 				_sortedLayers.Remove(layer);
-				_changed = true;
 
 				return true;
 			}
@@ -253,7 +236,6 @@ namespace UnityFx.Outline
 
 				_layers.Clear();
 				_sortedLayers.Clear();
-				_changed = true;
 			}
 		}
 
@@ -287,43 +269,6 @@ namespace UnityFx.Outline
 		IEnumerator IEnumerable.GetEnumerator()
 		{
 			return _layers.GetEnumerator();
-		}
-
-		#endregion
-
-		#region IChangeTracking
-
-		/// <inheritdoc/>
-		public bool IsChanged
-		{
-			get
-			{
-				if (_changed)
-				{
-					return true;
-				}
-
-				foreach (var layer in _layers)
-				{
-					if (layer.IsChanged)
-					{
-						return true;
-					}
-				}
-
-				return false;
-			}
-		}
-
-		/// <inheritdoc/>
-		public void AcceptChanges()
-		{
-			foreach (var layer in _layers)
-			{
-				layer.AcceptChanges();
-			}
-
-			_changed = false;
 		}
 
 		#endregion
