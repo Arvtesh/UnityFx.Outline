@@ -300,7 +300,10 @@ namespace UnityFx.Outline
 		{
 			if (camera)
 			{
-				camera.depthTextureMode |= DepthTextureMode.Depth;
+				if (_outlineSettings.RequiresCameraDepth)
+				{
+					camera.depthTextureMode |= DepthTextureMode.Depth;
+				}
 
 				if (!_cameraMap.ContainsKey(camera))
 				{

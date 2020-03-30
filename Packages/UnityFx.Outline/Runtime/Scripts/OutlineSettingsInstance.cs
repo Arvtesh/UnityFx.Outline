@@ -45,6 +45,21 @@ namespace UnityFx.Outline
 			}
 		}
 
+		public bool RequiresCameraDepth
+		{
+			get
+			{
+				var renderMode = _outlineMode;
+
+				if (!ReferenceEquals(_outlineSettings, null))
+				{
+					renderMode = _outlineSettings.OutlineRenderMode;
+				}
+
+				return (renderMode & OutlineRenderFlags.EnableDepthTesting) != 0;
+			}
+		}
+
 		internal OutlineSettingsInstance()
 		{
 		}
