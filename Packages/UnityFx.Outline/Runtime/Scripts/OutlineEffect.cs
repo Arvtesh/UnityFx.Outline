@@ -30,30 +30,9 @@ namespace UnityFx.Outline
 
 		private CommandBuffer _commandBuffer;
 
-#if UNITY_EDITOR
-
-		private int _commandBufferUpdateCounter;
-
-#endif
-
 		#endregion
 
 		#region interface
-
-#if UNITY_EDITOR
-
-		/// <summary>
-		/// Gets number of the command buffer updates since its creation. Only available in editor.
-		/// </summary>
-		public int NumberOfCommandBufferUpdates
-		{
-			get
-			{
-				return _commandBufferUpdateCounter;
-			}
-		}
-
-#endif
 
 		/// <summary>
 		/// Gets or sets resources used by the effect implementation.
@@ -163,13 +142,6 @@ namespace UnityFx.Outline
 				};
 
 				camera.depthTextureMode |= DepthTextureMode.Depth;
-
-#if UNITY_EDITOR
-
-				_commandBufferUpdateCounter = 0;
-
-#endif
-
 				camera.AddCommandBuffer(_cameraEvent, _commandBuffer);
 			}
 		}
@@ -231,12 +203,6 @@ namespace UnityFx.Outline
 					_outlineLayers.Render(renderer, _outlineResources);
 				}
 			}
-
-#if UNITY_EDITOR
-
-			_commandBufferUpdateCounter++;
-
-#endif
 		}
 
 		private void CreateLayersIfNeeded()
