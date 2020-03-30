@@ -15,7 +15,7 @@ namespace UnityFx.Outline
 	/// <seealso cref="OutlineEffect"/>
 	[ExecuteInEditMode]
 	[DisallowMultipleComponent]
-	public sealed partial class OutlineBehaviour : MonoBehaviour, IOutlineSettingsEx
+	public sealed class OutlineBehaviour : MonoBehaviour, IOutlineSettingsEx
 	{
 		#region data
 
@@ -30,7 +30,7 @@ namespace UnityFx.Outline
 
 #pragma warning restore 0649
 
-		private RendererCollection _renderers;
+		private OutlineRendererCollection _renderers;
 		private CommandBuffer _commandBuffer;
 
 		private Dictionary<Camera, CommandBuffer> _cameraMap = new Dictionary<Camera, CommandBuffer>();
@@ -355,6 +355,15 @@ namespace UnityFx.Outline
 			if (_outlineSettings == null)
 			{
 				_outlineSettings = new OutlineSettingsInstance(_outlineResources);
+			}
+		}
+
+		private void CreateRenderersIfNeeded()
+		{
+			if (_renderers == null)
+			{
+				_renderers = new OutlineRendererCollection(gameObject);
+				_renderers.Reset(true);
 			}
 		}
 

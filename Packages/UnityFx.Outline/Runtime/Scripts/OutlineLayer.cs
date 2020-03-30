@@ -30,7 +30,7 @@ namespace UnityFx.Outline
 		private bool _enabled = true;
 
 		private OutlineLayerCollection _parentCollection;
-		private Dictionary<GameObject, RendererCollection> _outlineObjects = new Dictionary<GameObject, RendererCollection>();
+		private Dictionary<GameObject, OutlineRendererCollection> _outlineObjects = new Dictionary<GameObject, OutlineRendererCollection>();
 
 		#endregion
 
@@ -166,7 +166,9 @@ namespace UnityFx.Outline
 
 			if (!_outlineObjects.ContainsKey(go))
 			{
-				_outlineObjects.Add(go, new RendererCollection(go, ignoreLayerMask));
+				var renderers = new OutlineRendererCollection(go);
+				renderers.Reset(false, ignoreLayerMask);
+				_outlineObjects.Add(go, renderers);
 			}
 		}
 
@@ -190,7 +192,7 @@ namespace UnityFx.Outline
 				throw new ArgumentNullException("go");
 			}
 
-			RendererCollection result;
+			OutlineRendererCollection result;
 
 			if (_outlineObjects.TryGetValue(go, out result))
 			{
