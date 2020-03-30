@@ -1,20 +1,20 @@
 {
-    "name": "com.unityfx.outline.postprocessing",
+    "name": "com.unityfx.outline.hdrp",
     "version": "0.1.0",
-    "displayName": "Screen-space outline (Post-processing v2)",
-    "description": "Configurable outline for Unity post-processing stack (v2). Both solid and blurred modes supported (Gauss blur).",
-    "unity": "2018.4",
+    "displayName": "Screen-space outline (HDRP)",
+    "description": "Configurable outline for HDRP.",
+    "unity": "2019.3",
     "dependencies": {
         "com.unityfx.outline": "0.8.0",
-        "com.unity.postprocessing": "2.2.2"
+        "com.unity.render-pipelines.high-definition": "7.0.0"
     },
     "keywords": [
         "UnityFx",
         "UnityFx.Outline",
-        "UnityFx.Outline.PostProcessing",
+        "UnityFx.Outline.HDRP",
         "Outline",
         "Post-processing",
-        "Post-effect"
+        "HDRP"
     ],
     "category": "UnityFx",
     "author": {
