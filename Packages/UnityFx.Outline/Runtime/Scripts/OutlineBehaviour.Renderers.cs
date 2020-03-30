@@ -15,32 +15,11 @@ namespace UnityFx.Outline
 
 		#region implementation
 
-		[ExecuteInEditMode]
-		[DisallowMultipleComponent]
-		private class OutlineRendererHelper : MonoBehaviour
-		{
-			private OutlineBehaviour _parent;
-
-			public void SetParent(OutlineBehaviour parent)
-			{
-				_parent = parent;
-			}
-
-			private void OnWillRenderObject()
-			{
-				if (isActiveAndEnabled && _parent)
-				{
-					_parent.OnWillRenderObject();
-				}
-			}
-		}
-
 		private sealed class RendererCollection : ICollection<Renderer>
 		{
 			#region data
 
 			private readonly List<Renderer> _renderers = new List<Renderer>();
-			private readonly OutlineBehaviour _parent;
 			private readonly GameObject _go;
 
 			#endregion
@@ -51,7 +30,6 @@ namespace UnityFx.Outline
 			{
 				Debug.Assert(parent);
 
-				_parent = parent;
 				_go = parent.gameObject;
 			}
 
@@ -60,20 +38,9 @@ namespace UnityFx.Outline
 				return _renderers;
 			}
 
-			public void Reset()
+			internal void Reset(bool includeInactive)
 			{
-				foreach (var r in _renderers)
-				{
-					Release(r);
-				}
-
-				_renderers.Clear();
-				_parent.GetComponentsInChildren(true, _renderers);
-
-				foreach (var r in _renderers)
-				{
-					Init(r);
-				}
+				_go.GetComponentsInChildren(includeInactive, _renderers);
 			}
 
 			#endregion
@@ -99,29 +66,17 @@ namespace UnityFx.Outline
 			public void Add(Renderer renderer)
 			{
 				Validate(renderer);
-				Init(renderer);
 
 				_renderers.Add(renderer);
 			}
 
 			public bool Remove(Renderer renderer)
 			{
-				if (_renderers.Remove(renderer))
-				{
-					Release(renderer);
-					return true;
-				}
-
-				return false;
+				return _renderers.Remove(renderer);
 			}
 
 			public void Clear()
 			{
-				foreach (var r in _renderers)
-				{
-					Release(r);
-				}
-
 				_renderers.Clear();
 			}
 
@@ -166,34 +121,6 @@ namespace UnityFx.Outline
 				}
 			}
 
-			private void Init(Renderer r)
-			{
-				if (r && r.gameObject != _go)
-				{
-					var c = r.GetComponent<OutlineRendererHelper>();
-
-					if (c == null)
-					{
-						c = r.gameObject.AddComponent<OutlineRendererHelper>();
-					}
-
-					c.SetParent(_parent);
-				}
-			}
-
-			private void Release(Renderer r)
-			{
-				if (r)
-				{
-					var c = r.GetComponent<OutlineRendererHelper>();
-
-					if (c)
-					{
-						DestroyImmediate(c);
-					}
-				}
-			}
-
 			#endregion
 		}
 
@@ -202,7 +129,7 @@ namespace UnityFx.Outline
 			if (_renderers == null)
 			{
 				_renderers = new RendererCollection(this);
-				_renderers.Reset();
+				_renderers.Reset(true);
 			}
 		}
 

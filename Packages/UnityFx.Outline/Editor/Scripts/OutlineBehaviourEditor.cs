@@ -79,18 +79,6 @@ namespace UnityFx.Outline
 				EditorGUI.indentLevel -= 1;
 				EditorGUI.EndDisabledGroup();
 			}
-
-			// 4) Debug info.
-			_debugOpened = EditorGUILayout.Foldout(_debugOpened, "Debug", true);
-
-			if (_debugOpened)
-			{
-				EditorGUI.BeginDisabledGroup(true);
-				EditorGUI.indentLevel += 1;
-				EditorGUILayout.IntField("Command buffer updates", _effect.NumberOfCommandBufferUpdates);
-				EditorGUI.indentLevel -= 1;
-				EditorGUI.EndDisabledGroup();
-			}
 		}
 	}
 }

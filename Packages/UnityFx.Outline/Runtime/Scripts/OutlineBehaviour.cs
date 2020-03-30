@@ -25,6 +25,8 @@ namespace UnityFx.Outline
 		private OutlineResources _outlineResources;
 		[SerializeField, HideInInspector]
 		private OutlineSettingsInstance _outlineSettings;
+		[SerializeField]
+		private bool _updateRenderers;
 
 #pragma warning restore 0649
 
@@ -34,30 +36,9 @@ namespace UnityFx.Outline
 		private Dictionary<Camera, CommandBuffer> _cameraMap = new Dictionary<Camera, CommandBuffer>();
 		private float _cameraMapUpdateTimer;
 
-#if UNITY_EDITOR
-
-		private int _commandBufferUpdateCounter;
-
-#endif
-
 		#endregion
 
 		#region interface
-
-#if UNITY_EDITOR
-
-		/// <summary>
-		/// Gets number of the command buffer updates since its creation. Only available in editor.
-		/// </summary>
-		public int NumberOfCommandBufferUpdates
-		{
-			get
-			{
-				return _commandBufferUpdateCounter;
-			}
-		}
-
-#endif
 
 		/// <summary>
 		/// Gets or sets resources used by the effect implementation.
@@ -132,10 +113,13 @@ namespace UnityFx.Outline
 		private void OnEnable()
 		{
 			CreateCommandBufferIfNeeded();
+			Camera.onPreRender += OnCameraPreRender;
 		}
 
 		private void OnDisable()
 		{
+			Camera.onPreRender -= OnCameraPreRender;
+
 			foreach (var kvp in _cameraMap)
 			{
 				if (kvp.Key)
@@ -165,34 +149,16 @@ namespace UnityFx.Outline
 
 			if (_outlineResources != null && _renderers != null)
 			{
+				if (_updateRenderers)
+				{
+					_renderers.Reset(false);
+				}
+
 				_commandBuffer.Clear();
 
 				using (var renderer = new OutlineRenderer(_commandBuffer, BuiltinRenderTextureType.CameraTarget))
 				{
 					renderer.Render(_renderers.GetList(), _outlineSettings.OutlineResources, _outlineSettings);
-				}
-
-#if UNITY_EDITOR
-
-				_commandBufferUpdateCounter++;
-
-#endif
-			}
-		}
-
-		private void OnWillRenderObject()
-		{
-			if (gameObject.activeInHierarchy && enabled)
-			{
-				var camera = Camera.current;
-
-				if (camera)
-				{
-					if (!_cameraMap.ContainsKey(camera))
-					{
-						camera.AddCommandBuffer(OutlineRenderer.RenderEvent, _commandBuffer);
-						_cameraMap.Add(camera, _commandBuffer);
-					}
 				}
 			}
 		}
@@ -217,7 +183,7 @@ namespace UnityFx.Outline
 
 			if (_renderers != null)
 			{
-				_renderers.Reset();
+				_renderers.Reset(true);
 			}
 		}
 
@@ -330,6 +296,20 @@ namespace UnityFx.Outline
 
 		#region implementation
 
+		private void OnCameraPreRender(Camera camera)
+		{
+			if (camera)
+			{
+				camera.depthTextureMode |= DepthTextureMode.Depth;
+
+				if (!_cameraMap.ContainsKey(camera))
+				{
+					camera.AddCommandBuffer(OutlineRenderer.RenderEvent, _commandBuffer);
+					_cameraMap.Add(camera, _commandBuffer);
+				}
+			}
+		}
+
 		private void RemoveDestroyedCameras()
 		{
 			List<Camera> camerasToRemove = null;
@@ -364,12 +344,6 @@ namespace UnityFx.Outline
 			{
 				_commandBuffer = new CommandBuffer();
 				_commandBuffer.name = string.Format("{0} - {1}", GetType().Name, name);
-
-#if UNITY_EDITOR
-
-				_commandBufferUpdateCounter = 0;
-
-#endif
 			}
 		}
 

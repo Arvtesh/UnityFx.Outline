@@ -162,6 +162,8 @@ namespace UnityFx.Outline
 					name = string.Format("{0} - {1}", GetType().Name, name)
 				};
 
+				camera.depthTextureMode |= DepthTextureMode.Depth;
+
 #if UNITY_EDITOR
 
 				_commandBufferUpdateCounter = 0;
