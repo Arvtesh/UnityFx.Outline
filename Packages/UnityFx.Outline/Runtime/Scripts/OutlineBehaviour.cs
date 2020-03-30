@@ -21,11 +21,11 @@ namespace UnityFx.Outline
 
 #pragma warning disable 0649
 
-		[SerializeField]
+		[SerializeField, Tooltip("Sets outline resources to use. Do not change the defaults unless you know what you're doing.")]
 		private OutlineResources _outlineResources;
 		[SerializeField, HideInInspector]
 		private OutlineSettingsInstance _outlineSettings;
-		[SerializeField]
+		[SerializeField, Tooltip("If set, list of object renderers is updated on each frame. Enable if the object has child renderers which are enabled/disabled frequently.")]
 		private bool _updateRenderers;
 
 #pragma warning restore 0649
