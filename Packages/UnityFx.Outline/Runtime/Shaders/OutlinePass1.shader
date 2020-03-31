@@ -25,9 +25,12 @@ Shader "UnityFx/Outline/HPass"
 			#pragma fragment Frag
 			#include "UnityCG.cginc"
 
+			CBUFFER_START(UnityPerMaterial)
+				int _Width;
+			CBUFFER_END
+
 			UNITY_DECLARE_TEX2D(_MaskTex);
 			float2 _MaskTex_TexelSize;
-			int _Width;
 			float _GaussSamples[32];
 
 			struct v2f

@@ -29,13 +29,16 @@ Shader "UnityFx/Outline/VPassBlend"
 			#pragma fragment Frag
 			#include "UnityCG.cginc"
 
+			CBUFFER_START(UnityPerMaterial)
+				float _Intensity;
+				int _Width;
+				float4 _Color;
+			CBUFFER_END
+
 			UNITY_DECLARE_TEX2D(_MaskTex);
 			float2 _MaskTex_TexelSize;
 			UNITY_DECLARE_TEX2D(_HPassTex);
 			float2 _HPassTex_TexelSize;
-			float4 _Color;
-			float _Intensity;
-			int _Width;
 			float _GaussSamples[32];
 
 			struct v2f
