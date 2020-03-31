@@ -3,7 +3,10 @@
 Channel | UnityFx.Outline |
 ---------|---------------|
 Github | [![GitHub release](https://img.shields.io/github/release/Arvtesh/UnityFx.Outline.svg?logo=github)](https://github.com/Arvtesh/UnityFx.Outline/releases)
-Npm | [![Npm release](https://img.shields.io/npm/v/com.unityfx.outline.svg)](https://www.npmjs.com/package/com.unityfx.outline) ![npm](https://img.shields.io/npm/dt/com.unityfx.outline)
+Npm (core + built-in RP) | [![Npm release](https://img.shields.io/npm/v/com.unityfx.outline.svg)](https://www.npmjs.com/package/com.unityfx.outline) ![npm](https://img.shields.io/npm/dt/com.unityfx.outline)
+Npm (Post-processing v2) | [![Npm release](https://img.shields.io/npm/v/com.unityfx.outline.postprocessing.svg)](https://www.npmjs.com/package/com.unityfx.outline.postprocessing) ![npm](https://img.shields.io/npm/dt/com.unityfx.outline.postprocessing)
+Npm (URP) | [![Npm release](https://img.shields.io/npm/v/com.unityfx.outline.urp.svg)](https://www.npmjs.com/package/com.unityfx.outline.urp) ![npm](https://img.shields.io/npm/dt/com.unityfx.outline.urp)
+Npm (HDRP) | [![Npm release](https://img.shields.io/npm/v/com.unityfx.outline.hdrp.svg)](https://www.npmjs.com/package/com.unityfx.outline.hdrp) ![npm](https://img.shields.io/npm/dt/com.unityfx.outline.hdrp)
 
 **Requires Unity 2017 or higher.**<br/>
 **Compatible with [Unity Post-processing Stack v2](https://github.com/Unity-Technologies/PostProcessing/tree/v2).**
@@ -42,10 +45,13 @@ You can get the code by cloning the github repository using your preffered git c
 git clone https://github.com/Arvtesh/UnityFx.Outline.git
 ```
 
-### Npm package
-[![NPM](https://nodei.co/npm/com.unityfx.outline.png)](https://www.npmjs.com/package/com.unityfx.outline)
+### Npm packages
+[![NPM](https://nodei.co/npm/com.unityfx.outline.png)](https://www.npmjs.com/package/com.unityfx.outline)<br/>
+[![NPM](https://nodei.co/npm/com.unityfx.outline.postprocessing.png)](https://www.npmjs.com/package/com.unityfx.outline.postprocessing)<br/>
+[![NPM](https://nodei.co/npm/com.unityfx.outline.urp.png)](https://www.npmjs.com/package/com.unityfx.outline.urp)<br/>
+[![NPM](https://nodei.co/npm/com.unityfx.outline.hdrp.png)](https://www.npmjs.com/package/com.unityfx.outline.hdrp)<br/>
 
-Npm package is available at [npmjs.com](https://www.npmjs.com/package/com.unityfx.outline). To use it, add the following line to dependencies section of your `manifest.json`. Unity should download and link the package automatically:
+Npm core package is available at [npmjs.com](https://www.npmjs.com/package/com.unityfx.outline). There are dedicated packages for [Post-processing Stack v2](https://github.com/Unity-Technologies/PostProcessing/tree/v2), [Universal Render Pipeline](https://docs.unity3d.com/Packages/com.unity.render-pipelines.universal@8.0/manual/index.html) and [High Definition Render Pipeline](https://docs.unity3d.com/Packages/com.unity.render-pipelines.high-definition@8.0/manual/index.html). To use the packages, add the following line to dependencies section of your `manifest.json`. Unity should download and link the package automatically:
 ```json
 {
   "scopedRegistries": [
@@ -58,7 +64,10 @@ Npm package is available at [npmjs.com](https://www.npmjs.com/package/com.unityf
     }
   ],
   "dependencies": {
-    "com.unityfx.outline": "0.7.0"
+    "com.unityfx.outline": "0.8.0",
+    "com.unityfx.outline.postprocessing": "0.1.0",
+    "com.unityfx.outline.urp": "0.1.0",
+    "com.unityfx.outline.hdrp": "0.1.0",
   }
 }
 ```
@@ -69,7 +78,7 @@ Install the package and import the namespace:
 using UnityFx.Outline;
 ```
 
-### Per-camera outlines
+### Per-camera outlines (built-in RP)
 ![Outline demo](Docs/OutlineEffectInspector.png "OutlineEffect Inspector")
 
 Add `OutlineEffect` script to a camera that should render outlines. Then add and configure as many layers as you need:
@@ -84,6 +93,21 @@ layer.Add(myGo);
 
 outlineEffect.OutlineLayers.Add(layer);
 ```
+or
+```csharp
+var outlineEffect = Camera.main.GetComponent<OutlineEffect>();
+
+// This adds layer 0 (if it is not there) and then adds myGo.
+outlineEffect.AddGameObject(myGo);
+
+// Now setup the layer.
+var layer = outlineEffect[0];
+
+layer.OutlineColor = Color.red;
+layer.OutlineWidth = 7;
+layer.OutlineMode = OutlineMode.Blurred;
+layer.Add(myGo);
+```
 
 This can be done at runtime or while editing a scene. If you choose to assign the script in runtime make sure `OutlineEffect.OutlineResources` is initialized. Disabling `OutlineEffect` script disables outlining for the camera (and frees all resources used).
 
@@ -97,7 +121,7 @@ var effect2 = camera2.GetComponent<OutlineEffect>();
 effect1.ShareLayersWith(effect2);
 ```
 
-### Per-object outlines
+### Per-object outlines (built-in RP)
 ![Outline demo](Docs/OutlineBehaviourInspector.png "OutlineBehaviour Inspector")
 
 Add `OutlineBehaviour` script to objects that should be outlined (in edit mode or in runtime). Make sure `OutlineBehaviour.OutlineResources` is initialized. You can customize outline settings either via Unity inspector or via script. Objects with `OutlineBehaviour` assigned render outlines in all cameras.
@@ -143,6 +167,7 @@ myCamera.AddCommandBuffer(OutlineRenderer.RenderEvent, commandBuffer);
 ```
 
 ### Integration with Unity post-processing.
+[![NPM](https://nodei.co/npm/com.unityfx.outline.postprocessing.png)](https://www.npmjs.com/package/com.unityfx.outline.postprocessing)
 
 The outline effect can easily be added to [Post-processing Stack v2](https://github.com/Unity-Technologies/PostProcessing/tree/v2). A minimal integration example is shown below:
 ```csharp
@@ -173,6 +198,12 @@ public sealed class OutlineEffectRenderer : PostProcessEffectRenderer<Outline>
 For the sake of simplicity the sample does not include any kind of error checking and no editor integration provided. In real world app the `Outline` class should expose its data to Unity editor either via custom inspector or using parameter overrides. Also, there are quite a few optimizations missing (for example, resusing `RuntimeUtilities.fullscreenTriangle` value as `OutlineResources.FullscreenTriangleMesh`).
 
 More info on writing custom post processing effects can be found [here](https://docs.unity3d.com/Packages/com.unity.postprocessing@2.2/manual/Writing-Custom-Effects.html).
+
+### Integration with Universal Render Pipeline (URP).
+[![NPM](https://nodei.co/npm/com.unityfx.outline.urp.png)](https://www.npmjs.com/package/com.unityfx.outline.urp)
+
+### Integration with High Definition Render Pipeline (HDRP).
+[![NPM](https://nodei.co/npm/com.unityfx.outline.hdrp.png)](https://www.npmjs.com/package/com.unityfx.outline.hdrp)
 
 ## Motivation
 The project was initially created to help author with his [Unity3d](https://unity3d.com) projects. There are not many reusable open-source examples of it, so here it is. Hope it will be useful for someone.
