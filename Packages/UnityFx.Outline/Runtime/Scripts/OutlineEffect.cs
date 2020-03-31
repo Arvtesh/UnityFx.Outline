@@ -2,7 +2,7 @@
 // See the LICENSE.md file in the project root for more information.
 
 using System;
-using System.Runtime.CompilerServices;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Rendering;
 
@@ -46,7 +46,7 @@ namespace UnityFx.Outline
 			}
 			set
 			{
-				if (value == null)
+				if (ReferenceEquals(value, null))
 				{
 					throw new ArgumentNullException("OutlineResources");
 				}
@@ -56,25 +56,15 @@ namespace UnityFx.Outline
 		}
 
 		/// <summary>
-		/// Gets or sets outline layers.
+		/// Gets collection of outline layers.
 		/// </summary>
-		/// <exception cref="ArgumentNullException">Thrown if setter argument is <see langword="null"/>.</exception>
 		/// <seealso cref="ShareLayersWith(OutlineEffect)"/>
-		public OutlineLayerCollection OutlineLayers
+		public IList<OutlineLayer> OutlineLayers
 		{
 			get
 			{
 				CreateLayersIfNeeded();
 				return _outlineLayers;
-			}
-			set
-			{
-				if (value == null)
-				{
-					throw new ArgumentNullException("OutlineLayers");
-				}
-
-				_outlineLayers = value;
 			}
 		}
 
@@ -108,6 +98,38 @@ namespace UnityFx.Outline
 		}
 
 		/// <summary>
+		/// Adds the <see cref="GameObject"/> passed to the first outline layer. Creates the layer if needed.
+		/// </summary>
+		/// <param name="go">The <see cref="GameObject"/> to add and render outline for.</param>
+		/// <seealso cref="AddGameObject(GameObject, int)"/>
+		public void AddGameObject(GameObject go)
+		{
+			AddGameObject(go, 0);
+		}
+
+		/// <summary>
+		/// Adds the <see cref="GameObject"/> passed to the specified outline layer. Creates the layer if needed.
+		/// </summary>
+		/// <param name="go">The <see cref="GameObject"/> to add and render outline for.</param>
+		/// <seealso cref="AddGameObject(GameObject)"/>
+		public void AddGameObject(GameObject go, int layerIndex)
+		{
+			if (layerIndex < 0)
+			{
+				throw new ArgumentOutOfRangeException("layerIndex");
+			}
+
+			CreateLayersIfNeeded();
+
+			while (_outlineLayers.Count <= layerIndex)
+			{
+				_outlineLayers.Add(new OutlineLayer());
+			}
+
+			_outlineLayers[layerIndex].Add(go);
+		}
+
+		/// <summary>
 		/// Shares <see cref="OutlineLayers"/> with another <see cref="OutlineEffect"/> instance.
 		/// </summary>
 		/// <param name="other">Effect to share <see cref="OutlineLayers"/> with.</param>
@@ -117,7 +139,6 @@ namespace UnityFx.Outline
 			if (other)
 			{
 				CreateLayersIfNeeded();
-
 				other._outlineLayers = _outlineLayers;
 			}
 		}

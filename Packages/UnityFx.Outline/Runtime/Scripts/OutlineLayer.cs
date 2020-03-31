@@ -130,7 +130,7 @@ namespace UnityFx.Outline
 		/// <exception cref="ArgumentNullException">Thrown if <paramref name="settings"/> is <see langword="null"/>.</exception>
 		public OutlineLayer(OutlineSettings settings)
 		{
-			if (settings == null)
+			if (ReferenceEquals(settings, null))
 			{
 				throw new ArgumentNullException("settings");
 			}
@@ -144,7 +144,7 @@ namespace UnityFx.Outline
 		/// <exception cref="ArgumentNullException">Thrown if <paramref name="settings"/> is <see langword="null"/>.</exception>
 		public OutlineLayer(string name, OutlineSettings settings)
 		{
-			if (settings == null)
+			if (ReferenceEquals(settings, null))
 			{
 				throw new ArgumentNullException("settings");
 			}
@@ -159,7 +159,7 @@ namespace UnityFx.Outline
 		/// <exception cref="ArgumentNullException">Thrown if <paramref name="go"/> is <see langword="null"/>.</exception>
 		public void Add(GameObject go, int ignoreLayerMask)
 		{
-			if (go == null)
+			if (ReferenceEquals(go, null))
 			{
 				throw new ArgumentNullException("go");
 			}
@@ -187,7 +187,7 @@ namespace UnityFx.Outline
 		/// <exception cref="ArgumentNullException">Thrown if <paramref name="go"/> is <see langword="null"/>.</exception>
 		public bool TryGetRenderers(GameObject go, out ICollection<Renderer> renderers)
 		{
-			if (go == null)
+			if (ReferenceEquals(go, null))
 			{
 				throw new ArgumentNullException("go");
 			}
