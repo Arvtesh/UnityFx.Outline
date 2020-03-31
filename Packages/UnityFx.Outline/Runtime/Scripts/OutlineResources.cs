@@ -204,17 +204,19 @@ namespace UnityFx.Outline
 		/// </summary>
 		public float[] GetGaussSamples(int width)
 		{
+			var index = Mathf.Clamp(width, 1, OutlineRenderer.MaxWidth) - 1;
+
 			if (_gaussSamples == null)
 			{
 				_gaussSamples = new float[OutlineRenderer.MaxWidth][];
 			}
 
-			if (_gaussSamples[width] == null)
+			if (_gaussSamples[index] == null)
 			{
-				_gaussSamples[width] = OutlineRenderer.GetGaussSamples(width, null);
+				_gaussSamples[index] = OutlineRenderer.GetGaussSamples(width, null);
 			}
 
-			return _gaussSamples[width];
+			return _gaussSamples[index];
 		}
 
 		/// <summary>
