@@ -5,14 +5,17 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/); this proj
 
 ## [0.8.0] - unreleased
 
-Added depth testing support and performance optimizations.
+Added depth testing support, SRP support and performance optimizations.
 
 ### Added
 - Added support for depth testing when rendering outlines. When enabled, outlines are only rendered around the visible object parts ([#1](https://github.com/Arvtesh/UnityFx.Outline/issues/1)).
+- Added a few convenience methods to `OutlineEffect`.
+- Added editor tooltips for outline component fileds.
 
 ### Fixed
 - Get rid of GC allocatinos during command buffer updates.
 - Fixed compiler warning in post-processing compatibility package (0649).
+- Fixed `IndexOutOfRangeException` when setting outline width to max value ([#4](https://github.com/Arvtesh/UnityFx.Outline/issues/4)).
 
 ### Removed
 - Removed change tracking support in package entities ([#2](https://github.com/Arvtesh/UnityFx.Outline/issues/2)).
