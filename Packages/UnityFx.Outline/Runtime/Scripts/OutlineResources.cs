@@ -75,7 +75,7 @@ namespace UnityFx.Outline
 		{
 			get
 			{
-				if (_renderMaterial == null)
+				if (ReferenceEquals(_renderMaterial, null))
 				{
 					_renderMaterial = new Material(RenderShader)
 					{
@@ -95,7 +95,7 @@ namespace UnityFx.Outline
 		{
 			get
 			{
-				if (_hPassMaterial == null)
+				if (ReferenceEquals(_hPassMaterial, null))
 				{
 					_hPassMaterial = new Material(HPassShader)
 					{
@@ -115,7 +115,7 @@ namespace UnityFx.Outline
 		{
 			get
 			{
-				if (_vPassMaterial == null)
+				if (ReferenceEquals(_vPassMaterial, null))
 				{
 					_vPassMaterial = new Material(VPassBlendShader)
 					{
@@ -167,7 +167,7 @@ namespace UnityFx.Outline
 		{
 			get
 			{
-				if (_fullscreenTriangleMesh == null)
+				if (ReferenceEquals(_fullscreenTriangleMesh, null))
 				{
 					_fullscreenTriangleMesh = new Mesh()
 					{
