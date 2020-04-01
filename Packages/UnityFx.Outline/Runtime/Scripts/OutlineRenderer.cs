@@ -125,7 +125,7 @@ namespace UnityFx.Outline
 		/// <param name="rt">Render target.</param>
 		/// <exception cref="ArgumentNullException">Thrown if <paramref name="commandBuffer"/> is <see langword="null"/>.</exception>
 		public OutlineRenderer(CommandBuffer commandBuffer, BuiltinRenderTextureType rt)
-			: this(commandBuffer, rt, rt)
+			: this(commandBuffer, rt, rt, Vector2Int.zero)
 		{
 		}
 
@@ -136,7 +136,7 @@ namespace UnityFx.Outline
 		/// <param name="rt">Render target.</param>
 		/// <exception cref="ArgumentNullException">Thrown if <paramref name="commandBuffer"/> is <see langword="null"/>.</exception>
 		public OutlineRenderer(CommandBuffer commandBuffer, RenderTargetIdentifier rt)
-			: this(commandBuffer, rt, rt)
+			: this(commandBuffer, rt, rt, Vector2Int.zero)
 		{
 		}
 
@@ -148,19 +148,35 @@ namespace UnityFx.Outline
 		/// <param name="dst">Render target.</param>
 		/// <exception cref="ArgumentNullException">Thrown if <paramref name="commandBuffer"/> is <see langword="null"/>.</exception>
 		public OutlineRenderer(CommandBuffer commandBuffer, RenderTargetIdentifier src, RenderTargetIdentifier dst)
+			: this(commandBuffer, src, dst, Vector2Int.zero)
+		{
+		}
+
+		/// <summary>
+		/// Initializes a new instance of the <see cref="OutlineRenderer"/> struct.
+		/// </summary>
+		/// <param name="commandBuffer">A <see cref="CommandBuffer"/> to render the effect to. It should be cleared manually (if needed) before passing to this method.</param>
+		/// <param name="src">Source image. Can be the same as <paramref name="dst"/>.</param>
+		/// <param name="dst">Render target.</param>
+		/// <param name="rtSize">Size of the temporaty render textures.</param>
+		/// <exception cref="ArgumentNullException">Thrown if <paramref name="commandBuffer"/> is <see langword="null"/>.</exception>
+		public OutlineRenderer(CommandBuffer commandBuffer, RenderTargetIdentifier src, RenderTargetIdentifier dst, Vector2Int rtSize)
 		{
 			if (commandBuffer == null)
 			{
 				throw new ArgumentNullException("commandBuffer");
 			}
 
+			var cx = rtSize.x > 0 ? rtSize.x : -1;
+			var cy = rtSize.y > 0 ? rtSize.y : -1;
+
 			_source = src;
 			_destination = dst;
 
 			_commandBuffer = commandBuffer;
 			_commandBuffer.BeginSample(EffectName);
-			_commandBuffer.GetTemporaryRT(_maskRtId, -1, -1, 0, FilterMode.Bilinear, RenderTextureFormat.R8);
-			_commandBuffer.GetTemporaryRT(_hPassRtId, -1, -1, 0, FilterMode.Bilinear, RenderTextureFormat.R8);
+			_commandBuffer.GetTemporaryRT(_maskRtId, cx, cy, 0, FilterMode.Bilinear, RenderTextureFormat.R8);
+			_commandBuffer.GetTemporaryRT(_hPassRtId, cx, cy, 0, FilterMode.Bilinear, RenderTextureFormat.R8);
 
 			// Need to copy src content into dst if they are not the same. For instance this is the case when rendering
 			// the outline effect as part of Unity Post Processing stack.

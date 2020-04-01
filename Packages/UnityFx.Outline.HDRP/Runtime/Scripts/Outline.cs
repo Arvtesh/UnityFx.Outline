@@ -2,6 +2,7 @@
 // See the LICENSE.md file in the project root for more information.
 
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.HighDefinition;
@@ -16,18 +17,36 @@ namespace UnityFx.Outline.HDRP
 
 #pragma warning disable 0649
 
+		[Serializable]
+		private class OutlineResourcesParameter : VolumeParameter<OutlineResources>
+		{
+		}
+
+		[Serializable]
+		private class OutlineLayersParameter : VolumeParameter<OutlineLayerCollection>
+		{
+		}
+
 		[SerializeField, HideInInspector]
 		private OutlineResources _defaultResources;
 		[SerializeField]
-		private VolumeParameter<OutlineResources> _resources = new VolumeParameter<OutlineResources>();
+		private OutlineResourcesParameter _resources = new OutlineResourcesParameter();
 		[SerializeField]
-		private VolumeParameter<OutlineLayerCollection> _layers = new VolumeParameter<OutlineLayerCollection>();
+		private OutlineLayersParameter _layers = new OutlineLayersParameter();
 
 #pragma warning restore 0649
 
 		#endregion
 
 		#region interface
+
+		public IList<OutlineLayer> OutlineLayers
+		{
+			get
+			{
+				return _layers.value;
+			}
+		}
 
 		#endregion
 
@@ -37,17 +56,18 @@ namespace UnityFx.Outline.HDRP
 		{
 			get
 			{
-				return CustomPostProcessInjectionPoint.AfterPostProcess;
+				return CustomPostProcessInjectionPoint.BeforePostProcess;
 			}
 		}
 
 		public override void Setup()
 		{
+			base.Setup();
 		}
 
 		public override void Render(CommandBuffer cmd, HDCamera camera, RTHandle source, RTHandle destination)
 		{
-			using (var renderer = new OutlineRenderer(cmd, source, destination))
+			using (var renderer = new OutlineRenderer(cmd, source, destination, destination.referenceSize))
 			{
 				_layers.value.Render(renderer, _resources.value);
 			}
@@ -55,6 +75,7 @@ namespace UnityFx.Outline.HDRP
 
 		public override void Cleanup()
 		{
+			base.Cleanup();
 		}
 
 		#endregion
