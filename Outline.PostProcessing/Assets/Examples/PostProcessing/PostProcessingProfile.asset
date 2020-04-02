@@ -1,0 +1,39 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8e6292b2c06870d4495f009f912b9600, type: 3}
+  m_Name: PostProcessingProfile
+  m_EditorClassIdentifier: 
+  settings:
+  - {fileID: 114600372921182068}
+--- !u!114 &114600372921182068
+MonoBehaviour:
+  m_ObjectHideFlags: 3
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 362f6fe821115814693a671c047d5f31, type: 3}
+  m_Name: Outline
+  m_EditorClassIdentifier: 
+  active: 1
+  enabled:
+    overrideState: 1
+    value: 1
+  _defaultResources: {fileID: 11400000, guid: d28e70f030b1a634db9a6a6d5478ef19, type: 2}
+  Resources:
+    overrideState: 0
+    value: {fileID: 11400000, guid: d28e70f030b1a634db9a6a6d5478ef19, type: 2}
+  Layers:
+    overrideState: 0
+    value: {fileID: 0}
