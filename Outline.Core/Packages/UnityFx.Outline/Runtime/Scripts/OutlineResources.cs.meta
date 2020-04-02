@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: b503341e0a514e3489c4851727e68257
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences:
+  - RenderShader: {fileID: 4800000, guid: ac20fbf75bafe454aba5ef3c098349df, type: 3}
+  - HPassShader: {fileID: 4800000, guid: 41c9acbf41c8245498ac9beab378de12, type: 3}
+  - VPassBlendShader: {fileID: 4800000, guid: 1df0cb1700e142f4ca3b28297d3957da, type: 3}
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
