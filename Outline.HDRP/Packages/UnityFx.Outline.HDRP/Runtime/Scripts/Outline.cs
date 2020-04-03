@@ -67,7 +67,7 @@ namespace UnityFx.Outline.HDRP
 
 		public override void Render(CommandBuffer cmd, HDCamera camera, RTHandle source, RTHandle destination)
 		{
-			using (var renderer = new OutlineRenderer(cmd, source, destination, destination.referenceSize))
+			using (var renderer = new OutlineRenderer(cmd, source, destination, source.referenceSize))
 			{
 				_layers.value.Render(renderer, _resources.value);
 			}
@@ -99,6 +99,11 @@ namespace UnityFx.Outline.HDRP
 
 		public bool IsActive()
 		{
+			if (!Application.isPlaying)
+			{
+				return false;
+			}
+
 			if (_resources == null || _layers == null)
 			{
 				return false;
