@@ -1,0 +1,33 @@
+{
+    "name": "com.unityfx.outline.hdrp",
+    "version": "0.1.0",
+    "displayName": "Screen-space outline (HDRP)",
+    "description": "Configurable outline for HDRP.",
+    "unity": "2019.3",
+    "dependencies": {
+        "com.unityfx.outline": "0.8.0",
+        "com.unity.render-pipelines.high-definition": "7.0.0"
+    },
+    "keywords": [
+        "UnityFx",
+        "UnityFx.Outline",
+        "UnityFx.Outline.HDRP",
+        "Outline",
+        "Post-processing",
+        "HDRP"
+    ],
+    "category": "UnityFx",
+    "author": {
+        "name": "Arvtesh",
+        "email": "arvtesh@gmail.com"
+    },
+    "license": "MIT",
+    "homepage": "https://github.com/Arvtesh/UnityFx.Outline",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/Arvtesh/UnityFx.Outline.git"
+    },
+    "bugs": {
+        "url": "https://github.com/Arvtesh/UnityFx.Outline/issues"
+    }
+}
