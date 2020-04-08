@@ -3,9 +3,9 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/); this project adheres to [Semantic Versioning](http://semver.org/).
 
-## [0.8.0] - unreleased
+## [0.7.2] - 2020.04.08
 
-Added depth testing support, SRP support and performance optimizations.
+Depth testing support and performance optimizations.
 
 ### Added
 - Added support for depth testing when rendering outlines. When enabled, outlines are only rendered around the visible object parts ([#1](https://github.com/Arvtesh/UnityFx.Outline/issues/1)).
