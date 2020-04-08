@@ -3,6 +3,22 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/); this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [0.7.2] - 2020.04.08
+
+Depth testing support and performance optimizations.
+
+### Added
+- Added support for depth testing when rendering outlines. When enabled, outlines are only rendered around the visible object parts ([#1](https://github.com/Arvtesh/UnityFx.Outline/issues/1)).
+- Added a few convenience methods to `OutlineEffect`.
+- Added editor tooltips for outline component fileds.
+
+### Fixed
+- Get rid of GC allocatinos during command buffer updates.
+- Fixed `IndexOutOfRangeException` when setting outline width to max value ([#4](https://github.com/Arvtesh/UnityFx.Outline/issues/4)).
+
+### Removed
+- Removed change tracking support in package entities ([#2](https://github.com/Arvtesh/UnityFx.Outline/issues/2)).
+
 ## [0.7.1] - 2020.01.28
 
 Bugfixes and project layout changes.

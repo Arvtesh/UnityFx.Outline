@@ -5,8 +5,6 @@ Channel | UnityFx.Outline |
 Github | [![GitHub release](https://img.shields.io/github/release/Arvtesh/UnityFx.Outline.svg?logo=github)](https://github.com/Arvtesh/UnityFx.Outline/releases)
 Npm (core + built-in RP) | [![Npm release](https://img.shields.io/npm/v/com.unityfx.outline.svg)](https://www.npmjs.com/package/com.unityfx.outline) ![npm](https://img.shields.io/npm/dt/com.unityfx.outline)
 Npm (Post-processing v2) | [![Npm release](https://img.shields.io/npm/v/com.unityfx.outline.postprocessing.svg)](https://www.npmjs.com/package/com.unityfx.outline.postprocessing) ![npm](https://img.shields.io/npm/dt/com.unityfx.outline.postprocessing)
-Npm (URP) | [![Npm release](https://img.shields.io/npm/v/com.unityfx.outline.urp.svg)](https://www.npmjs.com/package/com.unityfx.outline.urp) ![npm](https://img.shields.io/npm/dt/com.unityfx.outline.urp)
-Npm (HDRP) | [![Npm release](https://img.shields.io/npm/v/com.unityfx.outline.hdrp.svg)](https://www.npmjs.com/package/com.unityfx.outline.hdrp) ![npm](https://img.shields.io/npm/dt/com.unityfx.outline.hdrp)
 
 **Requires Unity 2017 or higher.**<br/>
 **Compatible with [Unity Post-processing Stack v2](https://github.com/Unity-Technologies/PostProcessing/tree/v2).**
@@ -48,8 +46,6 @@ git clone https://github.com/Arvtesh/UnityFx.Outline.git
 ### Npm packages
 [![NPM](https://nodei.co/npm/com.unityfx.outline.png)](https://www.npmjs.com/package/com.unityfx.outline)<br/>
 [![NPM](https://nodei.co/npm/com.unityfx.outline.postprocessing.png)](https://www.npmjs.com/package/com.unityfx.outline.postprocessing)<br/>
-[![NPM](https://nodei.co/npm/com.unityfx.outline.urp.png)](https://www.npmjs.com/package/com.unityfx.outline.urp)<br/>
-[![NPM](https://nodei.co/npm/com.unityfx.outline.hdrp.png)](https://www.npmjs.com/package/com.unityfx.outline.hdrp)<br/>
 
 Npm core package is available at [npmjs.com](https://www.npmjs.com/package/com.unityfx.outline). There are dedicated packages for [Post-processing Stack v2](https://github.com/Unity-Technologies/PostProcessing/tree/v2), [Universal Render Pipeline](https://docs.unity3d.com/Packages/com.unity.render-pipelines.universal@8.0/manual/index.html) and [High Definition Render Pipeline](https://docs.unity3d.com/Packages/com.unity.render-pipelines.high-definition@8.0/manual/index.html). To use the packages, add the following line to dependencies section of your `manifest.json`. Unity should download and link the package automatically:
 ```json
@@ -64,10 +60,8 @@ Npm core package is available at [npmjs.com](https://www.npmjs.com/package/com.u
     }
   ],
   "dependencies": {
-    "com.unityfx.outline": "0.8.0",
-    "com.unityfx.outline.postprocessing": "0.1.0",
-    "com.unityfx.outline.urp": "0.1.0",
-    "com.unityfx.outline.hdrp": "0.1.0",
+    "com.unityfx.outline": "0.7.2",
+    "com.unityfx.outline.postprocessing": "0.1.0"
   }
 }
 ```
@@ -88,7 +82,7 @@ var layer = new OutlineLayer("MyOutlines");
 
 layer.OutlineColor = Color.red;
 layer.OutlineWidth = 7;
-layer.OutlineMode = OutlineMode.Blurred;
+layer.OutlineRenderMode = OutlineRenderFlags.Blurred;
 layer.Add(myGo);
 
 outlineEffect.OutlineLayers.Add(layer);
@@ -105,7 +99,7 @@ var layer = outlineEffect[0];
 
 layer.OutlineColor = Color.red;
 layer.OutlineWidth = 7;
-layer.OutlineMode = OutlineMode.Blurred;
+layer.OutlineRenderMode = OutlineRenderFlags.Blurred;
 layer.Add(myGo);
 ```
 
@@ -135,6 +129,16 @@ outlineBehaviour.OutlineResources = myResources;
 outlineBehaviour.OutlineColor = Color.green;
 outlineBehaviour.OutlineWidth = 2;
 outlineBehaviour.OutlineIntensity = 10;
+```
+
+### Depth testing
+By default depth testing is disabled when rendering outlines. This behaviour can be overriden by setting `OutlineRenderFlags.EnableDepthTesting` flag of `OutlineRenderMode` or settings the corresponding checkbox in editor.
+```csharp
+var outlineSettings = GetComponent<OutlineBehaviour>();
+
+outlineSettings.OutlineColor = Color.green;
+outlineSettings.OutlineWidth = 2;
+outlineSettings.OutlineRenderMode = OutlineRenderFlags.Blurred | OutlineRenderFlags.EnableDepthTesting;
 ```
 
 ### Extensibility
@@ -202,8 +206,12 @@ More info on writing custom post processing effects can be found [here](https://
 ### Integration with Universal Render Pipeline (URP).
 [![NPM](https://nodei.co/npm/com.unityfx.outline.urp.png)](https://www.npmjs.com/package/com.unityfx.outline.urp)
 
+TODO
+
 ### Integration with High Definition Render Pipeline (HDRP).
 [![NPM](https://nodei.co/npm/com.unityfx.outline.hdrp.png)](https://www.npmjs.com/package/com.unityfx.outline.hdrp)
+
+TODO
 
 ## Motivation
 The project was initially created to help author with his [Unity3d](https://unity3d.com) projects. There are not many reusable open-source examples of it, so here it is. Hope it will be useful for someone.
