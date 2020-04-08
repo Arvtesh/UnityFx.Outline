@@ -1,7 +1,7 @@
 # UnityFx.Outline
 
 ## SUMMARY
-Screen-space outline effects for Unity.
+Screen-space outline effect for Unity.
 
 ## USEFUL LINKS
 * [Github project](https://github.com/Arvtesh/UnityFx.Outline)

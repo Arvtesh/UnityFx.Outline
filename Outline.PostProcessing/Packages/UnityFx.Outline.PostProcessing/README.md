@@ -1,7 +1,7 @@
 # UnityFx.Outline.PostProcessing
 
 ## SUMMARY
-Screen-space outline effects for Unity Post-processing Stack v2.
+Screen-space outline effect for Unity Post-processing Stack v2.
 
 ## USEFUL LINKS
 * [Github project](https://github.com/Arvtesh/UnityFx.Outline)
