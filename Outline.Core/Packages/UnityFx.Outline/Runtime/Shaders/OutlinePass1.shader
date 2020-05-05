@@ -29,8 +29,8 @@ Shader "UnityFx/Outline/HPass"
 				int _Width;
 			CBUFFER_END
 
-			UNITY_DECLARE_TEX2D(_MaskTex);
-			float2 _MaskTex_TexelSize;
+			UNITY_DECLARE_TEX2D(_MainTex);
+			float2 _MainTex_TexelSize;
 			float _GaussSamples[32];
 
 			struct v2f
@@ -51,13 +51,13 @@ Shader "UnityFx/Outline/HPass"
 
 			float Frag(v2f i) : COLOR
 			{
-				float TX_x = _MaskTex_TexelSize.x;
+				float TX_x = _MainTex_TexelSize.x;
 				float intensity;
 				int n = _Width;
 
 				for (int k = -n; k <= n; k += 1)
 				{
-					intensity += UNITY_SAMPLE_TEX2D(_MaskTex, i.uvs.xy + float2(k * TX_x, 0)).r * _GaussSamples[abs(k)];
+					intensity += UNITY_SAMPLE_TEX2D(_MainTex, i.uvs.xy + float2(k * TX_x, 0)).r * _GaussSamples[abs(k)];
 				}
 
 				return intensity;

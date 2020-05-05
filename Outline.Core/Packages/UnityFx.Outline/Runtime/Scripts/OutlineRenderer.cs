@@ -475,7 +475,7 @@ namespace UnityFx.Outline
 			}
 
 			// Set source texture as _MainTex to match Blit behavior.
-			_commandBuffer.SetGlobalTexture(_mainRtId, _source);
+			_commandBuffer.SetGlobalTexture(_mainRtId, _hPassRtId);
 
 			// Set destination texture as render target.
 #if UNITY_2018_2_OR_NEWER

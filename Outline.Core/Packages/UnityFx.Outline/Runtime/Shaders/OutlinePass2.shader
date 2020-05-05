@@ -35,10 +35,9 @@ Shader "UnityFx/Outline/VPassBlend"
 				float4 _Color;
 			CBUFFER_END
 
+			UNITY_DECLARE_TEX2D(_MainTex);
+			float2 _MainTex_TexelSize;
 			UNITY_DECLARE_TEX2D(_MaskTex);
-			float2 _MaskTex_TexelSize;
-			UNITY_DECLARE_TEX2D(_HPassTex);
-			float2 _HPassTex_TexelSize;
 			float _GaussSamples[32];
 
 			struct v2f
@@ -64,13 +63,13 @@ Shader "UnityFx/Outline/VPassBlend"
 					discard;
 				}
 
-				float TX_y = _MaskTex_TexelSize.y;
+				float TX_y = _MainTex_TexelSize.y;
 				float intensity;
 				int n = _Width;
 
 				for (int k = -n; k <= _Width; k += 1)
 				{
-					intensity += UNITY_SAMPLE_TEX2D(_HPassTex, i.uvs.xy + float2(0, k * TX_y)).r * _GaussSamples[abs(k)];
+					intensity += UNITY_SAMPLE_TEX2D(_MainTex, i.uvs.xy + float2(0, k * TX_y)).r * _GaussSamples[abs(k)];
 				}
 
 				intensity = _Intensity > 99 ? step(0.01, intensity) : intensity * _Intensity;
