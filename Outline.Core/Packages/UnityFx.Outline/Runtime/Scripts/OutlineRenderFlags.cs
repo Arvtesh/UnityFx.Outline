@@ -24,6 +24,11 @@ namespace UnityFx.Outline
 		/// <summary>
 		/// Enabled depth testing when rendering object outlines. Only visible parts of objects are outlined.
 		/// </summary>
-		EnableDepthTesting = 0x100
+		EnableDepthTesting = 2,
+
+		/// <summary>
+		/// If set, DrawMesh() is used instead of DrawProcedural() even for SM3.5+ capable hardware.
+		/// </summary>
+		UseLegacyRenderer = 0x100
 	}
 }

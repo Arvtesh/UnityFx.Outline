@@ -475,7 +475,7 @@ namespace UnityFx.Outline
 #endif
 
 			// Blit fullscreen triangle.
-			if (SystemInfo.graphicsShaderLevel >= 35)
+			if ((settings.OutlineRenderMode & OutlineRenderFlags.UseLegacyRenderer) == 0 && SystemInfo.graphicsShaderLevel >= 35)
 			{
 				_commandBuffer.DrawProcedural(Matrix4x4.identity, resources.OutlineMaterial, _hPassId_35, MeshTopology.Triangles, 3, 1, resources.Properties);
 			}
@@ -498,7 +498,7 @@ namespace UnityFx.Outline
 #endif
 
 			// Blit fullscreen triangle.
-			if (SystemInfo.graphicsShaderLevel >= 35)
+			if ((settings.OutlineRenderMode & OutlineRenderFlags.UseLegacyRenderer) == 0 && SystemInfo.graphicsShaderLevel >= 35)
 			{
 				_commandBuffer.DrawProcedural(Matrix4x4.identity, resources.OutlineMaterial, _vPassId_35, MeshTopology.Triangles, 3, 1, resources.Properties);
 			}
