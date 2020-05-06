@@ -465,8 +465,6 @@ namespace UnityFx.Outline
 			{
 				_commandBuffer.DrawMesh(resources.FullscreenTriangleMesh, Matrix4x4.identity, resources.HPassMaterial, 0, -1, props);
 			}
-
-			//_commandBuffer.Blit(_maskRtId, _hPassRtId, resources.HPassMaterial);
 		}
 
 		private void RenderVPassBlend(OutlineResources resources, IOutlineSettings settings)
@@ -491,7 +489,7 @@ namespace UnityFx.Outline
 
 			// Set destination texture as render target.
 #if UNITY_2018_2_OR_NEWER
-			_commandBuffer.SetRenderTarget(_destination, RenderBufferLoadAction.DontCare, RenderBufferStoreAction.Store);
+			_commandBuffer.SetRenderTarget(_destination, _source.Equals(_destination) ? RenderBufferLoadAction.Load : RenderBufferLoadAction.DontCare, RenderBufferStoreAction.Store);
 #else
 			_commandBuffer.SetRenderTarget(_destination);
 #endif
@@ -505,8 +503,6 @@ namespace UnityFx.Outline
 			{
 				_commandBuffer.DrawMesh(resources.FullscreenTriangleMesh, Matrix4x4.identity, resources.VPassBlendMaterial, 0, -1, props);
 			}
-
-			//_commandBuffer.Blit(_hPassRtId, _destination, resources.VPassBlendMaterial);
 		}
 
 		#endregion

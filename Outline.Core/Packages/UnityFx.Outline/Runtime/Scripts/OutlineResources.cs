@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Rendering;
 
 namespace UnityFx.Outline
 {
@@ -161,8 +162,14 @@ namespace UnityFx.Outline
 		}
 
 		/// <summary>
-		/// Gets or sets a fullscreen triangle mesh.
+		/// Gets or sets a fullscreen triangle mesh. The mesh is lazy-initialized on the first access.
 		/// </summary>
+		/// <remarks>
+		/// This is used by <see cref="OutlineRenderer"/> to avoid Blit() calls and use DrawMesh() passing
+		/// this mesh as the first argument. When running on a device with Shader Model 3.5 support this
+		/// should not be used at all, as the vertices are generated in vertex shader with DrawProcedural() call.
+		/// </remarks>
+		/// <seealso cref="OutlineRenderer"/>
 		public Mesh FullscreenTriangleMesh
 		{
 			get
@@ -174,7 +181,7 @@ namespace UnityFx.Outline
 						name = "Outline - FullscreenTriangle",
 						hideFlags = HideFlags.HideAndDontSave,
 						vertices = new Vector3[] { new Vector3(-1, -1, 0), new Vector3(3, -1, 0), new Vector3(-1, 3, 0) },
-						triangles = new int[] {0, 1, 2 }
+						triangles = new int[] { 0, 1, 2 }
 					};
 
 					_fullscreenTriangleMesh.UploadMeshData(true);
