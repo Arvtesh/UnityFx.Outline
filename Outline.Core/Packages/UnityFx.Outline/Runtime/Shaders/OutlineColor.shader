@@ -3,7 +3,7 @@
 
 // Renders everything with while color.
 // Modified version of 'Custom/DrawSimple' shader taken from https://willweissman.wordpress.com/tutorials/shaders/unity-shaderlab-object-outlines/.
-Shader "UnityFx/Outline/RenderColor"
+Shader "Hidden/UnityFx/OutlineColor"
 {
 	SubShader
 	{

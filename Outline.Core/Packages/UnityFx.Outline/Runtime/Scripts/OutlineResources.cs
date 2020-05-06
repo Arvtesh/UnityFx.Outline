@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.Rendering;
 
 namespace UnityFx.Outline
 {
@@ -18,10 +17,8 @@ namespace UnityFx.Outline
 		#region data
 
 		private Material _renderMaterial;
-		private Material _hPassMaterial;
-		private Material _vPassMaterial;
-		private MaterialPropertyBlock _hPassProperties;
-		private MaterialPropertyBlock _vPassProperties;
+		private Material _outlineMaterial;
+		private MaterialPropertyBlock _props;
 		private Mesh _fullscreenTriangleMesh;
 		private float[][] _gaussSamples;
 
@@ -60,14 +57,9 @@ namespace UnityFx.Outline
 		public Shader RenderShader;
 
 		/// <summary>
-		/// Gets or sets a <see cref="Shader"/> that renders outline around the mask, that was generated with <see cref="RenderShader"/> (pass 1).
+		/// Gets or sets a <see cref="Shader"/> that renders outline around the mask, that was generated with <see cref="RenderShader"/>.
 		/// </summary>
-		public Shader HPassShader;
-
-		/// <summary>
-		/// Gets or sets a <see cref="Shader"/> that renders outline around the mask, that was generated with <see cref="RenderShader"/> and <see cref="HPassShader"/> (pass 2).
-		/// </summary>
-		public Shader VPassBlendShader;
+		public Shader OutlineShader;
 
 		/// <summary>
 		/// Gets a <see cref="RenderShader"/>-based material.
@@ -90,74 +82,38 @@ namespace UnityFx.Outline
 		}
 
 		/// <summary>
-		/// Gets a <see cref="HPassShader"/>-based material.
+		/// Gets a <see cref="OutlineShader"/>-based material.
 		/// </summary>
-		public Material HPassMaterial
+		public Material OutlineMaterial
 		{
 			get
 			{
-				if (_hPassMaterial == null)
+				if (_outlineMaterial == null)
 				{
-					_hPassMaterial = new Material(HPassShader)
+					_outlineMaterial = new Material(OutlineShader)
 					{
-						name = "Outline - HPassRender",
+						name = "Outline - Main",
 						hideFlags = HideFlags.HideAndDontSave
 					};
 				}
 
-				return _hPassMaterial;
-			}
-		}
-
-		/// <summary>
-		/// Gets a <see cref="VPassBlendShader"/>-based material.
-		/// </summary>
-		public Material VPassBlendMaterial
-		{
-			get
-			{
-				if (_vPassMaterial == null)
-				{
-					_vPassMaterial = new Material(VPassBlendShader)
-					{
-						name = "Outline - VPassBlendRender",
-						hideFlags = HideFlags.HideAndDontSave
-					};
-				}
-
-				return _vPassMaterial;
-			}
-		}
-
-		/// <summary>
-		/// Gets a <see cref="MaterialPropertyBlock"/> for <see cref="HPassMaterial"/>.
-		/// </summary>
-		public MaterialPropertyBlock HPassProperties
-		{
-			get
-			{
-				if (_hPassProperties == null)
-				{
-					_hPassProperties = new MaterialPropertyBlock();
-				}
-
-				return _hPassProperties;
+				return _outlineMaterial;
 			}
 		}
 
 		/// <summary>
 		/// Gets a <see cref="MaterialPropertyBlock"/> for <see cref="VPassBlendMaterial"/>.
 		/// </summary>
-		public MaterialPropertyBlock VPassBlendProperties
+		public MaterialPropertyBlock Properties
 		{
 			get
 			{
-				if (_vPassProperties == null)
+				if (_props == null)
 				{
-					_vPassProperties = new MaterialPropertyBlock();
+					_props = new MaterialPropertyBlock();
 				}
 
-				return _vPassProperties;
+				return _props;
 			}
 		}
 
@@ -202,7 +158,7 @@ namespace UnityFx.Outline
 		{
 			get
 			{
-				return RenderShader && HPassShader && VPassBlendShader;
+				return RenderShader && OutlineShader;
 			}
 		}
 
@@ -231,9 +187,8 @@ namespace UnityFx.Outline
 		/// </summary>
 		public void ResetToDefaults()
 		{
-			RenderShader = Shader.Find("UnityFx/Outline/RenderColor");
-			HPassShader = Shader.Find("UnityFx/Outline/HPass");
-			VPassBlendShader = Shader.Find("UnityFx/Outline/VPassBlend");
+			RenderShader = Shader.Find("Hidden/UnityFx/OutlineColor");
+			OutlineShader = Shader.Find("Hidden/UnityFx/Outline");
 		}
 
 		#endregion

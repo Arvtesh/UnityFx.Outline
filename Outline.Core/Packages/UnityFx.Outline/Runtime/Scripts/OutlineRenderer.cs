@@ -63,6 +63,11 @@ namespace UnityFx.Outline
 	{
 		#region data
 
+		private const int _hPassId_35 = 0;
+		private const int _hPassId = 1;
+		private const int _vPassId_35 = 2;
+		private const int _vPassId = 3;
+
 		private static readonly int _mainRtId = Shader.PropertyToID("_MainTex");
 		private static readonly int _maskRtId = Shader.PropertyToID("_MaskTex");
 		private static readonly int _hPassRtId = Shader.PropertyToID("_HPassTex");
@@ -355,6 +360,22 @@ namespace UnityFx.Outline
 
 		private void Init(OutlineResources resources, IOutlineSettings settings)
 		{
+			// Shader parameter overrides (shared between all passes).
+			var props = resources.Properties;
+
+			props.SetFloat(resources.WidthId, settings.OutlineWidth);
+			props.SetColor(resources.ColorId, settings.OutlineColor);
+
+			if ((settings.OutlineRenderMode & OutlineRenderFlags.Blurred) != 0)
+			{
+				props.SetFloat(resources.IntensityId, settings.OutlineIntensity);
+			}
+			else
+			{
+				props.SetFloat(resources.IntensityId, SolidIntensity);
+			}
+
+			// Gauss samples.
 			_commandBuffer.SetGlobalFloatArray(resources.GaussSamplesId, resources.GetGaussSamples(settings.OutlineWidth));
 		}
 
@@ -443,10 +464,6 @@ namespace UnityFx.Outline
 
 		private void RenderHPass(OutlineResources resources, IOutlineSettings settings)
 		{
-			// Setup shader parameter overrides.
-			var props = resources.HPassProperties;
-			props.SetFloat(resources.WidthId, settings.OutlineWidth);
-
 			// Set source texture as _MainTex to match Blit behavior.
 			_commandBuffer.SetGlobalTexture(_mainRtId, _maskRtId);
 
@@ -460,31 +477,16 @@ namespace UnityFx.Outline
 			// Blit fullscreen triangle.
 			if (SystemInfo.graphicsShaderLevel >= 35)
 			{
-				_commandBuffer.DrawProcedural(Matrix4x4.identity, resources.HPassMaterial, -1, MeshTopology.Triangles, 3, 1, props);
+				_commandBuffer.DrawProcedural(Matrix4x4.identity, resources.OutlineMaterial, _hPassId_35, MeshTopology.Triangles, 3, 1, resources.Properties);
 			}
 			else
 			{
-				_commandBuffer.DrawMesh(resources.FullscreenTriangleMesh, Matrix4x4.identity, resources.HPassMaterial, 0, -1, props);
+				_commandBuffer.DrawMesh(resources.FullscreenTriangleMesh, Matrix4x4.identity, resources.OutlineMaterial, 0, _hPassId, resources.Properties);
 			}
 		}
 
 		private void RenderVPassBlend(OutlineResources resources, IOutlineSettings settings)
 		{
-			// Setup shader parameter overrides.
-			var props = resources.VPassBlendProperties;
-
-			props.SetFloat(resources.WidthId, settings.OutlineWidth);
-			props.SetColor(resources.ColorId, settings.OutlineColor);
-
-			if ((settings.OutlineRenderMode & OutlineRenderFlags.Blurred) != 0)
-			{
-				props.SetFloat(resources.IntensityId, settings.OutlineIntensity);
-			}
-			else
-			{
-				props.SetFloat(resources.IntensityId, SolidIntensity);
-			}
-
 			// Set source texture as _MainTex to match Blit behavior.
 			_commandBuffer.SetGlobalTexture(_mainRtId, _hPassRtId);
 
@@ -498,11 +500,11 @@ namespace UnityFx.Outline
 			// Blit fullscreen triangle.
 			if (SystemInfo.graphicsShaderLevel >= 35)
 			{
-				_commandBuffer.DrawProcedural(Matrix4x4.identity, resources.VPassBlendMaterial, -1, MeshTopology.Triangles, 3, 1, props);
+				_commandBuffer.DrawProcedural(Matrix4x4.identity, resources.OutlineMaterial, _vPassId_35, MeshTopology.Triangles, 3, 1, resources.Properties);
 			}
 			else
 			{
-				_commandBuffer.DrawMesh(resources.FullscreenTriangleMesh, Matrix4x4.identity, resources.VPassBlendMaterial, 0, -1, props);
+				_commandBuffer.DrawMesh(resources.FullscreenTriangleMesh, Matrix4x4.identity, resources.OutlineMaterial, 0, _vPassId, resources.Properties);
 			}
 		}
 
