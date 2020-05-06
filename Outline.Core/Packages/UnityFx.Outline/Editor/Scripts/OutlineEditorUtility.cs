@@ -71,52 +71,23 @@ namespace UnityFx.Outline
 				settings.OutlineWidth = width;
 			}
 
-			var prevBlurred = (settings.OutlineRenderMode & OutlineRenderFlags.Blurred) != 0;
-			var blurred = EditorGUILayout.Toggle("Blurred", prevBlurred);
+			var prevRenderMode = settings.OutlineRenderMode;
+			var renderMode = (OutlineRenderFlags)EditorGUILayout.EnumFlagsField("Render Flags", prevRenderMode);
 
-			if (blurred)
+			if (renderMode != prevRenderMode)
 			{
-				EditorGUI.indentLevel += 1;
+				Undo.RecordObject(undoContext, "Render Flags");
+				settings.OutlineRenderMode = renderMode;
+			}
 
+			if ((renderMode & OutlineRenderFlags.Blurred) != 0)
+			{
 				var i = EditorGUILayout.Slider("Blur Intensity", settings.OutlineIntensity, OutlineRenderer.MinIntensity, OutlineRenderer.MaxIntensity);
 
 				if (!Mathf.Approximately(settings.OutlineIntensity, i))
 				{
 					Undo.RecordObject(undoContext, "Blur Intensity");
 					settings.OutlineIntensity = i;
-				}
-
-				EditorGUI.indentLevel -= 1;
-			}
-
-			if (blurred != prevBlurred)
-			{
-				Undo.RecordObject(undoContext, "Blur");
-
-				if (blurred)
-				{
-					settings.OutlineRenderMode |= OutlineRenderFlags.Blurred;
-				}
-				else
-				{
-					settings.OutlineRenderMode &= ~OutlineRenderFlags.Blurred;
-				}
-			}
-
-			var prevDepthTestEnabled = (settings.OutlineRenderMode & OutlineRenderFlags.EnableDepthTesting) != 0;
-			var depthTestEnabled = EditorGUILayout.Toggle("Depth Test", prevDepthTestEnabled);
-
-			if (depthTestEnabled != prevDepthTestEnabled)
-			{
-				Undo.RecordObject(undoContext, "Depth Test");
-
-				if (depthTestEnabled)
-				{
-					settings.OutlineRenderMode |= OutlineRenderFlags.EnableDepthTesting;
-				}
-				else
-				{
-					settings.OutlineRenderMode &= ~OutlineRenderFlags.EnableDepthTesting;
 				}
 			}
 		}
@@ -134,7 +105,7 @@ namespace UnityFx.Outline
 
 				if (layer.Enabled)
 				{
-					EditorGUILayout.LabelField(layer.OutlineRenderMode == OutlineRenderFlags.Solid ? layer.OutlineRenderMode.ToString() : string.Format("Blurred ({0})", layer.OutlineIntensity), GUILayout.MaxWidth(70));
+					EditorGUILayout.LabelField(layer.OutlineRenderMode == OutlineRenderFlags.None ? layer.OutlineRenderMode.ToString() : string.Format("Blurred ({0})", layer.OutlineIntensity), GUILayout.MaxWidth(70));
 					EditorGUILayout.IntField(layer.OutlineWidth, GUILayout.MaxWidth(100));
 					EditorGUILayout.ColorField(layer.OutlineColor, GUILayout.MinWidth(100));
 				}

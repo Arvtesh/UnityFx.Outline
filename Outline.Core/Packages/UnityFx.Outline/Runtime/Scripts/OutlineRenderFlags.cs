@@ -14,7 +14,7 @@ namespace UnityFx.Outline
 		/// <summary>
 		/// Outline frame is a solid line.
 		/// </summary>
-		Solid = 0,
+		None = 0,
 
 		/// <summary>
 		/// Outline frame is blurred.

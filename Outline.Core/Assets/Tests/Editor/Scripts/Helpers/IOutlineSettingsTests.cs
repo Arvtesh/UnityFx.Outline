@@ -111,8 +111,8 @@ namespace UnityFx.Outline
 			_settings.OutlineRenderMode = OutlineRenderFlags.Blurred;
 			Assert.AreEqual(OutlineRenderFlags.Blurred, _settings.OutlineRenderMode);
 
-			_settings.OutlineRenderMode = OutlineRenderFlags.Solid;
-			Assert.AreEqual(OutlineRenderFlags.Solid, _settings.OutlineRenderMode);
+			_settings.OutlineRenderMode = OutlineRenderFlags.None;
+			Assert.AreEqual(OutlineRenderFlags.None, _settings.OutlineRenderMode);
 		}
 
 		[Test]
