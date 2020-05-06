@@ -22,7 +22,7 @@ Shader "UnityFx/Outline/HPass"
 		float2 _MainTex_TexelSize;
 		float _GaussSamples[32];
 
-		float frag(v2f_img i) : SV_Target
+		float4 frag(v2f_img i) : SV_Target
 		{
 			float TX_x = _MainTex_TexelSize.x;
 			float intensity;
