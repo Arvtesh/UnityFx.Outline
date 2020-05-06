@@ -10,6 +10,35 @@ Shader "UnityFx/Outline/HPass"
 		_Width("Outline thickness (in pixels)", Range(1, 32)) = 5
 	}
 
+	HLSLINCLUDE
+
+		#include "OutlineCommon.hlsl"
+
+		CBUFFER_START(UnityPerMaterial)
+			int _Width;
+		CBUFFER_END
+
+		UNITY_DECLARE_TEX2D(_MainTex);
+		float2 _MainTex_TexelSize;
+		float _GaussSamples[32];
+
+		float frag(v2f_img i) : SV_Target
+		{
+			float TX_x = _MainTex_TexelSize.x;
+			float intensity;
+			int n = _Width;
+
+			for (int k = -n; k <= n; k += 1)
+			{
+				intensity += UNITY_SAMPLE_TEX2D(_MainTex, i.uv + float2(k * TX_x, 0)).r * _GaussSamples[abs(k)];
+			}
+
+			return intensity;
+		}
+
+	ENDHLSL
+
+	// SM3.5+
 	SubShader
 	{
 		Cull Off
@@ -21,47 +50,28 @@ Shader "UnityFx/Outline/HPass"
 		{
 			HLSLPROGRAM
 
-			#pragma vertex Vert
-			#pragma fragment Frag
-			#include "UnityCG.cginc"
+			#pragma target 3.5
+			#pragma vertex vert_vid
+			#pragma fragment frag
 
-			CBUFFER_START(UnityPerMaterial)
-				int _Width;
-			CBUFFER_END
+			ENDHLSL
+		}
+	}
 
-			UNITY_DECLARE_TEX2D(_MainTex);
-			float2 _MainTex_TexelSize;
-			float _GaussSamples[32];
+	// SM2.0
+	SubShader
+	{
+		Cull Off
+		ZWrite Off
+		ZTest Always
+		Lighting Off
 
-			struct v2f
-			{
-				float4 pos : POSITION;
-				float2 uvs : TEXCOORD0;
-			};
+		Pass
+		{
+			HLSLPROGRAM
 
-			v2f Vert(appdata_base v)
-			{
-				v2f o;
-
-				o.pos = float4(v.vertex.xy, 0.0, 1.0);
-				o.uvs = ComputeScreenPos(o.pos);
-
-				return o;
-			}
-
-			float Frag(v2f i) : COLOR
-			{
-				float TX_x = _MainTex_TexelSize.x;
-				float intensity;
-				int n = _Width;
-
-				for (int k = -n; k <= n; k += 1)
-				{
-					intensity += UNITY_SAMPLE_TEX2D(_MainTex, i.uvs.xy + float2(k * TX_x, 0)).r * _GaussSamples[abs(k)];
-				}
-
-				return intensity;
-			}
+			#pragma vertex vert
+			#pragma fragment frag
 
 			ENDHLSL
 		}

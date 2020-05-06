@@ -224,10 +224,13 @@ namespace UnityFx.Outline
 				throw new ArgumentNullException("settings");
 			}
 
-			Init(resources, settings);
-			RenderObject(resources, settings, renderers);
-			RenderHPass(resources, settings);
-			RenderVPassBlend(resources, settings);
+			if (renderers.Count > 0)
+			{
+				Init(resources, settings);
+				RenderObject(resources, settings, renderers);
+				RenderHPass(resources, settings);
+				RenderVPassBlend(resources, settings);
+			}
 		}
 
 		/// <summary>
@@ -454,7 +457,16 @@ namespace UnityFx.Outline
 #endif
 
 			// Blit fullscreen triangle.
-			_commandBuffer.DrawMesh(resources.FullscreenTriangleMesh, Matrix4x4.identity, resources.HPassMaterial, 0, 0, props);
+			if (SystemInfo.graphicsShaderLevel >= 35)
+			{
+				_commandBuffer.DrawProcedural(Matrix4x4.identity, resources.HPassMaterial, -1, MeshTopology.Triangles, 3, 1, props);
+			}
+			else
+			{
+				_commandBuffer.DrawMesh(resources.FullscreenTriangleMesh, Matrix4x4.identity, resources.HPassMaterial, 0, -1, props);
+			}
+
+			//_commandBuffer.Blit(_maskRtId, _hPassRtId, resources.HPassMaterial);
 		}
 
 		private void RenderVPassBlend(OutlineResources resources, IOutlineSettings settings)
@@ -485,7 +497,16 @@ namespace UnityFx.Outline
 #endif
 
 			// Blit fullscreen triangle.
-			_commandBuffer.DrawMesh(resources.FullscreenTriangleMesh, Matrix4x4.identity, resources.VPassBlendMaterial, 0, 0, props);
+			if (SystemInfo.graphicsShaderLevel >= 35)
+			{
+				_commandBuffer.DrawProcedural(Matrix4x4.identity, resources.VPassBlendMaterial, -1, MeshTopology.Triangles, 3, 1, props);
+			}
+			else
+			{
+				_commandBuffer.DrawMesh(resources.FullscreenTriangleMesh, Matrix4x4.identity, resources.VPassBlendMaterial, 0, -1, props);
+			}
+
+			//_commandBuffer.Blit(_hPassRtId, _destination, resources.VPassBlendMaterial);
 		}
 
 		#endregion

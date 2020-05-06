@@ -173,7 +173,7 @@ namespace UnityFx.Outline
 					{
 						name = "Outline - FullscreenTriangle",
 						hideFlags = HideFlags.HideAndDontSave,
-						vertices = new Vector3[] { new Vector3(-1f, -1f, 0f), new Vector3(-1f,  3f, 0f), new Vector3( 3f, -1f, 0f) },
+						vertices = new Vector3[] { new Vector3(-1, -1, 0), new Vector3(3, -1, 0), new Vector3(-1, 3, 0) },
 						triangles = new int[] {0, 1, 2 }
 					};
 
