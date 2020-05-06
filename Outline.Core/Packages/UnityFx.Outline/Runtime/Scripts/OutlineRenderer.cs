@@ -169,14 +169,15 @@ namespace UnityFx.Outline
 
 			var cx = rtSize.x > 0 ? rtSize.x : -1;
 			var cy = rtSize.y > 0 ? rtSize.y : -1;
+			var rtFormat = SystemInfo.SupportsRenderTextureFormat(RenderTextureFormat.R8) ? RenderTextureFormat.R8 : RenderTextureFormat.Default;
 
 			_source = src;
 			_destination = dst;
 
 			_commandBuffer = commandBuffer;
 			_commandBuffer.BeginSample(EffectName);
-			_commandBuffer.GetTemporaryRT(_maskRtId, cx, cy, 0, FilterMode.Bilinear, RenderTextureFormat.R8);
-			_commandBuffer.GetTemporaryRT(_hPassRtId, cx, cy, 0, FilterMode.Bilinear, RenderTextureFormat.R8);
+			_commandBuffer.GetTemporaryRT(_maskRtId, cx, cy, 0, FilterMode.Bilinear, rtFormat);
+			_commandBuffer.GetTemporaryRT(_hPassRtId, cx, cy, 0, FilterMode.Bilinear, rtFormat);
 
 			// Need to copy src content into dst if they are not the same. For instance this is the case when rendering
 			// the outline effect as part of Unity Post Processing stack.
