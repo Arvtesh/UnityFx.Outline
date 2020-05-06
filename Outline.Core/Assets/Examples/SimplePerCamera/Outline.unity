@@ -191,6 +191,7 @@ GameObject:
   m_Component:
   - component: {fileID: 692811816}
   - component: {fileID: 692811815}
+  - component: {fileID: 692811813}
   - component: {fileID: 692811818}
   - component: {fileID: 692811817}
   m_Layer: 0
@@ -200,6 +201,18 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
+--- !u!114 &692811813
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 692811812}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c9e1f138162751048bdb3432e85d7a73, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!20 &692811815
 Camera:
   m_ObjectHideFlags: 0
@@ -524,7 +537,7 @@ MonoBehaviour:
     _outlineWidth: 15
     _outlineIntensity: 2
     _outlineMode: 1
-    _depthTestEnabled: 0
+  _updateRenderers: 0
 --- !u!23 &1789341923
 MeshRenderer:
   m_ObjectHideFlags: 0
