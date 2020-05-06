@@ -1,7 +1,7 @@
 ﻿// Copyright (C) 2019-2020 Alexander Bogarsukov. All rights reserved.
 // See the LICENSE.md file in the project root for more information.
 
-// Renders outline based on a texture produces by 'UnityF/Outline/RenderColor' output.
+// Renders outline based on a texture produced with 'UnityF/OutlineColor'.
 // Modified version of 'Custom/Post Outline' shader taken from https://willweissman.wordpress.com/tutorials/shaders/unity-shaderlab-object-outlines/.
 Shader "Hidden/UnityFx/Outline"
 {
@@ -22,9 +22,9 @@ Shader "Hidden/UnityFx/Outline"
 			float4 _Color;
 		CBUFFER_END
 
+		UNITY_DECLARE_TEX2D(_MaskTex);
 		UNITY_DECLARE_TEX2D(_MainTex);
 		float2 _MainTex_TexelSize;
-		UNITY_DECLARE_TEX2D(_MaskTex);
 		float _GaussSamples[32];
 
 #if SHADER_TARGET >= 35
@@ -42,7 +42,7 @@ Shader "Hidden/UnityFx/Outline"
 			UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO(o);
 
 			// Generate a triangle in homogeneous clip space, s.t.
-			// v0 = (-1, -1, 1), v1 = (3, -1, 1), v2 = (-1, 3, 1).
+			// v0 = (-1, -1), v1 = (3, -1), v2 = (-1, 3).
 			float2 uv = float2((v.vertexID << 1) & 2, v.vertexID & 2);
 			o.pos = float4(uv * 2 - 1, UNITY_NEAR_CLIP_VALUE, 1);
 
@@ -70,36 +70,35 @@ Shader "Hidden/UnityFx/Outline"
 			return o;
 		}
 
-		float4 frag_h(v2f_img i) : SV_Target
+		float CalcIntensity(float2 uv, float2 offset)
 		{
-			float TX_x = _MainTex_TexelSize.x;
 			float intensity;
 			int n = _Width;
 
-			for (int k = -n; k <= n; k += 1)
+			// Accumulates horizontal or vertical blur intensity for the specified texture position.
+			// Set offset = (tx, 0) for horizontal sampling and offset = (0, ty) for vertical.
+			for (int k = -n; k <= _Width; k += 1)
 			{
-				intensity += UNITY_SAMPLE_TEX2D(_MainTex, i.uv + float2(k * TX_x, 0)).r * _GaussSamples[abs(k)];
+				intensity += UNITY_SAMPLE_TEX2D(_MainTex, uv + k * offset).r * _GaussSamples[abs(k)];
 			}
 
 			return intensity;
 		}
 
+		float4 frag_h(v2f_img i) : SV_Target
+		{
+			return CalcIntensity(i.uv, float2(_MainTex_TexelSize.x, 0));
+		}
+
 		float4 frag_v(v2f_img i) : SV_Target
 		{
-			if (UNITY_SAMPLE_TEX2D(_MaskTex, i.uv).r > 0)
+			if (UNITY_SAMPLE_TEX2D(_MaskTex, i.uv).r == 0)
 			{
+				// TODO: Avoid discard/clip to improve performance on mobiles.
 				discard;
 			}
 
-			float TX_y = _MainTex_TexelSize.y;
-			float intensity;
-			int n = _Width;
-
-			for (int k = -n; k <= _Width; k += 1)
-			{
-				intensity += UNITY_SAMPLE_TEX2D(_MainTex, i.uv + float2(0, k * TX_y)).r * _GaussSamples[abs(k)];
-			}
-
+			float intensity = CalcIntensity(i.uv, float2(0, _MainTex_TexelSize.y));
 			intensity = _Intensity > 99 ? step(0.01, intensity) : intensity * _Intensity;
 			return float4(_Color.rgb, saturate(_Color.a * intensity));
 		}
