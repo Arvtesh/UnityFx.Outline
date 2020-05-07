@@ -60,12 +60,7 @@ Shader "Hidden/UnityFx/Outline"
 			// v0 = (-1, -1), v1 = (3, -1), v2 = (-1, 3).
 			float2 uv = float2((v.vertexID << 1) & 2, v.vertexID & 2);
 			o.pos = float4(uv * 2 - 1, UNITY_NEAR_CLIP_VALUE, 1);
-
-#if UNITY_UV_STARTS_AT_TOP
-			o.uv = half2(uv.x, 1 - uv.y);
-#else
-			o.uv = uv;
-#endif
+			o.uv = ComputeScreenPos(o.pos);
 
 			return o;
 		}
