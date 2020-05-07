@@ -23,12 +23,14 @@ Supported outline parameters are:
 - Color;
 - Width (in pixels);
 - Type (solid or blurred);
-- Intensity (for blurred outlines).
+- Intensity (for blurred outlines);
+- Depth testing.
 
 Supported platforms:
 - Windows/Mac standalone;
 - Android;
-- iOS.
+- iOS;
+- Other platforms (untested).
 
 Please see [CHANGELOG](CHANGELOG.md) for information on recent changes.
 
@@ -164,7 +166,7 @@ var resources = GetMyResources();
 
 using (var renderer = new OutlineRenderer(commandBuffer, BuiltinRenderTextureType.CameraTarget))
 {
-  renderer.Render(renderers, resources, settings);
+  renderer.Render(renderers, resources, settings, myCamera.actualRenderingPath);
 }
 
 myCamera.AddCommandBuffer(OutlineRenderer.RenderEvent, commandBuffer);
