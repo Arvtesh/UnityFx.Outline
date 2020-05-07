@@ -28,6 +28,7 @@ namespace UnityFx.Outline
 		[SerializeField, HideInInspector]
 		private CameraEvent _cameraEvent = OutlineRenderer.RenderEvent;
 
+		private Camera _camera;
 		private CommandBuffer _commandBuffer;
 
 		#endregion
@@ -153,27 +154,25 @@ namespace UnityFx.Outline
 
 		private void OnEnable()
 		{
-			var camera = GetComponent<Camera>();
+			_camera = GetComponent<Camera>();
 
-			if (camera)
+			if (_camera)
 			{
 				_commandBuffer = new CommandBuffer
 				{
 					name = string.Format("{0} - {1}", GetType().Name, name)
 				};
 
-				camera.depthTextureMode |= DepthTextureMode.Depth;
-				camera.AddCommandBuffer(_cameraEvent, _commandBuffer);
+				_camera.depthTextureMode |= DepthTextureMode.Depth;
+				_camera.AddCommandBuffer(_cameraEvent, _commandBuffer);
 			}
 		}
 
 		private void OnDisable()
 		{
-			var camera = GetComponent<Camera>();
-
-			if (camera)
+			if (_camera)
 			{
-				camera.RemoveCommandBuffer(_cameraEvent, _commandBuffer);
+				_camera.RemoveCommandBuffer(_cameraEvent, _commandBuffer);
 			}
 
 			if (_commandBuffer != null)
@@ -185,7 +184,7 @@ namespace UnityFx.Outline
 
 		private void Update()
 		{
-			if (_outlineLayers)
+			if (_camera && _outlineLayers)
 			{
 				FillCommandBuffer();
 			}
@@ -221,7 +220,7 @@ namespace UnityFx.Outline
 			{
 				using (var renderer = new OutlineRenderer(_commandBuffer, BuiltinRenderTextureType.CameraTarget))
 				{
-					_outlineLayers.Render(renderer, _outlineResources);
+					_outlineLayers.Render(renderer, _outlineResources, _camera.actualRenderingPath);
 				}
 			}
 		}

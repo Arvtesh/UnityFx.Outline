@@ -53,13 +53,13 @@ namespace UnityFx.Outline
 		/// <summary>
 		/// Renders all layers.
 		/// </summary>
-		public void Render(OutlineRenderer renderer, OutlineResources resources)
+		public void Render(OutlineRenderer renderer, OutlineResources resources, RenderingPath renderingPath)
 		{
 			UpdateSortedLayersIfNeeded();
 
 			foreach (var layer in _sortedLayers)
 			{
-				layer.Render(renderer, resources);
+				layer.Render(renderer, resources, renderingPath);
 			}
 		}
 

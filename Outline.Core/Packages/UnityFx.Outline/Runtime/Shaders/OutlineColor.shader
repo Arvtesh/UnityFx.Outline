@@ -5,6 +5,17 @@
 // Modified version of 'Custom/DrawSimple' shader taken from https://willweissman.wordpress.com/tutorials/shaders/unity-shaderlab-object-outlines/.
 Shader "Hidden/UnityFx/OutlineColor"
 {
+	HLSLINCLUDE
+
+		#include "UnityCG.cginc"
+
+		half4 frag() : SV_Target
+		{
+			return 1;
+		}
+
+	ENDHLSL
+
 	SubShader
 	{
 		Cull Off
@@ -18,12 +29,6 @@ Shader "Hidden/UnityFx/OutlineColor"
 
 			#pragma vertex vert_img
 			#pragma fragment frag
-			#include "UnityCG.cginc"
-
-			half4 frag(): SV_Target
-			{
-				return half4(1, 1, 1, 1);
-			}
 
 			ENDHLSL
 		}

@@ -27,7 +27,7 @@ namespace UnityFx.Outline
 		EnableDepthTesting = 2,
 
 		/// <summary>
-		/// If set, DrawMesh() is used instead of DrawProcedural() even for SM3.5+ capable hardware.
+		/// If set, DrawMesh() is used instead of DrawProcedural() even for SM3.5+ capable hardware. Do not use unless you exaclty know what you're doing.
 		/// </summary>
 		UseLegacyRenderer = 0x100
 	}

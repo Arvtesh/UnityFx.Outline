@@ -207,7 +207,7 @@ namespace UnityFx.Outline
 		/// <summary>
 		/// Renders the layers.
 		/// </summary>
-		public void Render(OutlineRenderer renderer, OutlineResources resources)
+		public void Render(OutlineRenderer renderer, OutlineResources resources, RenderingPath renderingPath)
 		{
 			if (_enabled)
 			{
@@ -217,7 +217,7 @@ namespace UnityFx.Outline
 				{
 					if (kvp.Key && kvp.Key.activeInHierarchy)
 					{
-						renderer.Render(kvp.Value.GetList(), resources, _settings);
+						renderer.Render(kvp.Value.GetList(), resources, _settings, renderingPath);
 					}
 				}
 			}

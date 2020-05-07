@@ -208,10 +208,11 @@ namespace UnityFx.Outline
 		/// <param name="renderers">One or more renderers representing a single object to be outlined.</param>
 		/// <param name="resources">Outline resources.</param>
 		/// <param name="settings">Outline settings.</param>
+		/// <param name="renderingPath">Rendering path used by the target camera (used is <see cref="OutlineRenderFlags.EnableDepthTesting"/> is set).</param>
 		/// <exception cref="ArgumentNullException">Thrown if any of the arguments is <see langword="null"/>.</exception>
 		/// <seealso cref="Render(IEnumerable{Renderer}, OutlineResources, IOutlineSettings)"/>
 		/// <seealso cref="Render(Renderer, OutlineResources, IOutlineSettings)"/>
-		public void Render(IList<Renderer> renderers, OutlineResources resources, IOutlineSettings settings)
+		public void Render(IList<Renderer> renderers, OutlineResources resources, IOutlineSettings settings, RenderingPath renderingPath = RenderingPath.UsePlayerSettings)
 		{
 			if (renderers == null)
 			{
@@ -231,7 +232,7 @@ namespace UnityFx.Outline
 			if (renderers.Count > 0)
 			{
 				Init(resources, settings);
-				RenderObject(resources, settings, renderers);
+				RenderObject(resources, settings, renderers, renderingPath);
 				RenderHPass(resources, settings);
 				RenderVPassBlend(resources, settings);
 			}
@@ -243,10 +244,11 @@ namespace UnityFx.Outline
 		/// <param name="renderers">One or more renderers representing a single object to be outlined.</param>
 		/// <param name="resources">Outline resources.</param>
 		/// <param name="settings">Outline settings.</param>
+		/// <param name="renderingPath">Rendering path used by the target camera (used is <see cref="OutlineRenderFlags.EnableDepthTesting"/> is set).</param>
 		/// <exception cref="ArgumentNullException">Thrown if any of the arguments is <see langword="null"/>.</exception>
 		/// <seealso cref="Render(IList{Renderer}, OutlineResources, IOutlineSettings)"/>
 		/// <seealso cref="Render(Renderer, OutlineResources, IOutlineSettings)"/>
-		public void Render(IEnumerable<Renderer> renderers, OutlineResources resources, IOutlineSettings settings)
+		public void Render(IEnumerable<Renderer> renderers, OutlineResources resources, IOutlineSettings settings, RenderingPath renderingPath = RenderingPath.UsePlayerSettings)
 		{
 			if (renderers == null)
 			{
@@ -264,7 +266,7 @@ namespace UnityFx.Outline
 			}
 
 			Init(resources, settings);
-			RenderObject(resources, settings, renderers);
+			RenderObject(resources, settings, renderers, renderingPath);
 			RenderHPass(resources, settings);
 			RenderVPassBlend(resources, settings);
 		}
@@ -275,10 +277,11 @@ namespace UnityFx.Outline
 		/// <param name="renderer">A <see cref="Renderer"/> representing an object to be outlined.</param>
 		/// <param name="resources">Outline resources.</param>
 		/// <param name="settings">Outline settings.</param>
+		/// <param name="renderingPath">Rendering path used by the target camera (used is <see cref="OutlineRenderFlags.EnableDepthTesting"/> is set).</param>
 		/// <exception cref="ArgumentNullException">Thrown if any of the arguments is <see langword="null"/>.</exception>
 		/// <seealso cref="Render(IList{Renderer}, OutlineResources, IOutlineSettings)"/>
 		/// <seealso cref="Render(IEnumerable{Renderer}, OutlineResources, IOutlineSettings)"/>
-		public void Render(Renderer renderer, OutlineResources resources, IOutlineSettings settings)
+		public void Render(Renderer renderer, OutlineResources resources, IOutlineSettings settings, RenderingPath renderingPath = RenderingPath.UsePlayerSettings)
 		{
 			if (renderer == null)
 			{
@@ -296,7 +299,7 @@ namespace UnityFx.Outline
 			}
 
 			Init(resources, settings);
-			RenderObject(resources, settings, renderer);
+			RenderObject(resources, settings, renderer, renderingPath);
 			RenderHPass(resources, settings);
 			RenderVPassBlend(resources, settings);
 		}
@@ -377,15 +380,19 @@ namespace UnityFx.Outline
 			_commandBuffer.SetGlobalFloatArray(resources.GaussSamplesId, resources.GetGaussSamples(settings.OutlineWidth));
 		}
 
-		private void RenderObjectClear(bool depthTestEnabled)
+		private void RenderObjectClear(OutlineRenderFlags flags, RenderingPath renderingPath)
 		{
-			if (depthTestEnabled)
+			if ((flags & OutlineRenderFlags.EnableDepthTesting) != 0)
 			{
+				// Have to use BuiltinRenderTextureType.ResolvedDepth for deferred, BuiltinRenderTextureType.Depth for forward.
+				var depthTextureId = (renderingPath == RenderingPath.DeferredShading || renderingPath == RenderingPath.DeferredLighting) ?
+					BuiltinRenderTextureType.ResolvedDepth : BuiltinRenderTextureType.Depth;
+
 				// NOTE: Use the camera depth buffer when rendering the mask. Shader only reads from the depth buffer (ZWrite Off).
 #if UNITY_2018_2_OR_NEWER
-				_commandBuffer.SetRenderTarget(_maskRtId, RenderBufferLoadAction.DontCare, RenderBufferStoreAction.Store, BuiltinRenderTextureType.Depth, RenderBufferLoadAction.Load, RenderBufferStoreAction.DontCare);
+				_commandBuffer.SetRenderTarget(_maskRtId, RenderBufferLoadAction.DontCare, RenderBufferStoreAction.Store, depthTextureId, RenderBufferLoadAction.Load, RenderBufferStoreAction.DontCare);
 #else
-				_commandBuffer.SetRenderTarget(_maskRtId, BuiltinRenderTextureType.Depth);
+				_commandBuffer.SetRenderTarget(_maskRtId, depthTextureId);
 #endif
 			}
 			else
@@ -400,9 +407,9 @@ namespace UnityFx.Outline
 			_commandBuffer.ClearRenderTarget(false, true, Color.clear);
 		}
 
-		private void RenderObject(OutlineResources resources, IOutlineSettings settings, IList<Renderer> renderers)
+		private void RenderObject(OutlineResources resources, IOutlineSettings settings, IList<Renderer> renderers, RenderingPath renderingPath)
 		{
-			RenderObjectClear((settings.OutlineRenderMode & OutlineRenderFlags.EnableDepthTesting) != 0);
+			RenderObjectClear(settings.OutlineRenderMode, renderingPath);
 
 			for (var i = 0; i < renderers.Count; ++i)
 			{
@@ -422,9 +429,9 @@ namespace UnityFx.Outline
 			}
 		}
 
-		private void RenderObject(OutlineResources resources, IOutlineSettings settings, IEnumerable<Renderer> renderers)
+		private void RenderObject(OutlineResources resources, IOutlineSettings settings, IEnumerable<Renderer> renderers, RenderingPath renderingPath)
 		{
-			RenderObjectClear((settings.OutlineRenderMode & OutlineRenderFlags.EnableDepthTesting) != 0);
+			RenderObjectClear(settings.OutlineRenderMode, renderingPath);
 
 			// NOTE: Calling IEnumerable.GetEnumerator() triggers GC.Alloc.
 			foreach (var r in renderers)
@@ -443,9 +450,9 @@ namespace UnityFx.Outline
 			}
 		}
 
-		private void RenderObject(OutlineResources resources, IOutlineSettings settings, Renderer renderer)
+		private void RenderObject(OutlineResources resources, IOutlineSettings settings, Renderer renderer, RenderingPath renderingPath)
 		{
-			RenderObjectClear((settings.OutlineRenderMode & OutlineRenderFlags.EnableDepthTesting) != 0);
+			RenderObjectClear(settings.OutlineRenderMode, renderingPath);
 
 			if (renderer && renderer.gameObject.activeInHierarchy && renderer.enabled)
 			{

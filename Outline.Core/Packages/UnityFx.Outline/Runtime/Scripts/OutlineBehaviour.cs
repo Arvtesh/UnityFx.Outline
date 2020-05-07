@@ -30,11 +30,9 @@ namespace UnityFx.Outline
 
 #pragma warning restore 0649
 
-		private OutlineRendererCollection _renderers;
-		private CommandBuffer _commandBuffer;
-
 		private Dictionary<Camera, CommandBuffer> _cameraMap = new Dictionary<Camera, CommandBuffer>();
-		private float _cameraMapUpdateTimer;
+		private List<Camera> _camerasToRemove = new List<Camera>();
+		private OutlineRendererCollection _renderers;
 
 		#endregion
 
@@ -112,7 +110,6 @@ namespace UnityFx.Outline
 
 		private void OnEnable()
 		{
-			CreateCommandBufferIfNeeded();
 			Camera.onPreRender += OnCameraPreRender;
 		}
 
@@ -126,39 +123,51 @@ namespace UnityFx.Outline
 				{
 					kvp.Key.RemoveCommandBuffer(OutlineRenderer.RenderEvent, kvp.Value);
 				}
+
+				kvp.Value.Dispose();
 			}
 
 			_cameraMap.Clear();
-
-			if (_commandBuffer != null)
-			{
-				_commandBuffer.Dispose();
-				_commandBuffer = null;
-			}
 		}
 
 		private void Update()
 		{
-			_cameraMapUpdateTimer += Time.deltaTime;
-
-			if (_cameraMapUpdateTimer > 16)
-			{
-				RemoveDestroyedCameras();
-				_cameraMapUpdateTimer = 0;
-			}
-
 			if (_outlineResources != null && _renderers != null)
 			{
+				_camerasToRemove.Clear();
+
 				if (_updateRenderers)
 				{
 					_renderers.Reset(false);
 				}
 
-				_commandBuffer.Clear();
-
-				using (var renderer = new OutlineRenderer(_commandBuffer, BuiltinRenderTextureType.CameraTarget))
+				foreach (var kvp in _cameraMap)
 				{
-					renderer.Render(_renderers.GetList(), _outlineSettings.OutlineResources, _outlineSettings);
+					var camera = kvp.Key;
+					var cmdBuffer = kvp.Value;
+
+					if (camera)
+					{
+						cmdBuffer.Clear();
+
+						if (_renderers.Count > 0)
+						{
+							using (var renderer = new OutlineRenderer(cmdBuffer, BuiltinRenderTextureType.CameraTarget))
+							{
+								renderer.Render(_renderers.GetList(), _outlineSettings.OutlineResources, _outlineSettings, camera.actualRenderingPath);
+							}
+						}
+					}
+					else
+					{
+						cmdBuffer.Dispose();
+						_camerasToRemove.Add(camera);
+					}
+				}
+
+				foreach (var camera in _camerasToRemove)
+				{
+					_cameraMap.Remove(camera);
 				}
 			}
 		}
@@ -168,7 +177,6 @@ namespace UnityFx.Outline
 		private void OnValidate()
 		{
 			CreateRenderersIfNeeded();
-			CreateCommandBufferIfNeeded();
 			CreateSettingsIfNeeded();
 
 			_outlineSettings.OutlineResources = _outlineResources;
@@ -307,46 +315,12 @@ namespace UnityFx.Outline
 
 				if (!_cameraMap.ContainsKey(camera))
 				{
-					camera.AddCommandBuffer(OutlineRenderer.RenderEvent, _commandBuffer);
-					_cameraMap.Add(camera, _commandBuffer);
+					var cmdBuf = new CommandBuffer();
+					cmdBuf.name = string.Format("{0} - {1}", GetType().Name, name);
+					camera.AddCommandBuffer(OutlineRenderer.RenderEvent, cmdBuf);
+
+					_cameraMap.Add(camera, cmdBuf);
 				}
-			}
-		}
-
-		private void RemoveDestroyedCameras()
-		{
-			List<Camera> camerasToRemove = null;
-
-			foreach (var camera in _cameraMap.Keys)
-			{
-				if (camera == null)
-				{
-					if (camerasToRemove != null)
-					{
-						camerasToRemove.Add(camera);
-					}
-					else
-					{
-						camerasToRemove = new List<Camera>() { camera };
-					}
-				}
-			}
-
-			if (camerasToRemove != null)
-			{
-				foreach (var camera in camerasToRemove)
-				{
-					_cameraMap.Remove(camera);
-				}
-			}
-		}
-
-		private void CreateCommandBufferIfNeeded()
-		{
-			if (_commandBuffer == null)
-			{
-				_commandBuffer = new CommandBuffer();
-				_commandBuffer.name = string.Format("{0} - {1}", GetType().Name, name);
 			}
 		}
 
