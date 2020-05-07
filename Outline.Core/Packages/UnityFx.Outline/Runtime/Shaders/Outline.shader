@@ -27,7 +27,22 @@ Shader "Hidden/UnityFx/Outline"
 		float2 _MainTex_TexelSize;
 		float _GaussSamples[32];
 
-#if SHADER_TARGET >= 35
+#if SHADER_TARGET < 35
+
+		v2f_img vert(appdata_img v)
+		{
+			v2f_img o;
+			UNITY_INITIALIZE_OUTPUT(v2f_img, o);
+			UNITY_SETUP_INSTANCE_ID(v);
+			UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO(o);
+
+			o.pos = float4(v.vertex.xy, UNITY_NEAR_CLIP_VALUE, 1);
+			o.uv = ComputeScreenPos(o.pos);
+
+			return o;
+		}
+
+#else
 
 		struct appdata_vid
 		{
@@ -57,19 +72,6 @@ Shader "Hidden/UnityFx/Outline"
 
 #endif
 
-		v2f_img vert(appdata_img v)
-		{
-			v2f_img o;
-			UNITY_INITIALIZE_OUTPUT(v2f_img, o);
-			UNITY_SETUP_INSTANCE_ID(v);
-			UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO(o);
-
-			o.pos = float4(v.vertex.xy, UNITY_NEAR_CLIP_VALUE, 1);
-			o.uv = ComputeScreenPos(o.pos);
-
-			return o;
-		}
-
 		float CalcIntensity(float2 uv, float2 offset)
 		{
 			float intensity;
@@ -92,7 +94,7 @@ Shader "Hidden/UnityFx/Outline"
 
 		float4 frag_v(v2f_img i) : SV_Target
 		{
-			if (UNITY_SAMPLE_TEX2D(_MaskTex, i.uv).r == 0)
+			if (UNITY_SAMPLE_TEX2D(_MaskTex, i.uv).r > 0)
 			{
 				// TODO: Avoid discard/clip to improve performance on mobiles.
 				discard;
@@ -105,6 +107,7 @@ Shader "Hidden/UnityFx/Outline"
 
 	ENDHLSL
 
+	// SM3.5+
 	SubShader
 	{
 		Cull Off
@@ -112,9 +115,11 @@ Shader "Hidden/UnityFx/Outline"
 		ZTest Always
 		Lighting Off
 
-		// 0) HPass SM3.5+
+		// 0) HPass
 		Pass
 		{
+			Name "HPass"
+
 			HLSLPROGRAM
 
 			#pragma target 3.5
@@ -124,20 +129,10 @@ Shader "Hidden/UnityFx/Outline"
 			ENDHLSL
 		}
 
-		// 1) HPass SM2.0
+		// 1) VPass
 		Pass
 		{
-			HLSLPROGRAM
-
-			#pragma vertex vert
-			#pragma fragment frag_h
-
-			ENDHLSL
-		}
-
-		// 2) VPass SM3.5+
-		Pass
-		{
+			Name "VPassBlend"
 			Blend SrcAlpha OneMinusSrcAlpha
 
 			HLSLPROGRAM
@@ -148,10 +143,33 @@ Shader "Hidden/UnityFx/Outline"
 
 			ENDHLSL
 		}
+	}
 
-		// 3) VPass SM2.0
+	// SM2.0
+	SubShader
+	{
+		Cull Off
+		ZWrite Off
+		ZTest Always
+		Lighting Off
+
+		// 0) HPass
 		Pass
 		{
+			Name "HPass"
+
+			HLSLPROGRAM
+
+			#pragma vertex vert
+			#pragma fragment frag_h
+
+			ENDHLSL
+		}
+
+		// 1) VPass
+		Pass
+		{
+			Name "VPassBlend"
 			Blend SrcAlpha OneMinusSrcAlpha
 
 			HLSLPROGRAM

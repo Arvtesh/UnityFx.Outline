@@ -63,10 +63,8 @@ namespace UnityFx.Outline
 	{
 		#region data
 
-		private const int _hPassId_35 = 0;
-		private const int _hPassId = 1;
-		private const int _vPassId_35 = 2;
-		private const int _vPassId = 3;
+		private const int _hPassId = 0;
+		private const int _vPassId = 1;
 
 		private static readonly int _mainRtId = Shader.PropertyToID("_MainTex");
 		private static readonly int _maskRtId = Shader.PropertyToID("_MaskTex");
@@ -477,7 +475,7 @@ namespace UnityFx.Outline
 			// Blit fullscreen triangle.
 			if ((settings.OutlineRenderMode & OutlineRenderFlags.UseLegacyRenderer) == 0 && SystemInfo.graphicsShaderLevel >= 35)
 			{
-				_commandBuffer.DrawProcedural(Matrix4x4.identity, resources.OutlineMaterial, _hPassId_35, MeshTopology.Triangles, 3, 1, resources.Properties);
+				_commandBuffer.DrawProcedural(Matrix4x4.identity, resources.OutlineMaterial, _hPassId, MeshTopology.Triangles, 3, 1, resources.Properties);
 			}
 			else
 			{
@@ -500,7 +498,7 @@ namespace UnityFx.Outline
 			// Blit fullscreen triangle.
 			if ((settings.OutlineRenderMode & OutlineRenderFlags.UseLegacyRenderer) == 0 && SystemInfo.graphicsShaderLevel >= 35)
 			{
-				_commandBuffer.DrawProcedural(Matrix4x4.identity, resources.OutlineMaterial, _vPassId_35, MeshTopology.Triangles, 3, 1, resources.Properties);
+				_commandBuffer.DrawProcedural(Matrix4x4.identity, resources.OutlineMaterial, _vPassId, MeshTopology.Triangles, 3, 1, resources.Properties);
 			}
 			else
 			{
