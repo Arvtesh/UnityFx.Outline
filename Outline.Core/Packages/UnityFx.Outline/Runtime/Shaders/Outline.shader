@@ -49,7 +49,7 @@ Shader "Hidden/UnityFx/Outline"
 			uint vertexID : SV_VertexID;
 		};
 
-		v2f_img vert_35(appdata_vid v)
+		v2f_img vert(appdata_vid v)
 		{
 			v2f_img o;
 			UNITY_INITIALIZE_OUTPUT(v2f_img, o);
@@ -118,7 +118,7 @@ Shader "Hidden/UnityFx/Outline"
 			HLSLPROGRAM
 
 			#pragma target 3.5
-			#pragma vertex vert_35
+			#pragma vertex vert
 			#pragma fragment frag_h
 
 			ENDHLSL
@@ -133,7 +133,7 @@ Shader "Hidden/UnityFx/Outline"
 			HLSLPROGRAM
 
 			#pragma target 3.5
-			#pragma vertex vert_35
+			#pragma vertex vert
 			#pragma fragment frag_v
 
 			ENDHLSL
