@@ -203,17 +203,19 @@ namespace UnityFx.Outline
 		}
 
 		/// <summary>
-		/// Renders the layers.
+		/// Gets the objects for rendering.
 		/// </summary>
-		public void Render(OutlineRenderer renderer, OutlineResources resources, RenderingPath renderingPath)
+		public void GetRenderObjects(IList<OutlineObject> renderObjects)
 		{
 			if (_enabled)
 			{
 				foreach (var kvp in _outlineObjects)
 				{
-					if (kvp.Key && kvp.Key.activeInHierarchy)
+					var go = kvp.Key;
+
+					if (go && go.activeInHierarchy)
 					{
-						renderer.Render(kvp.Value.GetList(), resources, _settings, renderingPath);
+						renderObjects.Add(new OutlineObject(go, kvp.Value.GetList(), _settings));
 					}
 				}
 			}

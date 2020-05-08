@@ -30,6 +30,7 @@ namespace UnityFx.Outline
 
 		private Camera _camera;
 		private CommandBuffer _commandBuffer;
+		private List<OutlineObject> _renderObjects = new List<OutlineObject>(16);
 
 		#endregion
 
@@ -220,14 +221,20 @@ namespace UnityFx.Outline
 			{
 				using (var renderer = new OutlineRenderer(_commandBuffer, BuiltinRenderTextureType.CameraTarget))
 				{
-					_outlineLayers.Render(renderer, _outlineResources, _camera.actualRenderingPath);
+					_renderObjects.Clear();
+					_outlineLayers.GetRenderObjects(_renderObjects);
+
+					foreach (var renderObject in _renderObjects)
+					{
+						renderer.Render(renderObject.Renderers, _outlineResources, renderObject.OutlineSettings, _camera.actualRenderingPath);
+					}
 				}
 			}
 		}
 
 		private void CreateLayersIfNeeded()
 		{
-			if (ReferenceEquals(_outlineLayers, null))
+			if (_outlineLayers is null)
 			{
 				_outlineLayers = ScriptableObject.CreateInstance<OutlineLayerCollection>();
 				_outlineLayers.name = "OutlineLayers";

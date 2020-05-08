@@ -51,15 +51,15 @@ namespace UnityFx.Outline
 		}
 
 		/// <summary>
-		/// Renders all layers.
+		/// Gets the objects for rendering.
 		/// </summary>
-		public void Render(OutlineRenderer renderer, OutlineResources resources, RenderingPath renderingPath)
+		public void GetRenderObjects(IList<OutlineObject> renderObjects)
 		{
 			UpdateSortedLayersIfNeeded();
 
 			foreach (var layer in _sortedLayers)
 			{
-				layer.Render(renderer, resources, renderingPath);
+				layer.GetRenderObjects(renderObjects);
 			}
 		}
 

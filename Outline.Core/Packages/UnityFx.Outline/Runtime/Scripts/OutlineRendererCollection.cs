@@ -25,7 +25,7 @@ namespace UnityFx.Outline
 			_go = go;
 		}
 
-		internal List<Renderer> GetList()
+		internal IReadOnlyList<Renderer> GetList()
 		{
 			return _renderers;
 		}
