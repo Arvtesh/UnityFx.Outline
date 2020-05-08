@@ -60,6 +60,11 @@ namespace UnityFx.Outline
 		public const int SolidIntensity = 100;
 
 		/// <summary>
+		/// Name of _MainTex shader parameter.
+		/// </summary>
+		public const string MainTexName = "_MainTex";
+
+		/// <summary>
 		/// Name of _Color shader parameter.
 		/// </summary>
 		public const string ColorName = "_Color";
@@ -78,6 +83,11 @@ namespace UnityFx.Outline
 		/// Name of _GaussSamples shader parameter.
 		/// </summary>
 		public const string GaussSamplesName = "_GaussSamples";
+
+		/// <summary>
+		/// Hashed name of _MainTex shader parameter.
+		/// </summary>
+		public readonly int MainTexId = Shader.PropertyToID(MainTexName);
 
 		/// <summary>
 		/// Hashed name of _Color shader parameter.

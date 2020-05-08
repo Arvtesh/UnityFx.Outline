@@ -60,14 +60,13 @@ namespace UnityFx.Outline
 	/// }
 	/// </example>
 	/// <seealso cref="OutlineResources"/>
-	public struct OutlineRenderer : IDisposable
+	public readonly struct OutlineRenderer : IDisposable
 	{
 		#region data
 
 		private const int _hPassId = 0;
 		private const int _vPassId = 1;
 
-		private static readonly int _mainRtId = Shader.PropertyToID("_MainTex");
 		private static readonly int _maskRtId = Shader.PropertyToID("_MaskTex");
 		private static readonly int _hPassRtId = Shader.PropertyToID("_HPassTex");
 
@@ -95,8 +94,8 @@ namespace UnityFx.Outline
 		/// <param name="commandBuffer">A <see cref="CommandBuffer"/> to render the effect to. It should be cleared manually (if needed) before passing to this method.</param>
 		/// <param name="rt">Render target.</param>
 		/// <exception cref="ArgumentNullException">Thrown if <paramref name="commandBuffer"/> is <see langword="null"/>.</exception>
-		public OutlineRenderer(CommandBuffer commandBuffer, BuiltinRenderTextureType rt)
-			: this(commandBuffer, rt, rt, Vector2Int.zero)
+		public OutlineRenderer(CommandBuffer commandBuffer, RenderTargetIdentifier rt)
+			: this(commandBuffer, rt, Vector2Int.zero)
 		{
 		}
 
@@ -106,9 +105,18 @@ namespace UnityFx.Outline
 		/// <param name="commandBuffer">A <see cref="CommandBuffer"/> to render the effect to. It should be cleared manually (if needed) before passing to this method.</param>
 		/// <param name="rt">Render target.</param>
 		/// <exception cref="ArgumentNullException">Thrown if <paramref name="commandBuffer"/> is <see langword="null"/>.</exception>
-		public OutlineRenderer(CommandBuffer commandBuffer, RenderTargetIdentifier rt)
-			: this(commandBuffer, rt, rt, Vector2Int.zero)
+		public OutlineRenderer(CommandBuffer commandBuffer, RenderTargetIdentifier rt, Vector2Int rtSize)
 		{
+			if (commandBuffer is null)
+			{
+				throw new ArgumentNullException(nameof(commandBuffer));
+			}
+
+			_source = rt;
+			_destination = rt;
+			_commandBuffer = commandBuffer;
+
+			Init(_commandBuffer, rtSize);
 		}
 
 		/// <summary>
@@ -138,31 +146,14 @@ namespace UnityFx.Outline
 				throw new ArgumentNullException(nameof(commandBuffer));
 			}
 
-			var cx = rtSize.x > 0 ? rtSize.x : -1;
-			var cy = rtSize.y > 0 ? rtSize.y : -1;
+			Debug.Assert(!src.Equals(dst));
 
 			_source = src;
 			_destination = dst;
-
 			_commandBuffer = commandBuffer;
-			_commandBuffer.BeginSample(EffectName);
-			_commandBuffer.GetTemporaryRT(_maskRtId, cx, cy, 0, FilterMode.Bilinear, RenderTextureFormat.R8);
-			_commandBuffer.GetTemporaryRT(_hPassRtId, cx, cy, 0, FilterMode.Bilinear, RenderTextureFormat.R8);
 
-			// Need to copy src content into dst if they are not the same. For instance this is the case when rendering
-			// the outline effect as part of Unity Post Processing stack.
-			if (!src.Equals(dst))
-			{
-				if (SystemInfo.copyTextureSupport > CopyTextureSupport.None)
-				{
-					_commandBuffer.CopyTexture(src, dst);
-				}
-				else
-				{
-					_commandBuffer.SetRenderTarget(dst, RenderBufferLoadAction.DontCare, RenderBufferStoreAction.Store);
-					_commandBuffer.Blit(src, BuiltinRenderTextureType.CurrentActive);
-				}
-			}
+			Init(_commandBuffer, rtSize);
+			Blit(_commandBuffer, src, dst);
 		}
 
 		/// <summary>
@@ -275,7 +266,7 @@ namespace UnityFx.Outline
 			{
 				var r = renderers[i];
 
-				if (r && r.enabled && r.gameObject.activeInHierarchy)
+				if (r && r.enabled && r.isVisible && r.gameObject.activeInHierarchy)
 				{
 					// NOTE: Accessing Renderer.sharedMaterials triggers GC.Alloc. That's why we use a temporary
 					// list of materials, cached with the outline resources.
@@ -293,7 +284,7 @@ namespace UnityFx.Outline
 		{
 			RenderObjectClear(settings.OutlineRenderMode, renderingPath);
 
-			if (renderer && renderer.gameObject.activeInHierarchy && renderer.enabled)
+			if (renderer && renderer.enabled && renderer.isVisible && renderer.gameObject.activeInHierarchy)
 			{
 				// NOTE: Accessing Renderer.sharedMaterials triggers GC.Alloc. That's why we use a temporary
 				// list of materials, cached with the outline resources.
@@ -324,10 +315,35 @@ namespace UnityFx.Outline
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		private static void Init(CommandBuffer cmdBuffer, Vector2Int rtSize)
+		{
+			var cx = rtSize.x > 0 ? rtSize.x : -1;
+			var cy = rtSize.y > 0 ? rtSize.y : -1;
+
+			cmdBuffer.BeginSample(EffectName);
+			cmdBuffer.GetTemporaryRT(_maskRtId, cx, cy, 0, FilterMode.Bilinear, RenderTextureFormat.R8);
+			cmdBuffer.GetTemporaryRT(_hPassRtId, cx, cy, 0, FilterMode.Bilinear, RenderTextureFormat.R8);
+		}
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		private static void Blit(CommandBuffer cmdBuffer, RenderTargetIdentifier src, RenderTargetIdentifier dst)
+		{
+			if (SystemInfo.copyTextureSupport > CopyTextureSupport.None)
+			{
+				cmdBuffer.CopyTexture(src, dst);
+			}
+			else
+			{
+				cmdBuffer.SetRenderTarget(dst, RenderBufferLoadAction.DontCare, RenderBufferStoreAction.Store);
+				cmdBuffer.Blit(src, BuiltinRenderTextureType.CurrentActive);
+			}
+		}
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		private static void Blit(CommandBuffer cmdBuffer, RenderTargetIdentifier src, OutlineResources resources, int shaderPass, Material mat, MaterialPropertyBlock props, bool forceDrawMesh = false)
 		{
 			// Set source texture as _MainTex to match Blit behavior.
-			cmdBuffer.SetGlobalTexture(_mainRtId, src);
+			cmdBuffer.SetGlobalTexture(resources.MainTexId, src);
 
 			if (forceDrawMesh || SystemInfo.graphicsShaderLevel < 35)
 			{
