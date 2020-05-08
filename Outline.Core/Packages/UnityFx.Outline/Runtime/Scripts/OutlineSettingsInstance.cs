@@ -27,23 +27,9 @@ namespace UnityFx.Outline
 
 #pragma warning restore 0649
 
-		private OutlineResources _resources;
-
 		#endregion
 
 		#region interface
-
-		public OutlineResources OutlineResources
-		{
-			get
-			{
-				return _resources;
-			}
-			set
-			{
-				_resources = value;
-			}
-		}
 
 		public bool RequiresCameraDepth
 		{
@@ -62,11 +48,6 @@ namespace UnityFx.Outline
 
 		internal OutlineSettingsInstance()
 		{
-		}
-
-		internal OutlineSettingsInstance(OutlineResources resources)
-		{
-			_resources = resources;
 		}
 
 		#endregion

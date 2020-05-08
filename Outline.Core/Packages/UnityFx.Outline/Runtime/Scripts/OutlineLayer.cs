@@ -211,8 +211,6 @@ namespace UnityFx.Outline
 		{
 			if (_enabled)
 			{
-				_settings.OutlineResources = resources;
-
 				foreach (var kvp in _outlineObjects)
 				{
 					if (kvp.Key && kvp.Key.activeInHierarchy)
@@ -249,7 +247,6 @@ namespace UnityFx.Outline
 
 		internal void Reset()
 		{
-			_settings.OutlineResources = null;
 			_outlineObjects.Clear();
 		}
 

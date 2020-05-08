@@ -55,13 +55,7 @@ namespace UnityFx.Outline
 					throw new ArgumentNullException("OutlineResources");
 				}
 
-				if (_outlineResources != value)
-				{
-					CreateSettingsIfNeeded();
-
-					_outlineResources = value;
-					_outlineSettings.OutlineResources = _outlineResources;
-				}
+				_outlineResources = value;
 			}
 		}
 
@@ -96,16 +90,10 @@ namespace UnityFx.Outline
 		{
 			CreateRenderersIfNeeded();
 			CreateSettingsIfNeeded();
-
-			_outlineSettings.OutlineResources = _outlineResources;
 		}
 
 		private void OnDestroy()
 		{
-			if (_outlineSettings != null)
-			{
-				_outlineSettings.OutlineResources = null;
-			}
 		}
 
 		private void OnEnable()
@@ -154,7 +142,7 @@ namespace UnityFx.Outline
 						{
 							using (var renderer = new OutlineRenderer(cmdBuffer, BuiltinRenderTextureType.CameraTarget))
 							{
-								renderer.Render(_renderers.GetList(), _outlineSettings.OutlineResources, _outlineSettings, camera.actualRenderingPath);
+								renderer.Render(_renderers.GetList(), _outlineResources, _outlineSettings, camera.actualRenderingPath);
 							}
 						}
 					}
@@ -178,17 +166,10 @@ namespace UnityFx.Outline
 		{
 			CreateRenderersIfNeeded();
 			CreateSettingsIfNeeded();
-
-			_outlineSettings.OutlineResources = _outlineResources;
 		}
 
 		private void Reset()
 		{
-			if (_outlineSettings != null)
-			{
-				_outlineSettings.OutlineResources = _outlineResources;
-			}
-
 			if (_renderers != null)
 			{
 				_renderers.Reset(true);
@@ -328,7 +309,7 @@ namespace UnityFx.Outline
 		{
 			if (_outlineSettings == null)
 			{
-				_outlineSettings = new OutlineSettingsInstance(_outlineResources);
+				_outlineSettings = new OutlineSettingsInstance();
 			}
 		}
 
