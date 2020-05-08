@@ -299,7 +299,6 @@ namespace UnityFx.Outline
 
 		private void RenderOutline(OutlineResources resources, IOutlineSettings settings)
 		{
-			var forceDrawMesh = (settings.OutlineRenderMode & OutlineRenderFlags.UseLegacyRenderer) != 0;
 			var mat = resources.OutlineMaterial;
 			var props = resources.GetProperties(settings);
 
@@ -307,11 +306,11 @@ namespace UnityFx.Outline
 
 			// HPass
 			_commandBuffer.SetRenderTarget(_hPassRtId, RenderBufferLoadAction.DontCare, RenderBufferStoreAction.Store);
-			Blit(_commandBuffer, _maskRtId, resources, _hPassId, mat, props, forceDrawMesh);
+			Blit(_commandBuffer, _maskRtId, resources, _hPassId, mat, props);
 
 			// VPassBlend
 			_commandBuffer.SetRenderTarget(_destination, _source.Equals(_destination) ? RenderBufferLoadAction.Load : RenderBufferLoadAction.DontCare, RenderBufferStoreAction.Store);
-			Blit(_commandBuffer, _hPassRtId, resources, _vPassId, mat, props, forceDrawMesh);
+			Blit(_commandBuffer, _hPassRtId, resources, _vPassId, mat, props);
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -340,12 +339,12 @@ namespace UnityFx.Outline
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		private static void Blit(CommandBuffer cmdBuffer, RenderTargetIdentifier src, OutlineResources resources, int shaderPass, Material mat, MaterialPropertyBlock props, bool forceDrawMesh = false)
+		private static void Blit(CommandBuffer cmdBuffer, RenderTargetIdentifier src, OutlineResources resources, int shaderPass, Material mat, MaterialPropertyBlock props)
 		{
 			// Set source texture as _MainTex to match Blit behavior.
 			cmdBuffer.SetGlobalTexture(resources.MainTexId, src);
 
-			if (forceDrawMesh || SystemInfo.graphicsShaderLevel < 35)
+			if (SystemInfo.graphicsShaderLevel < 35)
 			{
 				cmdBuffer.DrawMesh(resources.FullscreenTriangleMesh, Matrix4x4.identity, mat, 0, shaderPass, props);
 			}
