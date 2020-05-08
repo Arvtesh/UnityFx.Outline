@@ -27,7 +27,7 @@ Shader "Hidden/UnityFx/Outline"
 		float2 _MainTex_TexelSize;
 		float _GaussSamples[32];
 
-#if SHADER_TARGET < 35
+#if SHADER_TARGET < 35 || _USE_DRAWMESH
 
 		v2f_img vert(appdata_img v)
 		{
@@ -118,6 +118,7 @@ Shader "Hidden/UnityFx/Outline"
 			HLSLPROGRAM
 
 			#pragma target 3.5
+			#pragma shader_feature _USE_DRAWMESH
 			#pragma vertex vert
 			#pragma fragment frag_h
 
@@ -133,6 +134,7 @@ Shader "Hidden/UnityFx/Outline"
 			HLSLPROGRAM
 
 			#pragma target 3.5
+			#pragma shader_feature _USE_DRAWMESH
 			#pragma vertex vert
 			#pragma fragment frag_v
 

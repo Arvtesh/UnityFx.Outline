@@ -85,6 +85,11 @@ namespace UnityFx.Outline
 		public const string GaussSamplesName = "_GaussSamples";
 
 		/// <summary>
+		/// Name of the _USE_DRAWMESH shader feature.
+		/// </summary>
+		public const string UseDrawMeshFeatureName = "_USE_DRAWMESH";
+
+		/// <summary>
 		/// Hashed name of _MainTex shader parameter.
 		/// </summary>
 		public readonly int MainTexId = Shader.PropertyToID(MainTexName);
