@@ -50,9 +50,9 @@ namespace UnityFx.Outline
 			}
 			set
 			{
-				if (value == null)
+				if (value is null)
 				{
-					throw new ArgumentNullException("OutlineResources");
+					throw new ArgumentNullException(nameof(OutlineResources));
 				}
 
 				_outlineResources = value;

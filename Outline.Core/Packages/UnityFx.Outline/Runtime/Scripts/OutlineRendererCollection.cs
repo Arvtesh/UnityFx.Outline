@@ -67,21 +67,9 @@ namespace UnityFx.Outline
 
 		#region ICollection
 
-		public int Count
-		{
-			get
-			{
-				return _renderers.Count;
-			}
-		}
+		public int Count => _renderers.Count;
 
-		public bool IsReadOnly
-		{
-			get
-			{
-				return false;
-			}
-		}
+		public bool IsReadOnly => false;
 
 		public void Add(Renderer renderer)
 		{
@@ -130,14 +118,14 @@ namespace UnityFx.Outline
 
 		private void Validate(Renderer renderer)
 		{
-			if (renderer == null)
+			if (renderer is null)
 			{
-				throw new ArgumentNullException("renderer");
+				throw new ArgumentNullException(nameof(renderer));
 			}
 
 			if (!renderer.transform.IsChildOf(_go.transform))
 			{
-				throw new ArgumentException(string.Format("Only children of the {0} are allowed.", _go.name), "renderer");
+				throw new ArgumentException(string.Format("Only children of the {0} are allowed.", _go.name), nameof(renderer));
 			}
 		}
 

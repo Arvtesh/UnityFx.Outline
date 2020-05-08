@@ -130,9 +130,9 @@ namespace UnityFx.Outline
 		/// <exception cref="ArgumentNullException">Thrown if <paramref name="settings"/> is <see langword="null"/>.</exception>
 		public OutlineLayer(OutlineSettings settings)
 		{
-			if (ReferenceEquals(settings, null))
+			if (settings is null)
 			{
-				throw new ArgumentNullException("settings");
+				throw new ArgumentNullException(nameof(settings));
 			}
 
 			_settings.OutlineSettings = settings;
@@ -144,9 +144,9 @@ namespace UnityFx.Outline
 		/// <exception cref="ArgumentNullException">Thrown if <paramref name="settings"/> is <see langword="null"/>.</exception>
 		public OutlineLayer(string name, OutlineSettings settings)
 		{
-			if (ReferenceEquals(settings, null))
+			if (settings is null)
 			{
-				throw new ArgumentNullException("settings");
+				throw new ArgumentNullException(nameof(settings));
 			}
 
 			_name = name;
@@ -159,9 +159,9 @@ namespace UnityFx.Outline
 		/// <exception cref="ArgumentNullException">Thrown if <paramref name="go"/> is <see langword="null"/>.</exception>
 		public void Add(GameObject go, int ignoreLayerMask)
 		{
-			if (ReferenceEquals(go, null))
+			if (go is null)
 			{
-				throw new ArgumentNullException("go");
+				throw new ArgumentNullException(nameof(go));
 			}
 
 			if (!_outlineObjects.ContainsKey(go))
@@ -187,14 +187,12 @@ namespace UnityFx.Outline
 		/// <exception cref="ArgumentNullException">Thrown if <paramref name="go"/> is <see langword="null"/>.</exception>
 		public bool TryGetRenderers(GameObject go, out ICollection<Renderer> renderers)
 		{
-			if (ReferenceEquals(go, null))
+			if (go is null)
 			{
-				throw new ArgumentNullException("go");
+				throw new ArgumentNullException(nameof(go));
 			}
 
-			OutlineRendererCollection result;
-
-			if (_outlineObjects.TryGetValue(go, out result))
+			if (_outlineObjects.TryGetValue(go, out var result))
 			{
 				renderers = result;
 				return true;
@@ -342,22 +340,10 @@ namespace UnityFx.Outline
 		#region ICollection
 
 		/// <inheritdoc/>
-		public int Count
-		{
-			get
-			{
-				return _outlineObjects.Count;
-			}
-		}
+		public int Count => _outlineObjects.Count;
 
 		/// <inheritdoc/>
-		public bool IsReadOnly
-		{
-			get
-			{
-				return false;
-			}
-		}
+		public bool IsReadOnly => false;
 
 		/// <inheritdoc/>
 		public void Add(GameObject go)
@@ -368,18 +354,18 @@ namespace UnityFx.Outline
 		/// <inheritdoc/>
 		public bool Remove(GameObject go)
 		{
-			if (!ReferenceEquals(go, null))
+			if (go is null)
 			{
-				return _outlineObjects.Remove(go);
+				return false;
 			}
 
-			return false;
+			return _outlineObjects.Remove(go);
 		}
 
 		/// <inheritdoc/>
 		public bool Contains(GameObject go)
 		{
-			if (ReferenceEquals(go, null))
+			if (go is null)
 			{
 				return false;
 			}

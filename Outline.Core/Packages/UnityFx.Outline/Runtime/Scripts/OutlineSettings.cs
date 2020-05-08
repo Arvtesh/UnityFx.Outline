@@ -67,7 +67,7 @@ namespace UnityFx.Outline
 			}
 			set
 			{
-				_outlineWidth = Mathf.Clamp(value, OutlineRenderer.MinWidth, OutlineRenderer.MaxWidth);
+				_outlineWidth = Mathf.Clamp(value, OutlineResources.MinWidth, OutlineResources.MaxWidth);
 			}
 		}
 
@@ -80,7 +80,7 @@ namespace UnityFx.Outline
 			}
 			set
 			{
-				_outlineIntensity = Mathf.Clamp(value, OutlineRenderer.MinIntensity, OutlineRenderer.MaxIntensity);
+				_outlineIntensity = Mathf.Clamp(value, OutlineResources.MinIntensity, OutlineResources.MaxIntensity);
 			}
 		}
 

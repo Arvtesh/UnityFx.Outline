@@ -56,14 +56,14 @@ namespace UnityFx.Outline
 		[Test]
 		public void OutlineWidth_DefaultValueIsValid()
 		{
-			Assert.LessOrEqual(OutlineRenderer.MinWidth, _settings.OutlineWidth);
-			Assert.GreaterOrEqual(OutlineRenderer.MaxWidth, _settings.OutlineWidth);
+			Assert.LessOrEqual(OutlineResources.MinWidth, _settings.OutlineWidth);
+			Assert.GreaterOrEqual(OutlineResources.MaxWidth, _settings.OutlineWidth);
 		}
 
 		[Test]
 		public void OutlineWidth_SetsValue()
 		{
-			var width = UnityEngine.Random.Range(OutlineRenderer.MinWidth, OutlineRenderer.MaxWidth);
+			var width = UnityEngine.Random.Range(OutlineResources.MinWidth, OutlineResources.MaxWidth);
 			_settings.OutlineWidth = width;
 
 			Assert.AreEqual(width, _settings.OutlineWidth);
@@ -74,11 +74,11 @@ namespace UnityFx.Outline
 		{
 			_settings.OutlineWidth = 1000;
 
-			Assert.AreEqual(OutlineRenderer.MaxWidth, _settings.OutlineWidth);
+			Assert.AreEqual(OutlineResources.MaxWidth, _settings.OutlineWidth);
 
 			_settings.OutlineWidth = -1000;
 
-			Assert.AreEqual(OutlineRenderer.MinWidth, _settings.OutlineWidth);
+			Assert.AreEqual(OutlineResources.MinWidth, _settings.OutlineWidth);
 		}
 
 		[Test]
@@ -142,14 +142,14 @@ namespace UnityFx.Outline
 		[Test]
 		public void OutlineIntensity_DefaultValueIsValid()
 		{
-			Assert.LessOrEqual(OutlineRenderer.MinIntensity, _settings.OutlineIntensity);
-			Assert.GreaterOrEqual(OutlineRenderer.MaxIntensity, _settings.OutlineIntensity);
+			Assert.LessOrEqual(OutlineResources.MinIntensity, _settings.OutlineIntensity);
+			Assert.GreaterOrEqual(OutlineResources.MaxIntensity, _settings.OutlineIntensity);
 		}
 
 		[Test]
 		public void OutlineIntensity_SetsValue()
 		{
-			var intensity = UnityEngine.Random.Range(OutlineRenderer.MinIntensity, OutlineRenderer.MaxIntensity);
+			var intensity = UnityEngine.Random.Range(OutlineResources.MinIntensity, OutlineResources.MaxIntensity);
 
 			_settings.OutlineIntensity = intensity;
 
@@ -161,11 +161,11 @@ namespace UnityFx.Outline
 		{
 			_settings.OutlineIntensity = 1000;
 
-			Assert.AreEqual(OutlineRenderer.MaxIntensity, _settings.OutlineIntensity);
+			Assert.AreEqual(OutlineResources.MaxIntensity, _settings.OutlineIntensity);
 
 			_settings.OutlineIntensity = -1000;
 
-			Assert.AreEqual(OutlineRenderer.MinIntensity, _settings.OutlineIntensity);
+			Assert.AreEqual(OutlineResources.MinIntensity, _settings.OutlineIntensity);
 		}
 
 		[Test]

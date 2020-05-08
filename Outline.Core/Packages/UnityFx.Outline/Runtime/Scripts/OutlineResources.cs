@@ -27,24 +27,77 @@ namespace UnityFx.Outline
 		#region interface
 
 		/// <summary>
+		/// Minimum value of outline width parameter.
+		/// </summary>
+		/// <seealso cref="MaxWidth"/>
+		public const int MinWidth = 1;
+
+		/// <summary>
+		/// Maximum value of outline width parameter.
+		/// </summary>
+		/// <seealso cref="MinWidth"/>
+		public const int MaxWidth = 32;
+
+		/// <summary>
+		/// Minimum value of outline intensity parameter.
+		/// </summary>
+		/// <seealso cref="MaxIntensity"/>
+		/// <seealso cref="SolidIntensity"/>
+		public const int MinIntensity = 1;
+
+		/// <summary>
+		/// Maximum value of outline intensity parameter.
+		/// </summary>
+		/// <seealso cref="MinIntensity"/>
+		/// <seealso cref="SolidIntensity"/>
+		public const int MaxIntensity = 64;
+
+		/// <summary>
+		/// Value of outline intensity parameter that is treated as solid fill.
+		/// </summary>
+		/// <seealso cref="MinIntensity"/>
+		/// <seealso cref="MaxIntensity"/>
+		public const int SolidIntensity = 100;
+
+		/// <summary>
+		/// Name of _Color shader parameter.
+		/// </summary>
+		public const string ColorName = "_Color";
+
+		/// <summary>
+		/// Name of _Width shader parameter.
+		/// </summary>
+		public const string WidthName = "_Width";
+
+		/// <summary>
+		/// Name of _Intensity shader parameter.
+		/// </summary>
+		public const string IntensityName = "_Intensity";
+
+		/// <summary>
+		/// Name of _GaussSamples shader parameter.
+		/// </summary>
+		public const string GaussSamplesName = "_GaussSamples";
+
+		/// <summary>
 		/// Hashed name of _Color shader parameter.
 		/// </summary>
-		public readonly int ColorId = Shader.PropertyToID("_Color");
+		public readonly int ColorId = Shader.PropertyToID(ColorName);
 
 		/// <summary>
 		/// Hashed name of _Width shader parameter.
 		/// </summary>
-		public readonly int WidthId = Shader.PropertyToID("_Width");
+		public readonly int WidthId = Shader.PropertyToID(WidthName);
 
 		/// <summary>
 		/// Hashed name of _Intensity shader parameter.
 		/// </summary>
-		public readonly int IntensityId = Shader.PropertyToID("_Intensity");
+		public readonly int IntensityId = Shader.PropertyToID(IntensityName);
 
 		/// <summary>
 		/// Hashed name of _GaussSamples shader parameter.
 		/// </summary>
-		public readonly int GaussSamplesId = Shader.PropertyToID("_GaussSamples");
+		public readonly int GaussSamplesId = Shader.PropertyToID(GaussSamplesName);
 
 		/// <summary>
 		/// Temp materials list. Used by <see cref="OutlineRenderer"/> to avoid GC allocations.
@@ -72,7 +125,7 @@ namespace UnityFx.Outline
 				{
 					_renderMaterial = new Material(RenderShader)
 					{
-						name = "Outline - SimpleRender",
+						name = "Outline - RenderColor",
 						hideFlags = HideFlags.HideAndDontSave
 					};
 				}
@@ -108,7 +161,7 @@ namespace UnityFx.Outline
 		{
 			get
 			{
-				if (_props == null)
+				if (_props is null)
 				{
 					_props = new MaterialPropertyBlock();
 				}
@@ -163,20 +216,45 @@ namespace UnityFx.Outline
 		}
 
 		/// <summary>
+		/// Returns a <see cref="MaterialPropertyBlock"/> instance initialized with values from <paramref name="settings"/>.
+		/// </summary>
+		public MaterialPropertyBlock GetProperties(IOutlineSettings settings)
+		{
+			if (_props is null)
+			{
+				_props = new MaterialPropertyBlock();
+			}
+
+			_props.SetFloat(WidthId, settings.OutlineWidth);
+			_props.SetColor(ColorId, settings.OutlineColor);
+
+			if ((settings.OutlineRenderMode & OutlineRenderFlags.Blurred) != 0)
+			{
+				_props.SetFloat(IntensityId, settings.OutlineIntensity);
+			}
+			else
+			{
+				_props.SetFloat(IntensityId, SolidIntensity);
+			}
+
+			return _props;
+		}
+
+		/// <summary>
 		/// Gets cached gauss samples for the specified outline <paramref name="width"/>.
 		/// </summary>
 		public float[] GetGaussSamples(int width)
 		{
-			var index = Mathf.Clamp(width, 1, OutlineRenderer.MaxWidth) - 1;
+			var index = Mathf.Clamp(width, 1, MaxWidth) - 1;
 
-			if (_gaussSamples == null)
+			if (_gaussSamples is null)
 			{
-				_gaussSamples = new float[OutlineRenderer.MaxWidth][];
+				_gaussSamples = new float[MaxWidth][];
 			}
 
-			if (_gaussSamples[index] == null)
+			if (_gaussSamples[index] is null)
 			{
-				_gaussSamples[index] = OutlineRenderer.GetGaussSamples(width, null);
+				_gaussSamples[index] = GetGaussSamples(width, null);
 			}
 
 			return _gaussSamples[index];
@@ -189,6 +267,43 @@ namespace UnityFx.Outline
 		{
 			RenderShader = Shader.Find("Hidden/UnityFx/OutlineColor");
 			OutlineShader = Shader.Find("Hidden/UnityFx/Outline");
+		}
+
+		/// <summary>
+		/// Calculates value of Gauss function for the specified <paramref name="x"/> and <paramref name="stdDev"/> values.
+		/// </summary>
+		/// <seealso href="https://en.wikipedia.org/wiki/Gaussian_blur"/>
+		/// <seealso href="https://en.wikipedia.org/wiki/Normal_distribution"/>
+		public static float Gauss(float x, float stdDev)
+		{
+			var stdDev2 = stdDev * stdDev * 2;
+			var a = 1 / Mathf.Sqrt(Mathf.PI * stdDev2);
+			var gauss = a * Mathf.Pow((float)Math.E, -x * x / stdDev2);
+
+			return gauss;
+		}
+
+		/// <summary>
+		/// Samples Gauss function for the specified <paramref name="width"/>.
+		/// </summary>
+		/// <seealso href="https://en.wikipedia.org/wiki/Normal_distribution"/>
+		public static float[] GetGaussSamples(int width, float[] samples)
+		{
+			// NOTE: According to '3 sigma' rule there is no reason to have StdDev less then width / 3.
+			// In practice blur looks best when StdDev is within range [width / 3,  width / 2].
+			var stdDev = width * 0.5f;
+
+			if (samples is null)
+			{
+				samples = new float[MaxWidth];
+			}
+
+			for (var i = 0; i < width; i++)
+			{
+				samples[i] = Gauss(i, stdDev);
+			}
+
+			return samples;
 		}
 
 		#endregion

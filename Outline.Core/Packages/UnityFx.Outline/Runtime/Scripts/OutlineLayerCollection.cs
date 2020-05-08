@@ -107,14 +107,14 @@ namespace UnityFx.Outline
 			}
 			set
 			{
-				if (value == null)
+				if (value is null)
 				{
 					throw new ArgumentNullException("layer");
 				}
 
 				if (layerIndex < 0 || layerIndex >= _layers.Count)
 				{
-					throw new ArgumentOutOfRangeException("layerIndex");
+					throw new ArgumentOutOfRangeException(nameof(layerIndex));
 				}
 
 				if (_layers[layerIndex] != value)
@@ -143,9 +143,9 @@ namespace UnityFx.Outline
 		/// <inheritdoc/>
 		public void Insert(int index, OutlineLayer layer)
 		{
-			if (layer == null)
+			if (layer is null)
 			{
-				throw new ArgumentNullException("layer");
+				throw new ArgumentNullException(nameof(layer));
 			}
 
 			if (layer.ParentCollection != this)
@@ -175,29 +175,17 @@ namespace UnityFx.Outline
 		#region ICollection
 
 		/// <inheritdoc/>
-		public int Count
-		{
-			get
-			{
-				return _layers.Count;
-			}
-		}
+		public int Count => _layers.Count;
 
 		/// <inheritdoc/>
-		public bool IsReadOnly
-		{
-			get
-			{
-				return false;
-			}
-		}
+		public bool IsReadOnly => false;
 
 		/// <inheritdoc/>
 		public void Add(OutlineLayer layer)
 		{
-			if (layer == null)
+			if (layer is null)
 			{
-				throw new ArgumentNullException("layer");
+				throw new ArgumentNullException(nameof(layer));
 			}
 
 			if (layer.ParentCollection != this)
@@ -242,7 +230,7 @@ namespace UnityFx.Outline
 		/// <inheritdoc/>
 		public bool Contains(OutlineLayer layer)
 		{
-			if (layer == null)
+			if (layer is null)
 			{
 				return false;
 			}

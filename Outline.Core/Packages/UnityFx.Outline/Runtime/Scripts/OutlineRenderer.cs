@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using UnityEngine;
 using UnityEngine.Rendering;
 
@@ -59,7 +60,7 @@ namespace UnityFx.Outline
 	/// }
 	/// </example>
 	/// <seealso cref="OutlineResources"/>
-	public struct OutlineRenderer : IDisposable
+	public struct OutlineRenderer : IOutlineRenderer, IDisposable
 	{
 		#region data
 
@@ -87,39 +88,6 @@ namespace UnityFx.Outline
 		/// Name of the outline effect.
 		/// </summary>
 		public const string EffectName = "Outline";
-
-		/// <summary>
-		/// Minimum value of outline width parameter.
-		/// </summary>
-		/// <seealso cref="MaxWidth"/>
-		public const int MinWidth = 1;
-
-		/// <summary>
-		/// Maximum value of outline width parameter.
-		/// </summary>
-		/// <seealso cref="MinWidth"/>
-		public const int MaxWidth = 32;
-
-		/// <summary>
-		/// Minimum value of outline intensity parameter.
-		/// </summary>
-		/// <seealso cref="MaxIntensity"/>
-		/// <seealso cref="SolidIntensity"/>
-		public const int MinIntensity = 1;
-
-		/// <summary>
-		/// Maximum value of outline intensity parameter.
-		/// </summary>
-		/// <seealso cref="MinIntensity"/>
-		/// <seealso cref="SolidIntensity"/>
-		public const int MaxIntensity = 64;
-
-		/// <summary>
-		/// Value of outline intensity parameter that is treated as solid fill.
-		/// </summary>
-		/// <seealso cref="MinIntensity"/>
-		/// <seealso cref="MaxIntensity"/>
-		public const int SolidIntensity = 100;
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="OutlineRenderer"/> struct.
@@ -165,9 +133,9 @@ namespace UnityFx.Outline
 		/// <exception cref="ArgumentNullException">Thrown if <paramref name="commandBuffer"/> is <see langword="null"/>.</exception>
 		public OutlineRenderer(CommandBuffer commandBuffer, RenderTargetIdentifier src, RenderTargetIdentifier dst, Vector2Int rtSize)
 		{
-			if (commandBuffer == null)
+			if (commandBuffer is null)
 			{
-				throw new ArgumentNullException("commandBuffer");
+				throw new ArgumentNullException(nameof(commandBuffer));
 			}
 
 			var cx = rtSize.x > 0 ? rtSize.x : -1;
@@ -192,15 +160,15 @@ namespace UnityFx.Outline
 				}
 				else
 				{
-#if UNITY_2018_2_OR_NEWER
 					_commandBuffer.SetRenderTarget(dst, RenderBufferLoadAction.DontCare, RenderBufferStoreAction.Store);
-#else
-					_commandBuffer.SetRenderTarget(dst);
-#endif
 					_commandBuffer.Blit(src, BuiltinRenderTextureType.CurrentActive);
 				}
 			}
 		}
+
+		#endregion
+
+		#region IOutlineRenderer
 
 		/// <summary>
 		/// Renders outline around a single object. This version allows enumeration of <paramref name="renderers"/> with no GC allocations.
@@ -212,63 +180,28 @@ namespace UnityFx.Outline
 		/// <exception cref="ArgumentNullException">Thrown if any of the arguments is <see langword="null"/>.</exception>
 		/// <seealso cref="Render(IEnumerable{Renderer}, OutlineResources, IOutlineSettings)"/>
 		/// <seealso cref="Render(Renderer, OutlineResources, IOutlineSettings)"/>
-		public void Render(IList<Renderer> renderers, OutlineResources resources, IOutlineSettings settings, RenderingPath renderingPath = RenderingPath.UsePlayerSettings)
+		public void Render(IReadOnlyList<Renderer> renderers, OutlineResources resources, IOutlineSettings settings, RenderingPath renderingPath = RenderingPath.UsePlayerSettings)
 		{
-			if (renderers == null)
+			if (renderers is null)
 			{
-				throw new ArgumentNullException("renderers");
+				throw new ArgumentNullException(nameof(renderers));
 			}
 
-			if (resources == null)
+			if (resources is null)
 			{
-				throw new ArgumentNullException("resources");
+				throw new ArgumentNullException(nameof(resources));
 			}
 
-			if (settings == null)
+			if (settings is null)
 			{
-				throw new ArgumentNullException("settings");
+				throw new ArgumentNullException(nameof(settings));
 			}
 
 			if (renderers.Count > 0)
 			{
-				Init(resources, settings);
 				RenderObject(resources, settings, renderers, renderingPath);
-				RenderHPass(resources, settings);
-				RenderVPassBlend(resources, settings);
+				RenderOutline(resources, settings);
 			}
-		}
-
-		/// <summary>
-		/// Renders outline around a single object.
-		/// </summary>
-		/// <param name="renderers">One or more renderers representing a single object to be outlined.</param>
-		/// <param name="resources">Outline resources.</param>
-		/// <param name="settings">Outline settings.</param>
-		/// <param name="renderingPath">Rendering path used by the target camera (used is <see cref="OutlineRenderFlags.EnableDepthTesting"/> is set).</param>
-		/// <exception cref="ArgumentNullException">Thrown if any of the arguments is <see langword="null"/>.</exception>
-		/// <seealso cref="Render(IList{Renderer}, OutlineResources, IOutlineSettings)"/>
-		/// <seealso cref="Render(Renderer, OutlineResources, IOutlineSettings)"/>
-		public void Render(IEnumerable<Renderer> renderers, OutlineResources resources, IOutlineSettings settings, RenderingPath renderingPath = RenderingPath.UsePlayerSettings)
-		{
-			if (renderers == null)
-			{
-				throw new ArgumentNullException("renderers");
-			}
-
-			if (resources == null)
-			{
-				throw new ArgumentNullException("resources");
-			}
-
-			if (settings == null)
-			{
-				throw new ArgumentNullException("settings");
-			}
-
-			Init(resources, settings);
-			RenderObject(resources, settings, renderers, renderingPath);
-			RenderHPass(resources, settings);
-			RenderVPassBlend(resources, settings);
 		}
 
 		/// <summary>
@@ -283,62 +216,23 @@ namespace UnityFx.Outline
 		/// <seealso cref="Render(IEnumerable{Renderer}, OutlineResources, IOutlineSettings)"/>
 		public void Render(Renderer renderer, OutlineResources resources, IOutlineSettings settings, RenderingPath renderingPath = RenderingPath.UsePlayerSettings)
 		{
-			if (renderer == null)
+			if (renderer is null)
 			{
-				throw new ArgumentNullException("renderers");
+				throw new ArgumentNullException(nameof(renderer));
 			}
 
-			if (resources == null)
+			if (resources is null)
 			{
-				throw new ArgumentNullException("resources");
+				throw new ArgumentNullException(nameof(resources));
 			}
 
-			if (settings == null)
+			if (settings is null)
 			{
-				throw new ArgumentNullException("settings");
+				throw new ArgumentNullException(nameof(settings));
 			}
 
-			Init(resources, settings);
 			RenderObject(resources, settings, renderer, renderingPath);
-			RenderHPass(resources, settings);
-			RenderVPassBlend(resources, settings);
-		}
-
-		/// <summary>
-		/// Calculates value of Gauss function for the specified <paramref name="x"/> and <paramref name="stdDev"/> values.
-		/// </summary>
-		/// <seealso href="https://en.wikipedia.org/wiki/Gaussian_blur"/>
-		/// <seealso href="https://en.wikipedia.org/wiki/Normal_distribution"/>
-		public static float Gauss(float x, float stdDev)
-		{
-			var stdDev2 = stdDev * stdDev * 2;
-			var a = 1 / Mathf.Sqrt((float)Math.PI * stdDev2);
-			var gauss = a * Mathf.Pow((float)Math.E, -x * x / stdDev2);
-
-			return gauss;
-		}
-
-		/// <summary>
-		/// Samples Gauss function for the specified <paramref name="width"/>.
-		/// </summary>
-		/// <seealso href="https://en.wikipedia.org/wiki/Normal_distribution"/>
-		public static float[] GetGaussSamples(int width, float[] samples)
-		{
-			// NOTE: According to '3 sigma' rule there is no reason to have StdDev less then width / 3.
-			// In practice blur looks best when StdDev is within range [width / 3,  width / 2].
-			var stdDev = width * 0.5f;
-
-			if (samples == null)
-			{
-				samples = new float[MaxWidth];
-			}
-
-			for (var i = 0; i < width; i++)
-			{
-				samples[i] = Gauss(i, stdDev);
-			}
-
-			return samples;
+			RenderOutline(resources, settings);
 		}
 
 		#endregion
@@ -359,27 +253,6 @@ namespace UnityFx.Outline
 
 		#region implementation
 
-		private void Init(OutlineResources resources, IOutlineSettings settings)
-		{
-			// Shader parameter overrides (shared between all passes).
-			var props = resources.Properties;
-
-			props.SetFloat(resources.WidthId, settings.OutlineWidth);
-			props.SetColor(resources.ColorId, settings.OutlineColor);
-
-			if ((settings.OutlineRenderMode & OutlineRenderFlags.Blurred) != 0)
-			{
-				props.SetFloat(resources.IntensityId, settings.OutlineIntensity);
-			}
-			else
-			{
-				props.SetFloat(resources.IntensityId, SolidIntensity);
-			}
-
-			// Gauss samples.
-			_commandBuffer.SetGlobalFloatArray(resources.GaussSamplesId, resources.GetGaussSamples(settings.OutlineWidth));
-		}
-
 		private void RenderObjectClear(OutlineRenderFlags flags, RenderingPath renderingPath)
 		{
 			if ((flags & OutlineRenderFlags.EnableDepthTesting) != 0)
@@ -389,25 +262,17 @@ namespace UnityFx.Outline
 					BuiltinRenderTextureType.ResolvedDepth : BuiltinRenderTextureType.Depth;
 
 				// NOTE: Use the camera depth buffer when rendering the mask. Shader only reads from the depth buffer (ZWrite Off).
-#if UNITY_2018_2_OR_NEWER
 				_commandBuffer.SetRenderTarget(_maskRtId, RenderBufferLoadAction.DontCare, RenderBufferStoreAction.Store, depthTextureId, RenderBufferLoadAction.Load, RenderBufferStoreAction.DontCare);
-#else
-				_commandBuffer.SetRenderTarget(_maskRtId, depthTextureId);
-#endif
 			}
 			else
 			{
-#if UNITY_2018_2_OR_NEWER
 				_commandBuffer.SetRenderTarget(_maskRtId, RenderBufferLoadAction.DontCare, RenderBufferStoreAction.Store);
-#else
-				_commandBuffer.SetRenderTarget(_maskRtId);
-#endif
 			}
 
 			_commandBuffer.ClearRenderTarget(false, true, Color.clear);
 		}
 
-		private void RenderObject(OutlineResources resources, IOutlineSettings settings, IList<Renderer> renderers, RenderingPath renderingPath)
+		private void RenderObject(OutlineResources resources, IOutlineSettings settings, IReadOnlyList<Renderer> renderers, RenderingPath renderingPath)
 		{
 			RenderObjectClear(settings.OutlineRenderMode, renderingPath);
 
@@ -415,27 +280,6 @@ namespace UnityFx.Outline
 			{
 				var r = renderers[i];
 
-				if (r && r.enabled && r.gameObject.activeInHierarchy)
-				{
-					// NOTE: Accessing Renderer.sharedMaterials triggers GC.Alloc. That's why we use a temporary
-					// list of materials, cached with the outline resources.
-					r.GetSharedMaterials(resources.TmpMaterials);
-
-					for (var j = 0; j < resources.TmpMaterials.Count; ++j)
-					{
-						_commandBuffer.DrawRenderer(r, resources.RenderMaterial, j);
-					}
-				}
-			}
-		}
-
-		private void RenderObject(OutlineResources resources, IOutlineSettings settings, IEnumerable<Renderer> renderers, RenderingPath renderingPath)
-		{
-			RenderObjectClear(settings.OutlineRenderMode, renderingPath);
-
-			// NOTE: Calling IEnumerable.GetEnumerator() triggers GC.Alloc.
-			foreach (var r in renderers)
-			{
 				if (r && r.enabled && r.gameObject.activeInHierarchy)
 				{
 					// NOTE: Accessing Renderer.sharedMaterials triggers GC.Alloc. That's why we use a temporary
@@ -467,49 +311,36 @@ namespace UnityFx.Outline
 			}
 		}
 
-		private void RenderHPass(OutlineResources resources, IOutlineSettings settings)
+		private void RenderOutline(OutlineResources resources, IOutlineSettings settings)
 		{
-			// Set source texture as _MainTex to match Blit behavior.
-			_commandBuffer.SetGlobalTexture(_mainRtId, _maskRtId);
+			var forceDrawMesh = (settings.OutlineRenderMode & OutlineRenderFlags.UseLegacyRenderer) != 0;
+			var mat = resources.OutlineMaterial;
+			var props = resources.GetProperties(settings);
 
-			// Set destination texture as render target.
-#if UNITY_2018_2_OR_NEWER
+			_commandBuffer.SetGlobalFloatArray(resources.GaussSamplesId, resources.GetGaussSamples(settings.OutlineWidth));
+
+			// HPass
 			_commandBuffer.SetRenderTarget(_hPassRtId, RenderBufferLoadAction.DontCare, RenderBufferStoreAction.Store);
-#else
-			_commandBuffer.SetRenderTarget(_hPassRtId);
-#endif
+			Blit(_commandBuffer, _maskRtId, resources, _hPassId, mat, props, forceDrawMesh);
 
-			// Blit fullscreen triangle.
-			if ((settings.OutlineRenderMode & OutlineRenderFlags.UseLegacyRenderer) == 0 && SystemInfo.graphicsShaderLevel >= 35)
-			{
-				_commandBuffer.DrawProcedural(Matrix4x4.identity, resources.OutlineMaterial, _hPassId, MeshTopology.Triangles, 3, 1, resources.Properties);
-			}
-			else
-			{
-				_commandBuffer.DrawMesh(resources.FullscreenTriangleMesh, Matrix4x4.identity, resources.OutlineMaterial, 0, _hPassId, resources.Properties);
-			}
+			// VPassBlend
+			_commandBuffer.SetRenderTarget(_destination, _source.Equals(_destination) ? RenderBufferLoadAction.Load : RenderBufferLoadAction.DontCare, RenderBufferStoreAction.Store);
+			Blit(_commandBuffer, _hPassRtId, resources, _vPassId, mat, props, forceDrawMesh);
 		}
 
-		private void RenderVPassBlend(OutlineResources resources, IOutlineSettings settings)
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		private static void Blit(CommandBuffer cmdBuffer, RenderTargetIdentifier src, OutlineResources resources, int shaderPass, Material mat, MaterialPropertyBlock props, bool forceDrawMesh = false)
 		{
 			// Set source texture as _MainTex to match Blit behavior.
-			_commandBuffer.SetGlobalTexture(_mainRtId, _hPassRtId);
+			cmdBuffer.SetGlobalTexture(_mainRtId, src);
 
-			// Set destination texture as render target.
-#if UNITY_2018_2_OR_NEWER
-			_commandBuffer.SetRenderTarget(_destination, _source.Equals(_destination) ? RenderBufferLoadAction.Load : RenderBufferLoadAction.DontCare, RenderBufferStoreAction.Store);
-#else
-			_commandBuffer.SetRenderTarget(_destination);
-#endif
-
-			// Blit fullscreen triangle.
-			if ((settings.OutlineRenderMode & OutlineRenderFlags.UseLegacyRenderer) == 0 && SystemInfo.graphicsShaderLevel >= 35)
+			if (forceDrawMesh || SystemInfo.graphicsShaderLevel < 35)
 			{
-				_commandBuffer.DrawProcedural(Matrix4x4.identity, resources.OutlineMaterial, _vPassId, MeshTopology.Triangles, 3, 1, resources.Properties);
+				cmdBuffer.DrawMesh(resources.FullscreenTriangleMesh, Matrix4x4.identity, mat, 0, shaderPass, props);
 			}
 			else
 			{
-				_commandBuffer.DrawMesh(resources.FullscreenTriangleMesh, Matrix4x4.identity, resources.OutlineMaterial, 0, _vPassId, resources.Properties);
+				cmdBuffer.DrawProcedural(Matrix4x4.identity, mat, shaderPass, MeshTopology.Triangles, 3, 1, props);
 			}
 		}
 

@@ -63,7 +63,7 @@ namespace UnityFx.Outline
 				settings.OutlineColor = color;
 			}
 
-			var width = EditorGUILayout.IntSlider("Width", settings.OutlineWidth, OutlineRenderer.MinWidth, OutlineRenderer.MaxWidth);
+			var width = EditorGUILayout.IntSlider("Width", settings.OutlineWidth, OutlineResources.MinWidth, OutlineResources.MaxWidth);
 
 			if (settings.OutlineWidth != width)
 			{
@@ -82,7 +82,7 @@ namespace UnityFx.Outline
 
 			if ((renderMode & OutlineRenderFlags.Blurred) != 0)
 			{
-				var i = EditorGUILayout.Slider("Blur Intensity", settings.OutlineIntensity, OutlineRenderer.MinIntensity, OutlineRenderer.MaxIntensity);
+				var i = EditorGUILayout.Slider("Blur Intensity", settings.OutlineIntensity, OutlineResources.MinIntensity, OutlineResources.MaxIntensity);
 
 				if (!Mathf.Approximately(settings.OutlineIntensity, i))
 				{

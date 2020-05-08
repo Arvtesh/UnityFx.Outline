@@ -35,14 +35,7 @@ namespace UnityFx.Outline
 		{
 			get
 			{
-				var renderMode = _outlineMode;
-
-				if (!ReferenceEquals(_outlineSettings, null))
-				{
-					renderMode = _outlineSettings.OutlineRenderMode;
-				}
-
-				return (renderMode & OutlineRenderFlags.EnableDepthTesting) != 0;
+				return (OutlineRenderMode & OutlineRenderFlags.EnableDepthTesting) != 0;
 			}
 		}
 
@@ -75,12 +68,7 @@ namespace UnityFx.Outline
 		{
 			get
 			{
-				if (!ReferenceEquals(_outlineSettings, null))
-				{
-					return _outlineSettings.OutlineColor;
-				}
-
-				return _outlineColor;
+				return _outlineSettings is null ? _outlineColor : _outlineSettings.OutlineColor;
 			}
 			set
 			{
@@ -93,16 +81,11 @@ namespace UnityFx.Outline
 		{
 			get
 			{
-				if (!ReferenceEquals(_outlineSettings, null))
-				{
-					return _outlineSettings.OutlineWidth;
-				}
-
-				return _outlineWidth;
+				return _outlineSettings is null ? _outlineWidth : _outlineSettings.OutlineWidth;
 			}
 			set
 			{
-				_outlineWidth = Mathf.Clamp(value, OutlineRenderer.MinWidth, OutlineRenderer.MaxWidth);
+				_outlineWidth = Mathf.Clamp(value, OutlineResources.MinWidth, OutlineResources.MaxWidth);
 			}
 		}
 
@@ -111,16 +94,11 @@ namespace UnityFx.Outline
 		{
 			get
 			{
-				if (!ReferenceEquals(_outlineSettings, null))
-				{
-					return _outlineSettings.OutlineIntensity;
-				}
-
-				return _outlineIntensity;
+				return _outlineSettings is null ? _outlineIntensity : _outlineSettings.OutlineIntensity;
 			}
 			set
 			{
-				_outlineIntensity = Mathf.Clamp(value, OutlineRenderer.MinIntensity, OutlineRenderer.MaxIntensity);
+				_outlineIntensity = Mathf.Clamp(value, OutlineResources.MinIntensity, OutlineResources.MaxIntensity);
 			}
 		}
 
@@ -129,12 +107,7 @@ namespace UnityFx.Outline
 		{
 			get
 			{
-				if (!ReferenceEquals(_outlineSettings, null))
-				{
-					return _outlineSettings.OutlineRenderMode;
-				}
-
-				return _outlineMode;
+				return _outlineSettings is null ? _outlineMode : _outlineSettings.OutlineRenderMode;
 			}
 			set
 			{
