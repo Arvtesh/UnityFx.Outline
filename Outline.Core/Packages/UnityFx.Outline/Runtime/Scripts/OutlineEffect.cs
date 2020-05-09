@@ -219,14 +219,14 @@ namespace UnityFx.Outline
 
 			if (_outlineResources && _outlineResources.IsValid)
 			{
-				using (var renderer = new OutlineRenderer(_commandBuffer, BuiltinRenderTextureType.CameraTarget))
+				using (var renderer = new OutlineRenderer(_commandBuffer, _camera.actualRenderingPath))
 				{
 					_renderObjects.Clear();
 					_outlineLayers.GetRenderObjects(_renderObjects);
 
 					foreach (var renderObject in _renderObjects)
 					{
-						renderer.Render(renderObject.Renderers, _outlineResources, renderObject.OutlineSettings, _camera.actualRenderingPath);
+						renderer.Render(renderObject, _outlineResources);
 					}
 				}
 			}

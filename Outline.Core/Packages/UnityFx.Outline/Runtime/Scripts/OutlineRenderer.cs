@@ -70,8 +70,8 @@ namespace UnityFx.Outline
 		private static readonly int _maskRtId = Shader.PropertyToID("_MaskTex");
 		private static readonly int _hPassRtId = Shader.PropertyToID("_HPassTex");
 
-		private readonly RenderTargetIdentifier _source;
-		private readonly RenderTargetIdentifier _destination;
+		private readonly RenderTargetIdentifier _rt;
+		private readonly RenderTargetIdentifier _depth;
 		private readonly CommandBuffer _commandBuffer;
 
 		#endregion
@@ -91,69 +91,108 @@ namespace UnityFx.Outline
 		/// <summary>
 		/// Initializes a new instance of the <see cref="OutlineRenderer"/> struct.
 		/// </summary>
-		/// <param name="commandBuffer">A <see cref="CommandBuffer"/> to render the effect to. It should be cleared manually (if needed) before passing to this method.</param>
-		/// <param name="rt">Render target.</param>
-		/// <exception cref="ArgumentNullException">Thrown if <paramref name="commandBuffer"/> is <see langword="null"/>.</exception>
-		public OutlineRenderer(CommandBuffer commandBuffer, RenderTargetIdentifier rt)
-			: this(commandBuffer, rt, Vector2Int.zero)
+		/// <param name="cmd">A <see cref="CommandBuffer"/> to render the effect to. It should be cleared manually (if needed) before passing to this method.</param>
+		/// <exception cref="ArgumentNullException">Thrown if <paramref name="cmd"/> is <see langword="null"/>.</exception>
+		public OutlineRenderer(CommandBuffer cmd)
+			: this(cmd, BuiltinRenderTextureType.CameraTarget, BuiltinRenderTextureType.Depth, default)
 		{
 		}
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="OutlineRenderer"/> struct.
 		/// </summary>
-		/// <param name="commandBuffer">A <see cref="CommandBuffer"/> to render the effect to. It should be cleared manually (if needed) before passing to this method.</param>
-		/// <param name="rt">Render target.</param>
-		/// <exception cref="ArgumentNullException">Thrown if <paramref name="commandBuffer"/> is <see langword="null"/>.</exception>
-		public OutlineRenderer(CommandBuffer commandBuffer, RenderTargetIdentifier rt, Vector2Int rtSize)
+		/// <param name="cmd">A <see cref="CommandBuffer"/> to render the effect to. It should be cleared manually (if needed) before passing to this method.</param>
+		/// <param name="renderingPath">The rendering path of target camera (<see cref="Camera.actualRenderingPath"/>).</param>
+		/// <exception cref="ArgumentNullException">Thrown if <paramref name="cmd"/> is <see langword="null"/>.</exception>
+		public OutlineRenderer(CommandBuffer cmd, RenderingPath renderingPath)
+			: this(cmd, BuiltinRenderTextureType.CameraTarget, GetBuiltinDepth(renderingPath), default)
 		{
-			if (commandBuffer is null)
+		}
+
+		/// <summary>
+		/// Initializes a new instance of the <see cref="OutlineRenderer"/> struct.
+		/// </summary>
+		/// <param name="cmd">A <see cref="CommandBuffer"/> to render the effect to. It should be cleared manually (if needed) before passing to this method.</param>
+		/// <param name="dst">Render target.</param>
+		/// <exception cref="ArgumentNullException">Thrown if <paramref name="cmd"/> is <see langword="null"/>.</exception>
+		public OutlineRenderer(CommandBuffer cmd, RenderTargetIdentifier dst)
+			: this(cmd, dst, BuiltinRenderTextureType.Depth, default)
+		{
+		}
+
+		/// <summary>
+		/// Initializes a new instance of the <see cref="OutlineRenderer"/> struct.
+		/// </summary>
+		/// <param name="cmd">A <see cref="CommandBuffer"/> to render the effect to. It should be cleared manually (if needed) before passing to this method.</param>
+		/// <param name="dst">Render target.</param>
+		/// <param name="depth">Depth dexture to use.</param>
+		/// <exception cref="ArgumentNullException">Thrown if <paramref name="cmd"/> is <see langword="null"/>.</exception>
+		public OutlineRenderer(CommandBuffer cmd, RenderTargetIdentifier dst, RenderTargetIdentifier depth)
+			: this(cmd, dst, depth, default)
+		{
+		}
+
+		/// <summary>
+		/// Initializes a new instance of the <see cref="OutlineRenderer"/> struct.
+		/// </summary>
+		/// <param name="cmd">A <see cref="CommandBuffer"/> to render the effect to. It should be cleared manually (if needed) before passing to this method.</param>
+		/// <param name="dst">Render target.</param>
+		/// <param name="depth">Depth dexture to use.</param>
+		/// <param name="rtDesc">TODO</param>
+		/// <exception cref="ArgumentNullException">Thrown if <paramref name="cmd"/> is <see langword="null"/>.</exception>
+		public OutlineRenderer(CommandBuffer cmd, RenderTargetIdentifier dst, RenderTargetIdentifier depth, RenderTextureDescriptor rtDesc)
+		{
+			if (cmd is null)
 			{
-				throw new ArgumentNullException(nameof(commandBuffer));
+				throw new ArgumentNullException(nameof(cmd));
 			}
 
-			_source = rt;
-			_destination = rt;
-			_commandBuffer = commandBuffer;
-
-			Init(_commandBuffer, rtSize);
-		}
-
-		/// <summary>
-		/// Initializes a new instance of the <see cref="OutlineRenderer"/> struct.
-		/// </summary>
-		/// <param name="commandBuffer">A <see cref="CommandBuffer"/> to render the effect to. It should be cleared manually (if needed) before passing to this method.</param>
-		/// <param name="src">Source image. Can be the same as <paramref name="dst"/>.</param>
-		/// <param name="dst">Render target.</param>
-		/// <exception cref="ArgumentNullException">Thrown if <paramref name="commandBuffer"/> is <see langword="null"/>.</exception>
-		public OutlineRenderer(CommandBuffer commandBuffer, RenderTargetIdentifier src, RenderTargetIdentifier dst)
-			: this(commandBuffer, src, dst, Vector2Int.zero)
-		{
-		}
-
-		/// <summary>
-		/// Initializes a new instance of the <see cref="OutlineRenderer"/> struct.
-		/// </summary>
-		/// <param name="commandBuffer">A <see cref="CommandBuffer"/> to render the effect to. It should be cleared manually (if needed) before passing to this method.</param>
-		/// <param name="src">Source image. Can be the same as <paramref name="dst"/>.</param>
-		/// <param name="dst">Render target.</param>
-		/// <param name="rtSize">Size of the temporaty render textures.</param>
-		/// <exception cref="ArgumentNullException">Thrown if <paramref name="commandBuffer"/> is <see langword="null"/>.</exception>
-		public OutlineRenderer(CommandBuffer commandBuffer, RenderTargetIdentifier src, RenderTargetIdentifier dst, Vector2Int rtSize)
-		{
-			if (commandBuffer is null)
+			if (rtDesc.width <= 0)
 			{
-				throw new ArgumentNullException(nameof(commandBuffer));
+				rtDesc.width = -1;
 			}
 
-			Debug.Assert(!src.Equals(dst));
+			if (rtDesc.height <= 0)
+			{
+				rtDesc.height = -1;
+			}
 
-			_source = src;
-			_destination = dst;
-			_commandBuffer = commandBuffer;
+			if (rtDesc.dimension == TextureDimension.None || rtDesc.dimension == TextureDimension.Unknown)
+			{
+				// TODO: Remove this.
+				cmd.BeginSample(EffectName);
+				cmd.GetTemporaryRT(_maskRtId, rtDesc.width, rtDesc.height, 0, FilterMode.Bilinear, RenderTextureFormat.R8);
+				cmd.GetTemporaryRT(_hPassRtId, rtDesc.width, rtDesc.height, 0, FilterMode.Bilinear, RenderTextureFormat.R8);
+			}
+			else
+			{
+				rtDesc.shadowSamplingMode = ShadowSamplingMode.None;
+				rtDesc.depthBufferBits = 0;
+				rtDesc.colorFormat = RenderTextureFormat.R8;
 
-			Init(_commandBuffer, rtSize);
-			Blit(_commandBuffer, src, dst);
+				cmd.BeginSample(EffectName);
+				cmd.GetTemporaryRT(_maskRtId, rtDesc, FilterMode.Bilinear);
+				cmd.GetTemporaryRT(_hPassRtId, rtDesc, FilterMode.Bilinear);
+			}
+
+			_rt = dst;
+			_depth = depth;
+			_commandBuffer = cmd;
+		}
+
+		/// <summary>
+		/// Renders outline around a single object. This version allows enumeration of <paramref name="renderers"/> with no GC allocations.
+		/// </summary>
+		/// <param name="obj">An object to be outlines.</param>
+		/// <param name="resources">Outline resources.</param>
+		/// <param name="settings">Outline settings.</param>
+		/// <param name="renderingPath">Rendering path used by the target camera (used is <see cref="OutlineRenderFlags.EnableDepthTesting"/> is set).</param>
+		/// <exception cref="ArgumentNullException">Thrown if any of the arguments is <see langword="null"/>.</exception>
+		/// <seealso cref="Render(IEnumerable{Renderer}, OutlineResources, IOutlineSettings)"/>
+		/// <seealso cref="Render(Renderer, OutlineResources, IOutlineSettings)"/>
+		public void Render(OutlineObject obj, OutlineResources resources)
+		{
+			Render(obj.Renderers, resources, obj.OutlineSettings);
 		}
 
 		/// <summary>
@@ -166,7 +205,7 @@ namespace UnityFx.Outline
 		/// <exception cref="ArgumentNullException">Thrown if any of the arguments is <see langword="null"/>.</exception>
 		/// <seealso cref="Render(IEnumerable{Renderer}, OutlineResources, IOutlineSettings)"/>
 		/// <seealso cref="Render(Renderer, OutlineResources, IOutlineSettings)"/>
-		public void Render(IReadOnlyList<Renderer> renderers, OutlineResources resources, IOutlineSettings settings, RenderingPath renderingPath = RenderingPath.UsePlayerSettings)
+		public void Render(IReadOnlyList<Renderer> renderers, OutlineResources resources, IOutlineSettings settings)
 		{
 			if (renderers is null)
 			{
@@ -185,7 +224,7 @@ namespace UnityFx.Outline
 
 			if (renderers.Count > 0)
 			{
-				RenderObject(resources, settings, renderers, renderingPath);
+				RenderObject(resources, settings, renderers);
 				RenderOutline(resources, settings);
 			}
 		}
@@ -200,7 +239,7 @@ namespace UnityFx.Outline
 		/// <exception cref="ArgumentNullException">Thrown if any of the arguments is <see langword="null"/>.</exception>
 		/// <seealso cref="Render(IList{Renderer}, OutlineResources, IOutlineSettings)"/>
 		/// <seealso cref="Render(IEnumerable{Renderer}, OutlineResources, IOutlineSettings)"/>
-		public void Render(Renderer renderer, OutlineResources resources, IOutlineSettings settings, RenderingPath renderingPath = RenderingPath.UsePlayerSettings)
+		public void Render(Renderer renderer, OutlineResources resources, IOutlineSettings settings)
 		{
 			if (renderer is null)
 			{
@@ -217,8 +256,16 @@ namespace UnityFx.Outline
 				throw new ArgumentNullException(nameof(settings));
 			}
 
-			RenderObject(resources, settings, renderer, renderingPath);
+			RenderObject(resources, settings, renderer);
 			RenderOutline(resources, settings);
+		}
+
+		/// <summary>
+		/// TODO
+		/// </summary>
+		public static RenderTargetIdentifier GetBuiltinDepth(RenderingPath renderingPath)
+		{
+			return (renderingPath == RenderingPath.DeferredShading || renderingPath == RenderingPath.DeferredLighting) ? BuiltinRenderTextureType.ResolvedDepth : BuiltinRenderTextureType.Depth;
 		}
 
 		#endregion
@@ -239,16 +286,12 @@ namespace UnityFx.Outline
 
 		#region implementation
 
-		private void RenderObjectClear(OutlineRenderFlags flags, RenderingPath renderingPath)
+		private void RenderObjectClear(OutlineRenderFlags flags)
 		{
 			if ((flags & OutlineRenderFlags.EnableDepthTesting) != 0)
 			{
-				// Have to use BuiltinRenderTextureType.ResolvedDepth for deferred, BuiltinRenderTextureType.Depth for forward.
-				var depthTextureId = (renderingPath == RenderingPath.DeferredShading || renderingPath == RenderingPath.DeferredLighting) ?
-					BuiltinRenderTextureType.ResolvedDepth : BuiltinRenderTextureType.Depth;
-
 				// NOTE: Use the camera depth buffer when rendering the mask. Shader only reads from the depth buffer (ZWrite Off).
-				_commandBuffer.SetRenderTarget(_maskRtId, RenderBufferLoadAction.DontCare, RenderBufferStoreAction.Store, depthTextureId, RenderBufferLoadAction.Load, RenderBufferStoreAction.DontCare);
+				_commandBuffer.SetRenderTarget(_maskRtId, RenderBufferLoadAction.DontCare, RenderBufferStoreAction.Store, _depth, RenderBufferLoadAction.Load, RenderBufferStoreAction.DontCare);
 			}
 			else
 			{
@@ -258,9 +301,9 @@ namespace UnityFx.Outline
 			_commandBuffer.ClearRenderTarget(false, true, Color.clear);
 		}
 
-		private void RenderObject(OutlineResources resources, IOutlineSettings settings, IReadOnlyList<Renderer> renderers, RenderingPath renderingPath)
+		private void RenderObject(OutlineResources resources, IOutlineSettings settings, IReadOnlyList<Renderer> renderers)
 		{
-			RenderObjectClear(settings.OutlineRenderMode, renderingPath);
+			RenderObjectClear(settings.OutlineRenderMode);
 
 			for (var i = 0; i < renderers.Count; ++i)
 			{
@@ -280,9 +323,9 @@ namespace UnityFx.Outline
 			}
 		}
 
-		private void RenderObject(OutlineResources resources, IOutlineSettings settings, Renderer renderer, RenderingPath renderingPath)
+		private void RenderObject(OutlineResources resources, IOutlineSettings settings, Renderer renderer)
 		{
-			RenderObjectClear(settings.OutlineRenderMode, renderingPath);
+			RenderObjectClear(settings.OutlineRenderMode);
 
 			if (renderer && renderer.enabled && renderer.isVisible && renderer.gameObject.activeInHierarchy)
 			{
@@ -309,7 +352,7 @@ namespace UnityFx.Outline
 			Blit(_commandBuffer, _maskRtId, resources, _hPassId, mat, props);
 
 			// VPassBlend
-			_commandBuffer.SetRenderTarget(_destination, _source.Equals(_destination) ? RenderBufferLoadAction.Load : RenderBufferLoadAction.DontCare, RenderBufferStoreAction.Store);
+			_commandBuffer.SetRenderTarget(_rt, RenderBufferLoadAction.Load, RenderBufferStoreAction.Store);
 			Blit(_commandBuffer, _hPassRtId, resources, _vPassId, mat, props);
 		}
 
@@ -322,20 +365,6 @@ namespace UnityFx.Outline
 			cmdBuffer.BeginSample(EffectName);
 			cmdBuffer.GetTemporaryRT(_maskRtId, cx, cy, 0, FilterMode.Bilinear, RenderTextureFormat.R8);
 			cmdBuffer.GetTemporaryRT(_hPassRtId, cx, cy, 0, FilterMode.Bilinear, RenderTextureFormat.R8);
-		}
-
-		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		private static void Blit(CommandBuffer cmdBuffer, RenderTargetIdentifier src, RenderTargetIdentifier dst)
-		{
-			if (SystemInfo.copyTextureSupport > CopyTextureSupport.None)
-			{
-				cmdBuffer.CopyTexture(src, dst);
-			}
-			else
-			{
-				cmdBuffer.SetRenderTarget(dst, RenderBufferLoadAction.DontCare, RenderBufferStoreAction.Store);
-				cmdBuffer.Blit(src, BuiltinRenderTextureType.CurrentActive);
-			}
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
