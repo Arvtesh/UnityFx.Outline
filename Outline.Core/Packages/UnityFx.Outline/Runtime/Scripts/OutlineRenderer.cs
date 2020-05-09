@@ -73,6 +73,7 @@ namespace UnityFx.Outline
 		private readonly RenderTargetIdentifier _rt;
 		private readonly RenderTargetIdentifier _depth;
 		private readonly CommandBuffer _commandBuffer;
+		private readonly OutlineResources _resources;
 
 		#endregion
 
@@ -93,8 +94,8 @@ namespace UnityFx.Outline
 		/// </summary>
 		/// <param name="cmd">A <see cref="CommandBuffer"/> to render the effect to. It should be cleared manually (if needed) before passing to this method.</param>
 		/// <exception cref="ArgumentNullException">Thrown if <paramref name="cmd"/> is <see langword="null"/>.</exception>
-		public OutlineRenderer(CommandBuffer cmd)
-			: this(cmd, BuiltinRenderTextureType.CameraTarget, BuiltinRenderTextureType.Depth, default)
+		public OutlineRenderer(CommandBuffer cmd, OutlineResources resources)
+			: this(cmd, resources, BuiltinRenderTextureType.CameraTarget, BuiltinRenderTextureType.Depth, GetDefaultRtDesc())
 		{
 		}
 
@@ -104,8 +105,8 @@ namespace UnityFx.Outline
 		/// <param name="cmd">A <see cref="CommandBuffer"/> to render the effect to. It should be cleared manually (if needed) before passing to this method.</param>
 		/// <param name="renderingPath">The rendering path of target camera (<see cref="Camera.actualRenderingPath"/>).</param>
 		/// <exception cref="ArgumentNullException">Thrown if <paramref name="cmd"/> is <see langword="null"/>.</exception>
-		public OutlineRenderer(CommandBuffer cmd, RenderingPath renderingPath)
-			: this(cmd, BuiltinRenderTextureType.CameraTarget, GetBuiltinDepth(renderingPath), default)
+		public OutlineRenderer(CommandBuffer cmd, OutlineResources resources, RenderingPath renderingPath)
+			: this(cmd, resources, BuiltinRenderTextureType.CameraTarget, GetBuiltinDepth(renderingPath), GetDefaultRtDesc())
 		{
 		}
 
@@ -115,20 +116,8 @@ namespace UnityFx.Outline
 		/// <param name="cmd">A <see cref="CommandBuffer"/> to render the effect to. It should be cleared manually (if needed) before passing to this method.</param>
 		/// <param name="dst">Render target.</param>
 		/// <exception cref="ArgumentNullException">Thrown if <paramref name="cmd"/> is <see langword="null"/>.</exception>
-		public OutlineRenderer(CommandBuffer cmd, RenderTargetIdentifier dst)
-			: this(cmd, dst, BuiltinRenderTextureType.Depth, default)
-		{
-		}
-
-		/// <summary>
-		/// Initializes a new instance of the <see cref="OutlineRenderer"/> struct.
-		/// </summary>
-		/// <param name="cmd">A <see cref="CommandBuffer"/> to render the effect to. It should be cleared manually (if needed) before passing to this method.</param>
-		/// <param name="dst">Render target.</param>
-		/// <param name="depth">Depth dexture to use.</param>
-		/// <exception cref="ArgumentNullException">Thrown if <paramref name="cmd"/> is <see langword="null"/>.</exception>
-		public OutlineRenderer(CommandBuffer cmd, RenderTargetIdentifier dst, RenderTargetIdentifier depth)
-			: this(cmd, dst, depth, default)
+		public OutlineRenderer(CommandBuffer cmd, OutlineResources resources, RenderTargetIdentifier dst)
+			: this(cmd, resources, dst, BuiltinRenderTextureType.Depth, GetDefaultRtDesc())
 		{
 		}
 
@@ -138,13 +127,31 @@ namespace UnityFx.Outline
 		/// <param name="cmd">A <see cref="CommandBuffer"/> to render the effect to. It should be cleared manually (if needed) before passing to this method.</param>
 		/// <param name="dst">Render target.</param>
 		/// <param name="depth">Depth dexture to use.</param>
-		/// <param name="rtDesc">TODO</param>
 		/// <exception cref="ArgumentNullException">Thrown if <paramref name="cmd"/> is <see langword="null"/>.</exception>
-		public OutlineRenderer(CommandBuffer cmd, RenderTargetIdentifier dst, RenderTargetIdentifier depth, RenderTextureDescriptor rtDesc)
+		public OutlineRenderer(CommandBuffer cmd, OutlineResources resources, RenderTargetIdentifier dst, RenderTargetIdentifier depth)
+			: this(cmd, resources, dst, depth, GetDefaultRtDesc())
+		{
+		}
+
+		/// <summary>
+		/// Initializes a new instance of the <see cref="OutlineRenderer"/> struct.
+		/// </summary>
+		/// <param name="cmd">A <see cref="CommandBuffer"/> to render the effect to. It should be cleared manually (if needed) before passing to this method.</param>
+		/// <param name="resources">Outline resources.</param>
+		/// <param name="dst">Render target.</param>
+		/// <param name="depth">Depth dexture to use.</param>
+		/// <param name="rtDesc">Render texture decsriptor.</param>
+		/// <exception cref="ArgumentNullException">Thrown if <paramref name="cmd"/> is <see langword="null"/>.</exception>
+		public OutlineRenderer(CommandBuffer cmd, OutlineResources resources, RenderTargetIdentifier dst, RenderTargetIdentifier depth, RenderTextureDescriptor rtDesc)
 		{
 			if (cmd is null)
 			{
 				throw new ArgumentNullException(nameof(cmd));
+			}
+
+			if (resources is null)
+			{
+				throw new ArgumentNullException(nameof(resources));
 			}
 
 			if (rtDesc.width <= 0)
@@ -159,62 +166,48 @@ namespace UnityFx.Outline
 
 			if (rtDesc.dimension == TextureDimension.None || rtDesc.dimension == TextureDimension.Unknown)
 			{
-				// TODO: Remove this.
-				cmd.BeginSample(EffectName);
-				cmd.GetTemporaryRT(_maskRtId, rtDesc.width, rtDesc.height, 0, FilterMode.Bilinear, RenderTextureFormat.R8);
-				cmd.GetTemporaryRT(_hPassRtId, rtDesc.width, rtDesc.height, 0, FilterMode.Bilinear, RenderTextureFormat.R8);
+				rtDesc.dimension = TextureDimension.Tex2D;
 			}
-			else
-			{
-				rtDesc.shadowSamplingMode = ShadowSamplingMode.None;
-				rtDesc.depthBufferBits = 0;
-				rtDesc.colorFormat = RenderTextureFormat.R8;
 
-				cmd.BeginSample(EffectName);
-				cmd.GetTemporaryRT(_maskRtId, rtDesc, FilterMode.Bilinear);
-				cmd.GetTemporaryRT(_hPassRtId, rtDesc, FilterMode.Bilinear);
-			}
+			rtDesc.shadowSamplingMode = ShadowSamplingMode.None;
+			rtDesc.depthBufferBits = 0;
+			rtDesc.colorFormat = RenderTextureFormat.R8;
+			rtDesc.volumeDepth = 1;
+
+			cmd.BeginSample(EffectName);
+			cmd.GetTemporaryRT(_maskRtId, rtDesc, FilterMode.Bilinear);
+			cmd.GetTemporaryRT(_hPassRtId, rtDesc, FilterMode.Bilinear);
 
 			_rt = dst;
 			_depth = depth;
 			_commandBuffer = cmd;
+			_resources = resources;
 		}
 
 		/// <summary>
 		/// Renders outline around a single object. This version allows enumeration of <paramref name="renderers"/> with no GC allocations.
 		/// </summary>
-		/// <param name="obj">An object to be outlines.</param>
-		/// <param name="resources">Outline resources.</param>
-		/// <param name="settings">Outline settings.</param>
-		/// <param name="renderingPath">Rendering path used by the target camera (used is <see cref="OutlineRenderFlags.EnableDepthTesting"/> is set).</param>
-		/// <exception cref="ArgumentNullException">Thrown if any of the arguments is <see langword="null"/>.</exception>
-		/// <seealso cref="Render(IEnumerable{Renderer}, OutlineResources, IOutlineSettings)"/>
-		/// <seealso cref="Render(Renderer, OutlineResources, IOutlineSettings)"/>
-		public void Render(OutlineObject obj, OutlineResources resources)
+		/// <param name="obj">An object to be outlined.</param>
+		/// <seealso cref="Render(IReadOnlyList{Renderer}, IOutlineSettings)"/>
+		/// <seealso cref="Render(Renderer, IOutlineSettings)"/>
+		public void Render(OutlineObject obj)
 		{
-			Render(obj.Renderers, resources, obj.OutlineSettings);
+			Render(obj.Renderers, obj.OutlineSettings);
 		}
 
 		/// <summary>
 		/// Renders outline around a single object. This version allows enumeration of <paramref name="renderers"/> with no GC allocations.
 		/// </summary>
 		/// <param name="renderers">One or more renderers representing a single object to be outlined.</param>
-		/// <param name="resources">Outline resources.</param>
 		/// <param name="settings">Outline settings.</param>
-		/// <param name="renderingPath">Rendering path used by the target camera (used is <see cref="OutlineRenderFlags.EnableDepthTesting"/> is set).</param>
 		/// <exception cref="ArgumentNullException">Thrown if any of the arguments is <see langword="null"/>.</exception>
-		/// <seealso cref="Render(IEnumerable{Renderer}, OutlineResources, IOutlineSettings)"/>
-		/// <seealso cref="Render(Renderer, OutlineResources, IOutlineSettings)"/>
-		public void Render(IReadOnlyList<Renderer> renderers, OutlineResources resources, IOutlineSettings settings)
+		/// <seealso cref="Render(OutlineObject)"/>
+		/// <seealso cref="Render(Renderer, IOutlineSettings)"/>
+		public void Render(IReadOnlyList<Renderer> renderers, IOutlineSettings settings)
 		{
 			if (renderers is null)
 			{
 				throw new ArgumentNullException(nameof(renderers));
-			}
-
-			if (resources is null)
-			{
-				throw new ArgumentNullException(nameof(resources));
 			}
 
 			if (settings is null)
@@ -224,8 +217,8 @@ namespace UnityFx.Outline
 
 			if (renderers.Count > 0)
 			{
-				RenderObject(resources, settings, renderers);
-				RenderOutline(resources, settings);
+				RenderObject(settings, renderers);
+				RenderOutline(settings);
 			}
 		}
 
@@ -233,22 +226,15 @@ namespace UnityFx.Outline
 		/// Renders outline around a single object.
 		/// </summary>
 		/// <param name="renderer">A <see cref="Renderer"/> representing an object to be outlined.</param>
-		/// <param name="resources">Outline resources.</param>
 		/// <param name="settings">Outline settings.</param>
-		/// <param name="renderingPath">Rendering path used by the target camera (used is <see cref="OutlineRenderFlags.EnableDepthTesting"/> is set).</param>
 		/// <exception cref="ArgumentNullException">Thrown if any of the arguments is <see langword="null"/>.</exception>
-		/// <seealso cref="Render(IList{Renderer}, OutlineResources, IOutlineSettings)"/>
-		/// <seealso cref="Render(IEnumerable{Renderer}, OutlineResources, IOutlineSettings)"/>
-		public void Render(Renderer renderer, OutlineResources resources, IOutlineSettings settings)
+		/// <seealso cref="Render(OutlineObject)"/>
+		/// <seealso cref="Render(IReadOnlyList{Renderer}, IOutlineSettings)"/>
+		public void Render(Renderer renderer, IOutlineSettings settings)
 		{
 			if (renderer is null)
 			{
 				throw new ArgumentNullException(nameof(renderer));
-			}
-
-			if (resources is null)
-			{
-				throw new ArgumentNullException(nameof(resources));
 			}
 
 			if (settings is null)
@@ -256,16 +242,24 @@ namespace UnityFx.Outline
 				throw new ArgumentNullException(nameof(settings));
 			}
 
-			RenderObject(resources, settings, renderer);
-			RenderOutline(resources, settings);
+			RenderObject(settings, renderer);
+			RenderOutline(settings);
 		}
 
 		/// <summary>
-		/// TODO
+		/// Gets depth texture identifier for built-in render pipeline.
 		/// </summary>
 		public static RenderTargetIdentifier GetBuiltinDepth(RenderingPath renderingPath)
 		{
 			return (renderingPath == RenderingPath.DeferredShading || renderingPath == RenderingPath.DeferredLighting) ? BuiltinRenderTextureType.ResolvedDepth : BuiltinRenderTextureType.Depth;
+		}
+
+		/// <summary>
+		/// Creates a default instance or <see cref="RenderTextureDescriptor"/>.
+		/// </summary>
+		public static RenderTextureDescriptor GetDefaultRtDesc()
+		{
+			return new RenderTextureDescriptor(-1, -1, RenderTextureFormat.R8, 0);
 		}
 
 		#endregion
@@ -301,7 +295,7 @@ namespace UnityFx.Outline
 			_commandBuffer.ClearRenderTarget(false, true, Color.clear);
 		}
 
-		private void RenderObject(OutlineResources resources, IOutlineSettings settings, IReadOnlyList<Renderer> renderers)
+		private void RenderObject(IOutlineSettings settings, IReadOnlyList<Renderer> renderers)
 		{
 			RenderObjectClear(settings.OutlineRenderMode);
 
@@ -313,17 +307,17 @@ namespace UnityFx.Outline
 				{
 					// NOTE: Accessing Renderer.sharedMaterials triggers GC.Alloc. That's why we use a temporary
 					// list of materials, cached with the outline resources.
-					r.GetSharedMaterials(resources.TmpMaterials);
+					r.GetSharedMaterials(_resources.TmpMaterials);
 
-					for (var j = 0; j < resources.TmpMaterials.Count; ++j)
+					for (var j = 0; j < _resources.TmpMaterials.Count; ++j)
 					{
-						_commandBuffer.DrawRenderer(r, resources.RenderMaterial, j);
+						_commandBuffer.DrawRenderer(r, _resources.RenderMaterial, j);
 					}
 				}
 			}
 		}
 
-		private void RenderObject(OutlineResources resources, IOutlineSettings settings, Renderer renderer)
+		private void RenderObject(IOutlineSettings settings, Renderer renderer)
 		{
 			RenderObjectClear(settings.OutlineRenderMode);
 
@@ -331,40 +325,29 @@ namespace UnityFx.Outline
 			{
 				// NOTE: Accessing Renderer.sharedMaterials triggers GC.Alloc. That's why we use a temporary
 				// list of materials, cached with the outline resources.
-				renderer.GetSharedMaterials(resources.TmpMaterials);
+				renderer.GetSharedMaterials(_resources.TmpMaterials);
 
-				for (var i = 0; i < resources.TmpMaterials.Count; ++i)
+				for (var i = 0; i < _resources.TmpMaterials.Count; ++i)
 				{
-					_commandBuffer.DrawRenderer(renderer, resources.RenderMaterial, i);
+					_commandBuffer.DrawRenderer(renderer, _resources.RenderMaterial, i);
 				}
 			}
 		}
 
-		private void RenderOutline(OutlineResources resources, IOutlineSettings settings)
+		private void RenderOutline(IOutlineSettings settings)
 		{
-			var mat = resources.OutlineMaterial;
-			var props = resources.GetProperties(settings);
+			var mat = _resources.OutlineMaterial;
+			var props = _resources.GetProperties(settings);
 
-			_commandBuffer.SetGlobalFloatArray(resources.GaussSamplesId, resources.GetGaussSamples(settings.OutlineWidth));
+			_commandBuffer.SetGlobalFloatArray(_resources.GaussSamplesId, _resources.GetGaussSamples(settings.OutlineWidth));
 
 			// HPass
 			_commandBuffer.SetRenderTarget(_hPassRtId, RenderBufferLoadAction.DontCare, RenderBufferStoreAction.Store);
-			Blit(_commandBuffer, _maskRtId, resources, _hPassId, mat, props);
+			Blit(_commandBuffer, _maskRtId, _resources, _hPassId, mat, props);
 
 			// VPassBlend
 			_commandBuffer.SetRenderTarget(_rt, RenderBufferLoadAction.Load, RenderBufferStoreAction.Store);
-			Blit(_commandBuffer, _hPassRtId, resources, _vPassId, mat, props);
-		}
-
-		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		private static void Init(CommandBuffer cmdBuffer, Vector2Int rtSize)
-		{
-			var cx = rtSize.x > 0 ? rtSize.x : -1;
-			var cy = rtSize.y > 0 ? rtSize.y : -1;
-
-			cmdBuffer.BeginSample(EffectName);
-			cmdBuffer.GetTemporaryRT(_maskRtId, cx, cy, 0, FilterMode.Bilinear, RenderTextureFormat.R8);
-			cmdBuffer.GetTemporaryRT(_hPassRtId, cx, cy, 0, FilterMode.Bilinear, RenderTextureFormat.R8);
+			Blit(_commandBuffer, _hPassRtId, _resources, _vPassId, mat, props);
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]

@@ -140,9 +140,9 @@ namespace UnityFx.Outline
 
 						if (_renderers.Count > 0)
 						{
-							using (var renderer = new OutlineRenderer(cmdBuffer, camera.actualRenderingPath))
+							using (var renderer = new OutlineRenderer(cmdBuffer, _outlineResources, camera.actualRenderingPath))
 							{
-								renderer.Render(_renderers.GetList(), _outlineResources, _outlineSettings);
+								renderer.Render(_renderers.GetList(), _outlineSettings);
 							}
 						}
 					}
