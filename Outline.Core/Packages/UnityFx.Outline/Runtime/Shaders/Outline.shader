@@ -22,8 +22,8 @@ Shader "Hidden/UnityFx/Outline"
 			float4 _Color;
 		CBUFFER_END
 
-		UNITY_DECLARE_TEX2D(_MaskTex);
-		UNITY_DECLARE_TEX2D(_MainTex);
+		UNITY_DECLARE_SCREENSPACE_TEXTURE(_MaskTex);
+		UNITY_DECLARE_SCREENSPACE_TEXTURE(_MainTex);
 		float2 _MainTex_TexelSize;
 		float _GaussSamples[32];
 
@@ -47,7 +47,16 @@ Shader "Hidden/UnityFx/Outline"
 		struct appdata_vid
 		{
 			uint vertexID : SV_VertexID;
+			UNITY_VERTEX_INPUT_INSTANCE_ID
 		};
+
+		float4 GetFullScreenTriangleVertexPosition(uint vertexID, float z)
+		{
+			// Generates a triangle in homogeneous clip space, s.t.
+			// v0 = (-1, -1, 1), v1 = (3, -1, 1), v2 = (-1, 3, 1).
+			float2 uv = float2((vertexID << 1) & 2, vertexID & 2);
+			return float4(uv * 2 - 1, z, 1);
+		}
 
 		v2f_img vert(appdata_vid v)
 		{
@@ -56,10 +65,7 @@ Shader "Hidden/UnityFx/Outline"
 			UNITY_SETUP_INSTANCE_ID(v);
 			UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO(o);
 
-			// Generate a triangle in homogeneous clip space, s.t.
-			// v0 = (-1, -1), v1 = (3, -1), v2 = (-1, 3).
-			float2 uv = float2((v.vertexID << 1) & 2, v.vertexID & 2);
-			o.pos = float4(uv * 2 - 1, UNITY_NEAR_CLIP_VALUE, 1);
+			o.pos = GetFullScreenTriangleVertexPosition(v.vertexID, UNITY_NEAR_CLIP_VALUE);
 			o.uv = ComputeScreenPos(o.pos);
 
 			return o;
@@ -69,14 +75,13 @@ Shader "Hidden/UnityFx/Outline"
 
 		float CalcIntensity(float2 uv, float2 offset)
 		{
-			float intensity;
-			int n = _Width;
+			float intensity = 0;
 
 			// Accumulates horizontal or vertical blur intensity for the specified texture position.
 			// Set offset = (tx, 0) for horizontal sampling and offset = (0, ty) for vertical.
-			for (int k = -n; k <= _Width; k += 1)
+			for (int k = -_Width; k <= _Width; ++k)
 			{
-				intensity += UNITY_SAMPLE_TEX2D(_MainTex, uv + k * offset).r * _GaussSamples[abs(k)];
+				intensity += UNITY_SAMPLE_SCREENSPACE_TEXTURE(_MainTex, uv + k * offset).r * _GaussSamples[abs(k)];
 			}
 
 			return intensity;
@@ -84,12 +89,13 @@ Shader "Hidden/UnityFx/Outline"
 
 		float4 frag_h(v2f_img i) : SV_Target
 		{
-			return CalcIntensity(i.uv, float2(_MainTex_TexelSize.x, 0));
+			float intensity = CalcIntensity(i.uv, float2(_MainTex_TexelSize.x, 0));
+			return float4(intensity, intensity, intensity, 1);
 		}
 
 		float4 frag_v(v2f_img i) : SV_Target
 		{
-			if (UNITY_SAMPLE_TEX2D(_MaskTex, i.uv).r > 0)
+			if (UNITY_SAMPLE_SCREENSPACE_TEXTURE(_MaskTex, i.uv).r > 0)
 			{
 				// TODO: Avoid discard/clip to improve performance on mobiles.
 				discard;
