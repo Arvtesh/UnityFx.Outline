@@ -24,40 +24,12 @@ namespace UnityFx.Outline
 	/// <example>
 	/// var commandBuffer = new CommandBuffer();
 	/// 
-	/// using (var renderer = new OutlineRenderer(commandBuffer, BuiltinRenderTextureType.CameraTarget))
+	/// using (var renderer = new OutlineRenderer(commandBuffer, resources))
 	/// {
-	/// 	renderer.Render(renderers, resources, settings);
+	/// 	renderer.Render(renderers, settings);
 	/// }
 	///
 	/// camera.AddCommandBuffer(CameraEvent.BeforeImageEffects, commandBuffer);
-	/// </example>
-	/// <example>
-	/// [Preserve]
-	/// public class OutlineEffectRenderer : PostProcessEffectRenderer<Outline>
-	/// {
-	/// 	public override void Init()
-	/// 	{
-	/// 		base.Init();
-	///
-	/// 		// Reuse fullscreen triangle mesh from PostProcessing (do not create own).
-	/// 		settings.OutlineResources.FullscreenTriangleMesh = RuntimeUtilities.fullscreenTriangle;
-	/// 	}
-	///
-	/// 	public override void Render(PostProcessRenderContext context)
-	/// 	{
-	/// 		var resources = settings.OutlineResources;
-	/// 		var layers = settings.OutlineLayers;
-	///
-	/// 		if (resources && resources.IsValid && layers)
-	/// 		{
-	/// 			// No need to setup property sheet parameters, all the rendering staff is handled by the OutlineRenderer.
-	/// 			using (var renderer = new OutlineRenderer(context.command, context.source, context.destination))
-	/// 			{
-	/// 				layers.Render(renderer, resources);
-	/// 			}
-	/// 		}
-	/// 	}
-	/// }
 	/// </example>
 	/// <seealso cref="OutlineResources"/>
 	public readonly struct OutlineRenderer : IDisposable
@@ -93,6 +65,7 @@ namespace UnityFx.Outline
 		/// Initializes a new instance of the <see cref="OutlineRenderer"/> struct.
 		/// </summary>
 		/// <param name="cmd">A <see cref="CommandBuffer"/> to render the effect to. It should be cleared manually (if needed) before passing to this method.</param>
+		/// <param name="resources">Outline resources.</param>
 		/// <exception cref="ArgumentNullException">Thrown if <paramref name="cmd"/> is <see langword="null"/>.</exception>
 		public OutlineRenderer(CommandBuffer cmd, OutlineResources resources)
 			: this(cmd, resources, BuiltinRenderTextureType.CameraTarget, BuiltinRenderTextureType.Depth, GetDefaultRtDesc())
@@ -103,6 +76,7 @@ namespace UnityFx.Outline
 		/// Initializes a new instance of the <see cref="OutlineRenderer"/> struct.
 		/// </summary>
 		/// <param name="cmd">A <see cref="CommandBuffer"/> to render the effect to. It should be cleared manually (if needed) before passing to this method.</param>
+		/// <param name="resources">Outline resources.</param>
 		/// <param name="renderingPath">The rendering path of target camera (<see cref="Camera.actualRenderingPath"/>).</param>
 		/// <exception cref="ArgumentNullException">Thrown if <paramref name="cmd"/> is <see langword="null"/>.</exception>
 		public OutlineRenderer(CommandBuffer cmd, OutlineResources resources, RenderingPath renderingPath)
@@ -114,6 +88,7 @@ namespace UnityFx.Outline
 		/// Initializes a new instance of the <see cref="OutlineRenderer"/> struct.
 		/// </summary>
 		/// <param name="cmd">A <see cref="CommandBuffer"/> to render the effect to. It should be cleared manually (if needed) before passing to this method.</param>
+		/// <param name="resources">Outline resources.</param>
 		/// <param name="dst">Render target.</param>
 		/// <exception cref="ArgumentNullException">Thrown if <paramref name="cmd"/> is <see langword="null"/>.</exception>
 		public OutlineRenderer(CommandBuffer cmd, OutlineResources resources, RenderTargetIdentifier dst)
@@ -125,11 +100,24 @@ namespace UnityFx.Outline
 		/// Initializes a new instance of the <see cref="OutlineRenderer"/> struct.
 		/// </summary>
 		/// <param name="cmd">A <see cref="CommandBuffer"/> to render the effect to. It should be cleared manually (if needed) before passing to this method.</param>
+		/// <param name="resources">Outline resources.</param>
 		/// <param name="dst">Render target.</param>
 		/// <param name="depth">Depth dexture to use.</param>
 		/// <exception cref="ArgumentNullException">Thrown if <paramref name="cmd"/> is <see langword="null"/>.</exception>
 		public OutlineRenderer(CommandBuffer cmd, OutlineResources resources, RenderTargetIdentifier dst, RenderTargetIdentifier depth)
 			: this(cmd, resources, dst, depth, GetDefaultRtDesc())
+		{
+		}
+
+		/// <summary>
+		/// Initializes a new instance of the <see cref="OutlineRenderer"/> struct.
+		/// </summary>
+		/// <param name="cmd">A <see cref="CommandBuffer"/> to render the effect to. It should be cleared manually (if needed) before passing to this method.</param>
+		/// <param name="dst">Render target.</param>
+		/// <param name="renderingPath">The rendering path of target camera (<see cref="Camera.actualRenderingPath"/>).</param>
+		/// <exception cref="ArgumentNullException">Thrown if <paramref name="cmd"/> is <see langword="null"/>.</exception>
+		public OutlineRenderer(CommandBuffer cmd, OutlineResources resources, RenderTargetIdentifier dst, RenderingPath renderingPath)
+			: this(cmd, resources, dst, GetBuiltinDepth(renderingPath), GetDefaultRtDesc())
 		{
 		}
 
