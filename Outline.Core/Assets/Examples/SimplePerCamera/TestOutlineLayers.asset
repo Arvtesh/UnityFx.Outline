@@ -20,7 +20,7 @@ MonoBehaviour:
       _outlineWidth: 5
       _outlineIntensity: 2
       _outlineMode: 0
-    _name: 
+    _name: My pretty layer
     _zOrder: 0
     _enabled: 1
   - _settings:
@@ -29,7 +29,7 @@ MonoBehaviour:
       _outlineWidth: 15
       _outlineIntensity: 2
       _outlineMode: 1
-    _name: 
+    _name: The second layer
     _zOrder: 0
     _enabled: 1
   - _settings:
@@ -38,6 +38,6 @@ MonoBehaviour:
       _outlineWidth: 4
       _outlineIntensity: 2
       _outlineMode: 0
-    _name: 
+    _name: The best layer
     _zOrder: 0
     _enabled: 1

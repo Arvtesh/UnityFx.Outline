@@ -16,7 +16,7 @@ namespace UnityFx.Outline
 	/// <seealso cref="OutlineLayerCollection"/>
 	/// <seealso cref="OutlineEffect"/>
 	[Serializable]
-	public sealed partial class OutlineLayer : ICollection<GameObject>, IOutlineSettingsEx
+	public sealed class OutlineLayer : ICollection<GameObject>, IReadOnlyCollection<GameObject>, IOutlineSettingsEx
 	{
 		#region data
 
@@ -210,13 +210,7 @@ namespace UnityFx.Outline
 			}
 		}
 
-		internal OutlineLayerCollection ParentCollection
-		{
-			get
-			{
-				return _parentCollection;
-			}
-		}
+		internal OutlineLayerCollection ParentCollection => _parentCollection;
 
 		internal void Reset()
 		{
