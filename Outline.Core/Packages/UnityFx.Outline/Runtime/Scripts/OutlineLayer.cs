@@ -25,8 +25,6 @@ namespace UnityFx.Outline
 		[SerializeField, HideInInspector]
 		private string _name;
 		[SerializeField, HideInInspector]
-		private int _zOrder;
-		[SerializeField, HideInInspector]
 		private bool _enabled = true;
 
 		private OutlineLayerCollection _parentCollection;
@@ -65,31 +63,6 @@ namespace UnityFx.Outline
 			set
 			{
 				_enabled = value;
-			}
-		}
-
-		/// <summary>
-		/// Gets or sets the layer priority. Layers with greater <see cref="Priority"/> values are rendered on top of layers with lower priority.
-		/// Layers with equal priorities are rendered according to index in parent collection.
-		/// </summary>
-		/// <seealso cref="Enabled"/>
-		public int Priority
-		{
-			get
-			{
-				return _zOrder;
-			}
-			set
-			{
-				if (_zOrder != value)
-				{
-					if (_parentCollection != null)
-					{
-						_parentCollection.SetOrderChanged();
-					}
-
-					_zOrder = value;
-				}
 			}
 		}
 
@@ -434,12 +407,6 @@ namespace UnityFx.Outline
 			{
 				text.Append(" #");
 				text.Append(_parentCollection.IndexOf(this));
-			}
-
-			if (_zOrder > 0)
-			{
-				text.Append(" z");
-				text.Append(_zOrder);
 			}
 
 			if (_outlineObjects.Count > 0)

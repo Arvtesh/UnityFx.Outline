@@ -92,10 +92,6 @@ namespace UnityFx.Outline
 			CreateSettingsIfNeeded();
 		}
 
-		private void OnDestroy()
-		{
-		}
-
 		private void OnEnable()
 		{
 			Camera.onPreRender += OnCameraPreRender;

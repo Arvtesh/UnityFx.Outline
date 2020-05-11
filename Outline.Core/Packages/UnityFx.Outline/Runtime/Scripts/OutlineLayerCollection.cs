@@ -19,45 +19,19 @@ namespace UnityFx.Outline
 	{
 		#region data
 
-		private class OutlineLayerComparer : IComparer<OutlineLayer>
-		{
-			public int Compare(OutlineLayer x, OutlineLayer y)
-			{
-				return x.Priority - y.Priority;
-			}
-		}
-
 		[SerializeField, HideInInspector]
 		private List<OutlineLayer> _layers = new List<OutlineLayer>();
-
-		private List<OutlineLayer> _sortedLayers = new List<OutlineLayer>();
-		private OutlineLayerComparer _sortComparer = new OutlineLayerComparer();
-		private bool _orderChanged = true;
 
 		#endregion
 
 		#region interface
 
 		/// <summary>
-		/// Gets layers ordered by <see cref="OutlineLayer.Priority"/>.
-		/// </summary>
-		public OutlineLayer[] SortedLayers
-		{
-			get
-			{
-				UpdateSortedLayersIfNeeded();
-				return _sortedLayers.ToArray();
-			}
-		}
-
-		/// <summary>
 		/// Gets the objects for rendering.
 		/// </summary>
 		public void GetRenderObjects(IList<OutlineObject> renderObjects)
 		{
-			UpdateSortedLayersIfNeeded();
-
-			foreach (var layer in _sortedLayers)
+			foreach (var layer in _layers)
 			{
 				layer.GetRenderObjects(renderObjects);
 			}
@@ -66,11 +40,6 @@ namespace UnityFx.Outline
 		#endregion
 
 		#region internals
-
-		internal void SetOrderChanged()
-		{
-			_orderChanged = true;
-		}
 
 		internal void Reset()
 		{
@@ -90,8 +59,6 @@ namespace UnityFx.Outline
 			{
 				layer.SetCollection(this);
 			}
-
-			_orderChanged = true;
 		}
 
 		#endregion
@@ -123,8 +90,6 @@ namespace UnityFx.Outline
 
 					_layers[layerIndex].SetCollection(null);
 					_layers[layerIndex] = value;
-
-					_orderChanged = true;
 				}
 			}
 		}
@@ -151,10 +116,7 @@ namespace UnityFx.Outline
 			if (layer.ParentCollection != this)
 			{
 				layer.SetCollection(this);
-
 				_layers.Insert(index, layer);
-
-				_orderChanged = true;
 			}
 		}
 
@@ -165,8 +127,6 @@ namespace UnityFx.Outline
 			{
 				_layers[index].SetCollection(null);
 				_layers.RemoveAt(index);
-
-				_orderChanged = true;
 			}
 		}
 
@@ -191,9 +151,7 @@ namespace UnityFx.Outline
 			if (layer.ParentCollection != this)
 			{
 				layer.SetCollection(this);
-
 				_layers.Add(layer);
-				_orderChanged = true;
 			}
 		}
 
@@ -203,9 +161,6 @@ namespace UnityFx.Outline
 			if (_layers.Remove(layer))
 			{
 				layer.SetCollection(null);
-
-				_sortedLayers.Remove(layer);
-
 				return true;
 			}
 
@@ -223,7 +178,6 @@ namespace UnityFx.Outline
 				}
 
 				_layers.Clear();
-				_sortedLayers.Clear();
 			}
 		}
 
@@ -262,18 +216,6 @@ namespace UnityFx.Outline
 		#endregion
 
 		#region implementation
-
-		private void UpdateSortedLayersIfNeeded()
-		{
-			if (_orderChanged)
-			{
-				_sortedLayers.Clear();
-				_sortedLayers.AddRange(_layers);
-				_sortedLayers.Sort(_sortComparer);
-				_orderChanged = false;
-			}
-		}
-
 		#endregion
 	}
 }
