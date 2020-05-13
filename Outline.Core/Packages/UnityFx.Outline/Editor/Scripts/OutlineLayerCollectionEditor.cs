@@ -18,8 +18,6 @@ namespace UnityFx.Outline
 		private SerializedProperty _layersProp;
 		private ReorderableList _layersList;
 
-		private Dictionary<OutlineLayer, ReorderableList> _layerLists = new Dictionary<OutlineLayer, ReorderableList>();
-
 		private void OnEnable()
 		{
 			_layers = (OutlineLayerCollection)target;
@@ -31,11 +29,6 @@ namespace UnityFx.Outline
 			_layersList.elementHeightCallback += OnGetElementHeight;
 			_layersList.onAddCallback += OnAddLayer;
 			_layersList.onRemoveCallback += OnRemoveLayer;
-
-			foreach (var layer in _layers)
-			{
-				AddLayerList(layer);
-			}
 		}
 
 		public override void OnInspectorGUI()
@@ -46,11 +39,24 @@ namespace UnityFx.Outline
 
 			EditorGUILayout.Space();
 
-			foreach (var list in _layerLists.Values)
+			foreach (var layer in _layers)
 			{
-				if (list.count > 0)
+				if (layer.Count > 0)
 				{
-					list.DoLayoutList();
+					EditorGUILayout.LabelField(layer.Name, EditorStyles.boldLabel);
+					EditorGUI.BeginDisabledGroup(true);
+					EditorGUI.indentLevel += 1;
+
+					var index = 0;
+
+					foreach (var go in layer)
+					{
+						EditorGUILayout.ObjectField("#" + index, go, typeof(GameObject), true);
+						index++;
+					}
+
+					EditorGUI.indentLevel -= 1;
+					EditorGUI.EndDisabledGroup();
 				}
 			}
 
@@ -197,7 +203,6 @@ namespace UnityFx.Outline
 			EditorUtility.SetDirty(_layers);
 
 			_layers.Add(layer);
-			AddLayerList(layer);
 		}
 
 		private void OnRemoveLayer(ReorderableList list)
@@ -209,31 +214,6 @@ namespace UnityFx.Outline
 			EditorUtility.SetDirty(_layers);
 
 			_layers.RemoveAt(index);
-			_layerLists.Remove(layer);
-		}
-
-		private void AddLayerList(OutlineLayer layer)
-		{
-			var list = new ReorderableList(layer.GetList(), typeof(GameObject), false, true, false, false);
-
-			list.drawElementCallback += (rect, index, isActive, isFocused) =>
-			{
-				EditorGUI.BeginDisabledGroup(true);
-				EditorGUI.ObjectField(new Rect(rect.x, rect.y, rect.width, EditorGUIUtility.singleLineHeight), "#" + index, list.list[index] as GameObject, typeof(GameObject), true);
-				EditorGUI.EndDisabledGroup();
-			};
-
-			list.drawHeaderCallback += (rect) =>
-			{
-				EditorGUI.LabelField(rect, layer.Name);
-			};
-
-			list.elementHeightCallback += (index) =>
-			{
-				return EditorGUIUtility.singleLineHeight + EditorGUIUtility.standardVerticalSpacing;
-			};
-
-			_layerLists.Add(layer, list);
 		}
 	}
 }
