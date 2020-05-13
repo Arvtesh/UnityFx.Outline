@@ -13,145 +13,45 @@ namespace UnityFx.Outline
 	[CustomEditor(typeof(OutlineLayerCollection))]
 	public class OutlineLayerCollectionEditor : Editor
 	{
-		private readonly GUILayoutOption _layerButtonStyle = GUILayout.ExpandWidth(false);
 		private OutlineLayerCollection _layers;
 
-		//private SerializedProperty _layersProp;
-		//private ReorderableList _layersList;
+		private SerializedProperty _layersProp;
+		private ReorderableList _layersList;
+
+		private Dictionary<OutlineLayer, ReorderableList> _layerLists = new Dictionary<OutlineLayer, ReorderableList>();
 
 		private void OnEnable()
 		{
 			_layers = (OutlineLayerCollection)target;
 
-			//_layersProp = serializedObject.FindProperty("_layers");
-			//_layersList = new ReorderableList(serializedObject, _layersProp, true, true, true, true);
-			//_layersList.drawElementCallback += OnDrawLayer;
-			//_layersList.drawHeaderCallback += OnDrawHeader;
-			//_layersList.elementHeightCallback += OnGetElementHeight;
+			_layersProp = serializedObject.FindProperty("_layers");
+			_layersList = new ReorderableList(serializedObject, _layersProp, true, true, true, true);
+			_layersList.drawElementCallback += OnDrawLayer;
+			_layersList.drawHeaderCallback += OnDrawHeader;
+			_layersList.elementHeightCallback += OnGetElementHeight;
+			_layersList.onAddCallback += OnAddLayer;
+			_layersList.onRemoveCallback += OnRemoveLayer;
+
+			foreach (var layer in _layers)
+			{
+				AddLayerList(layer);
+			}
 		}
 
 		public override void OnInspectorGUI()
 		{
 			base.OnInspectorGUI();
 
-			//_layersList.DoLayoutList();
+			_layersList.DoLayoutList();
 
-			EditorGUI.BeginChangeCheck();
+			EditorGUILayout.Space();
 
-			var removeLayer = -1;
-			var moveUpLayer = -1;
-			var moveDownLayer = -1;
-
-			// 1) Layers list.
-			if (_layers.Count > 0)
+			foreach (var list in _layerLists.Values)
 			{
-				for (var i = 0; i < _layers.Count; i++)
+				if (list.count > 0)
 				{
-					EditorGUILayout.Space();
-					OutlineEditorUtility.RenderDivider(Color.gray);
-
-					EditorGUILayout.BeginHorizontal();
-					var enabled = EditorGUILayout.ToggleLeft("Layer #" + i.ToString(), _layers[i].Enabled, EditorStyles.boldLabel);
-
-					if (enabled != _layers[i].Enabled)
-					{
-						if (enabled)
-						{
-							Undo.RecordObject(_layers, "Enable Layer");
-						}
-						else
-						{
-							Undo.RecordObject(_layers, "Disable Layer");
-						}
-
-						_layers[i].Enabled = enabled;
-					}
-
-					GUILayout.FlexibleSpace();
-					EditorGUI.BeginDisabledGroup(i == 0);
-
-					if (GUILayout.Button("Move Up", _layerButtonStyle))
-					{
-						moveUpLayer = i;
-					}
-
-					EditorGUI.EndDisabledGroup();
-					EditorGUI.BeginDisabledGroup(i == _layers.Count - 1);
-
-					if (GUILayout.Button("Move Down", _layerButtonStyle))
-					{
-						moveDownLayer = i;
-					}
-
-					EditorGUI.EndDisabledGroup();
-
-					if (GUILayout.Button("Remove", _layerButtonStyle))
-					{
-						removeLayer = i;
-					}
-
-					EditorGUILayout.EndHorizontal();
-
-					var name = EditorGUILayout.TextField("Layer Name", _layers[i].NameTag);
-
-					if (name != _layers[i].NameTag)
-					{
-						Undo.RecordObject(_layers, "Set Layer Name");
-						_layers[i].NameTag = name;
-					}
-
-					OutlineEditorUtility.Render(_layers[i], _layers);
+					list.DoLayoutList();
 				}
-			}
-			else
-			{
-				EditorGUILayout.HelpBox("The layer collection is empty.", MessageType.Info, true);
-			}
-
-			// Add/remove processing.
-			OutlineEditorUtility.RenderDivider(Color.gray);
-			EditorGUILayout.BeginHorizontal();
-			GUILayout.FlexibleSpace();
-
-			if (GUILayout.Button("Add New", _layerButtonStyle))
-			{
-				Undo.RecordObject(_layers, "Add Layer");
-				_layers.Add(new OutlineLayer());
-			}
-
-			if (GUILayout.Button("Remove All", _layerButtonStyle))
-			{
-				Undo.RecordObject(_layers, "Remove All Layers");
-				_layers.Clear();
-			}
-
-			if (moveUpLayer > 0)
-			{
-				Undo.RecordObject(_layers, "Move Layer");
-				var tmp = _layers[moveUpLayer - 1];
-				_layers[moveUpLayer - 1] = _layers[moveUpLayer];
-				_layers[moveUpLayer] = tmp;
-			}
-
-			if (moveDownLayer >= 0)
-			{
-				Undo.RecordObject(_layers, "Move Layer");
-				var tmp = _layers[moveDownLayer + 1];
-				_layers[moveDownLayer + 1] = _layers[moveDownLayer];
-				_layers[moveDownLayer] = tmp;
-			}
-
-			if (removeLayer >= 0)
-			{
-				Undo.RecordObject(_layers, "Remove Layer");
-				_layers.RemoveAt(removeLayer);
-			}
-
-			EditorGUILayout.EndHorizontal();
-
-			if (EditorGUI.EndChangeCheck())
-			{
-				EditorUtility.SetDirty(_layers);
 			}
 
 			serializedObject.ApplyModifiedProperties();
@@ -162,94 +62,109 @@ namespace UnityFx.Outline
 			var lineHeight = EditorGUIUtility.singleLineHeight;
 			var lineSpacing = EditorGUIUtility.standardVerticalSpacing;
 			var lineOffset = lineHeight + lineSpacing;
-			var y = rect.y;
+			var y = rect.y + lineSpacing;
 			var layer = _layers[index];
+			var settingsDisabled = false;
 
 			EditorGUI.BeginChangeCheck();
 
-			var obj = (OutlineSettings)EditorGUI.ObjectField(new Rect(rect.x, y, rect.width, lineHeight), " ", layer.OutlineSettings, typeof(OutlineSettings), true);
-
-			if (layer.OutlineSettings != obj)
+			// Header
 			{
-				Undo.RecordObject(_layers, "Settings");
-				layer.OutlineSettings = obj;
-			}
+				var rc = new Rect(rect.x, y, rect.width, lineHeight);
+				var bgRect = new Rect(rect.x - 2, y - 2, rect.width + 3, lineHeight + 3);
 
-			var enabled = EditorGUI.ToggleLeft(new Rect(rect.x, y, rect.width, lineHeight), "Layer #" + index.ToString(), layer.Enabled, EditorStyles.boldLabel);
+				// Header background
+				EditorGUI.DrawRect(rc, Color.gray);
+				EditorGUI.DrawRect(new Rect(bgRect.x, bgRect.y, bgRect.width, 1), Color.gray);
+				EditorGUI.DrawRect(new Rect(bgRect.x, bgRect.yMax, bgRect.width, 1), Color.gray);
+				EditorGUI.DrawRect(new Rect(bgRect.x, bgRect.y, 1, bgRect.height), Color.gray);
+				EditorGUI.DrawRect(new Rect(bgRect.xMax, bgRect.y, 1, bgRect.height), Color.gray);
 
-			if (layer.Enabled != enabled)
-			{
-				if (enabled)
+				var obj = (OutlineSettings)EditorGUI.ObjectField(rc, " ", layer.OutlineSettings, typeof(OutlineSettings), true);
+
+				if (layer.OutlineSettings != obj)
 				{
-					Undo.RecordObject(_layers, "Enable Layer");
+					Undo.RecordObject(_layers, "Settings");
+					layer.OutlineSettings = obj;
 				}
-				else
+
+				var enabled = EditorGUI.ToggleLeft(rc, "Layer #" + index.ToString(), layer.Enabled, EditorStyles.boldLabel);
+
+				if (layer.Enabled != enabled)
 				{
-					Undo.RecordObject(_layers, "Disable Layer");
+					if (enabled)
+					{
+						Undo.RecordObject(_layers, "Enable Layer");
+					}
+					else
+					{
+						Undo.RecordObject(_layers, "Disable Layer");
+					}
+
+					layer.Enabled = enabled;
 				}
 
-				layer.Enabled = enabled;
-			}
-
-			y += lineOffset;
-			EditorGUI.DrawRect(new Rect(rect.x, y, rect.width, 1), Color.gray);
-			EditorGUI.DrawRect(new Rect(rect.x, y + 1, rect.width, 1), Color.white);
-
-			y += lineSpacing + 2;
-			var name = EditorGUI.TextField(new Rect(rect.x, y, rect.width, lineHeight), "Tag", layer.NameTag);
-
-			if (name != layer.NameTag)
-			{
-				Undo.RecordObject(_layers, "Layer Name");
-				layer.NameTag = name;
-			}
-
-			EditorGUI.BeginDisabledGroup(obj != null);
-
-			y += lineOffset;
-			var color = EditorGUI.ColorField(new Rect(rect.x, y, rect.width, lineHeight), "Color", layer.OutlineColor);
-
-			if (layer.OutlineColor != color)
-			{
-				Undo.RecordObject(_layers, "Color");
-				layer.OutlineColor = color;
-			}
-
-			y += lineOffset;
-			var width = EditorGUI.IntSlider(new Rect(rect.x, y, rect.width, lineHeight), "Width", layer.OutlineWidth, OutlineResources.MinWidth, OutlineResources.MaxWidth);
-
-			if (layer.OutlineWidth != width)
-			{
-				Undo.RecordObject(_layers, "Width");
-				layer.OutlineWidth = width;
-			}
-
-			y += lineOffset;
-			var renderMode = (OutlineRenderFlags)EditorGUI.EnumFlagsField(new Rect(rect.x, y, rect.width, lineHeight), "Render Flags", layer.OutlineRenderMode);
-
-			if (layer.OutlineRenderMode != renderMode)
-			{
-				Undo.RecordObject(_layers, "Render Flags");
-				layer.OutlineRenderMode = renderMode;
-			}
-
-			if ((renderMode & OutlineRenderFlags.Blurred) != 0)
-			{
+				settingsDisabled = obj != null;
 				y += lineOffset;
-				var i = EditorGUI.Slider(new Rect(rect.x, y, rect.width, lineHeight), "Blur Intensity", layer.OutlineIntensity, OutlineResources.MinIntensity, OutlineResources.MaxIntensity);
-
-				if (!Mathf.Approximately(layer.OutlineIntensity, i))
-				{
-					Undo.RecordObject(_layers, "Blur Intensity");
-					layer.OutlineIntensity = i;
-				}
 			}
 
-			EditorGUI.EndDisabledGroup();
+			// Layer properties
+			{
+				var name = EditorGUI.TextField(new Rect(rect.x, y, rect.width, lineHeight), "Name", layer.NameTag);
 
-			y += lineOffset;
-			EditorGUI.DrawRect(new Rect(rect.x, y, rect.width, 1), Color.gray);
-			EditorGUI.DrawRect(new Rect(rect.x, y + 1, rect.width, 1), Color.white);
+				if (name != layer.NameTag)
+				{
+					Undo.RecordObject(_layers, "Layer Name");
+					layer.NameTag = name;
+				}
+
+				y += lineOffset;
+			}
+
+			// Outline settings
+			{
+				EditorGUI.BeginDisabledGroup(settingsDisabled);
+
+				var color = EditorGUI.ColorField(new Rect(rect.x, y, rect.width, lineHeight), "Color", layer.OutlineColor);
+
+				if (layer.OutlineColor != color)
+				{
+					Undo.RecordObject(_layers, "Color");
+					layer.OutlineColor = color;
+				}
+
+				y += lineOffset;
+				var width = EditorGUI.IntSlider(new Rect(rect.x, y, rect.width, lineHeight), "Width", layer.OutlineWidth, OutlineResources.MinWidth, OutlineResources.MaxWidth);
+
+				if (layer.OutlineWidth != width)
+				{
+					Undo.RecordObject(_layers, "Width");
+					layer.OutlineWidth = width;
+				}
+
+				y += lineOffset;
+				var renderMode = (OutlineRenderFlags)EditorGUI.EnumFlagsField(new Rect(rect.x, y, rect.width, lineHeight), "Render Flags", layer.OutlineRenderMode);
+
+				if (layer.OutlineRenderMode != renderMode)
+				{
+					Undo.RecordObject(_layers, "Render Flags");
+					layer.OutlineRenderMode = renderMode;
+				}
+
+				if ((renderMode & OutlineRenderFlags.Blurred) != 0)
+				{
+					y += lineOffset;
+					var i = EditorGUI.Slider(new Rect(rect.x, y, rect.width, lineHeight), "Blur Intensity", layer.OutlineIntensity, OutlineResources.MinIntensity, OutlineResources.MaxIntensity);
+
+					if (!Mathf.Approximately(layer.OutlineIntensity, i))
+					{
+						Undo.RecordObject(_layers, "Blur Intensity");
+						layer.OutlineIntensity = i;
+					}
+				}
+
+				EditorGUI.EndDisabledGroup();
+			}
 
 			if (EditorGUI.EndChangeCheck())
 			{
@@ -259,7 +174,7 @@ namespace UnityFx.Outline
 
 		private void OnDrawHeader(Rect rect)
 		{
-			EditorGUI.LabelField(rect, "Layers");
+			EditorGUI.LabelField(rect, "Layer settings");
 		}
 
 		private float OnGetElementHeight(int index)
@@ -271,7 +186,54 @@ namespace UnityFx.Outline
 				++numberOfLines;
 			}
 
-			return (EditorGUIUtility.singleLineHeight + EditorGUIUtility.standardVerticalSpacing) * numberOfLines + EditorGUIUtility.standardVerticalSpacing + 5;
+			return (EditorGUIUtility.singleLineHeight + EditorGUIUtility.standardVerticalSpacing) * numberOfLines + EditorGUIUtility.standardVerticalSpacing;
+		}
+
+		private void OnAddLayer(ReorderableList list)
+		{
+			var layer = new OutlineLayer();
+
+			Undo.RecordObject(_layers, "Add Layer");
+			EditorUtility.SetDirty(_layers);
+
+			_layers.Add(layer);
+			AddLayerList(layer);
+		}
+
+		private void OnRemoveLayer(ReorderableList list)
+		{
+			var index = list.index;
+			var layer = _layers[index];
+
+			Undo.RecordObject(_layers, "Remove Layer");
+			EditorUtility.SetDirty(_layers);
+
+			_layers.RemoveAt(index);
+			_layerLists.Remove(layer);
+		}
+
+		private void AddLayerList(OutlineLayer layer)
+		{
+			var list = new ReorderableList(layer.GetList(), typeof(GameObject), false, true, false, false);
+
+			list.drawElementCallback += (rect, index, isActive, isFocused) =>
+			{
+				EditorGUI.BeginDisabledGroup(true);
+				EditorGUI.ObjectField(new Rect(rect.x, rect.y, rect.width, EditorGUIUtility.singleLineHeight), "#" + index, list.list[index] as GameObject, typeof(GameObject), true);
+				EditorGUI.EndDisabledGroup();
+			};
+
+			list.drawHeaderCallback += (rect) =>
+			{
+				EditorGUI.LabelField(rect, layer.Name);
+			};
+
+			list.elementHeightCallback += (index) =>
+			{
+				return EditorGUIUtility.singleLineHeight + EditorGUIUtility.standardVerticalSpacing;
+			};
+
+			_layerLists.Add(layer, list);
 		}
 	}
 }
