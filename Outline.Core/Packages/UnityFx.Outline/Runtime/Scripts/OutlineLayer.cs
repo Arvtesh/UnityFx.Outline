@@ -260,34 +260,6 @@ namespace UnityFx.Outline
 		}
 
 		/// <summary>
-		/// Adds a new object to the layer.
-		/// </summary>
-		/// <exception cref="ArgumentNullException">Thrown if <paramref name="go"/> is <see langword="null"/>.</exception>
-		public void Add(GameObject go, int ignoreLayerMask)
-		{
-			if (go is null)
-			{
-				throw new ArgumentNullException(nameof(go));
-			}
-
-			if (!_outlineObjects.ContainsKey(go))
-			{
-				var renderers = new OutlineRendererCollection(go);
-				renderers.Reset(false, ignoreLayerMask);
-				_outlineObjects.Add(go, renderers);
-			}
-		}
-
-		/// <summary>
-		/// Adds a new object to the layer.
-		/// </summary>
-		/// <exception cref="ArgumentNullException">Thrown if <paramref name="go"/> is <see langword="null"/>.</exception>
-		public void Add(GameObject go, string ignoreLayer)
-		{
-			Add(go, 1 << LayerMask.NameToLayer(ignoreLayer));
-		}
-
-		/// <summary>
 		/// Attempts to get renderers assosiated with the specified <see cref="GameObject"/>.
 		/// </summary>
 		/// <exception cref="ArgumentNullException">Thrown if <paramref name="go"/> is <see langword="null"/>.</exception>
@@ -358,6 +330,14 @@ namespace UnityFx.Outline
 		}
 
 #endif
+
+		internal void UpdateRenderers(int ignoreLayers)
+		{
+			foreach (var renderers in _outlineObjects.Values)
+			{
+				renderers.Reset(false, ignoreLayers);
+			}
+		}
 
 		internal void Reset()
 		{
@@ -445,7 +425,17 @@ namespace UnityFx.Outline
 		/// <inheritdoc/>
 		public void Add(GameObject go)
 		{
-			Add(go, 0);
+			if (go is null)
+			{
+				throw new ArgumentNullException(nameof(go));
+			}
+
+			if (!_outlineObjects.ContainsKey(go))
+			{
+				var renderers = new OutlineRendererCollection(go);
+				renderers.Reset(false, _parentCollection.IgnoreLayerMask);
+				_outlineObjects.Add(go, renderers);
+			}
 		}
 
 		/// <inheritdoc/>

@@ -21,10 +21,35 @@ namespace UnityFx.Outline
 
 		[SerializeField, HideInInspector]
 		private List<OutlineLayer> _layers = new List<OutlineLayer>();
+		[SerializeField, HideInInspector]
+		private int _layerMask;
 
 		#endregion
 
 		#region interface
+
+		/// <summary>
+		/// Gets or sets layer mask to use for ignored <see cref="Renderer"/> components in layer game objects.
+		/// </summary>
+		public int IgnoreLayerMask
+		{
+			get
+			{
+				return _layerMask;
+			}
+			set
+			{
+				if (_layerMask != value)
+				{
+					_layerMask = value;
+
+					foreach (var layer in _layers)
+					{
+						layer.UpdateRenderers(value);
+					}
+				}
+			}
+		}
 
 		/// <summary>
 		/// Gets the objects for rendering.

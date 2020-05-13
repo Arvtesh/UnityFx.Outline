@@ -25,6 +25,8 @@ namespace UnityFx.Outline
 		private OutlineResources _outlineResources;
 		[SerializeField, HideInInspector]
 		private OutlineSettingsInstance _outlineSettings;
+		[SerializeField, HideInInspector]
+		private int _layerMask;
 		[SerializeField, Tooltip("If set, list of object renderers is updated on each frame. Enable if the object has child renderers which are enabled/disabled frequently.")]
 		private bool _updateRenderers;
 
@@ -87,8 +89,28 @@ namespace UnityFx.Outline
 		}
 
 		/// <summary>
+		/// Gets or sets layer mask to use for ignored <see cref="Renderer"/> components in this game object.
+		/// </summary>
+		public int IgnoreLayerMask
+		{
+			get
+			{
+				return _layerMask;
+			}
+			set
+			{
+				if (_layerMask != value)
+				{
+					_layerMask = value;
+					_renderers?.Reset(false, value);
+				}
+			}
+		}
+
+		/// <summary>
 		/// Gets outline renderers. By default all child <see cref="Renderer"/> components are used for outlining.
 		/// </summary>
+		/// <seealso cref="UpdateRenderers"/>
 		public ICollection<Renderer> OutlineRenderers
 		{
 			get
@@ -101,12 +123,15 @@ namespace UnityFx.Outline
 		/// <summary>
 		/// Gets all cameras outline data is rendered to.
 		/// </summary>
-		public ICollection<Camera> Cameras
+		public ICollection<Camera> Cameras => _cameraMap.Keys;
+
+		/// <summary>
+		/// Updates renderer list.
+		/// </summary>
+		/// <seealso cref="OutlineRenderers"/>
+		public void UpdateRenderers()
 		{
-			get
-			{
-				return _cameraMap.Keys;
-			}
+			_renderers?.Reset(false, _layerMask);
 		}
 
 		#endregion
@@ -149,7 +174,7 @@ namespace UnityFx.Outline
 
 				if (_updateRenderers)
 				{
-					_renderers.Reset(false);
+					_renderers.Reset(false, _layerMask);
 				}
 
 				foreach (var kvp in _cameraMap)
@@ -195,7 +220,7 @@ namespace UnityFx.Outline
 		{
 			if (_renderers != null)
 			{
-				_renderers.Reset(true);
+				_renderers.Reset(false, _layerMask);
 			}
 		}
 
@@ -312,7 +337,7 @@ namespace UnityFx.Outline
 			if (_renderers == null)
 			{
 				_renderers = new OutlineRendererCollection(gameObject);
-				_renderers.Reset(true);
+				_renderers.Reset(false, _layerMask);
 			}
 		}
 

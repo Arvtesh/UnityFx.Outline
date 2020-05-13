@@ -38,3 +38,4 @@ MonoBehaviour:
       _outlineMode: 0
     _name: The best layer
     _enabled: 1
+  _layerMask: 2

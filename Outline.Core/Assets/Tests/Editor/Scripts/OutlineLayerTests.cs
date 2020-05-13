@@ -56,11 +56,14 @@ namespace UnityFx.Outline
 		{
 			var go = new GameObject("r1", typeof(MeshRenderer));
 			var go2 = new GameObject("r2", typeof(MeshRenderer));
+			var layers = new OutlineLayerCollection();
+			layers.IgnoreLayerMask = 1 << LayerMask.NameToLayer("TransparentFX");
+			layers.Add(_layer);
 
 			go2.layer = LayerMask.NameToLayer("TransparentFX");
 			go2.transform.SetParent(go.transform, false);
 
-			_layer.Add(go, "TransparentFX");
+			_layer.Add(go);
 			_layer.TryGetRenderers(go, out var r);
 
 			Assert.AreEqual(1, r.Count);

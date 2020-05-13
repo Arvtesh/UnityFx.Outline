@@ -3,6 +3,7 @@
 
 using System;
 using UnityEditor;
+using UnityEditorInternal;
 using UnityEditor.SceneManagement;
 using UnityEngine;
 
@@ -28,11 +29,19 @@ namespace UnityFx.Outline
 			// 1) Outline settings.
 			EditorGUI.BeginChangeCheck();
 
+			var mask = EditorGUILayout.MaskField("Ignore layers", _effect.IgnoreLayerMask, InternalEditorUtility.layers);
+
+			if (_effect.IgnoreLayerMask != mask)
+			{
+				Undo.RecordObject(_effect, "Set Ignore Layers");
+				_effect.IgnoreLayerMask = mask;
+			}
+
 			var obj = (OutlineSettings)EditorGUILayout.ObjectField("Outline Settings", _effect.OutlineSettings, typeof(OutlineSettings), true);
 
 			if (_effect.OutlineSettings != obj)
 			{
-				Undo.RecordObject(_effect, "Settings");
+				Undo.RecordObject(_effect, "Set Settings");
 				_effect.OutlineSettings = obj;
 			}
 

@@ -35,6 +35,18 @@ namespace UnityFx.Outline
 		{
 			base.OnInspectorGUI();
 
+			EditorGUI.BeginChangeCheck();
+
+			var mask = EditorGUILayout.MaskField("Ignore layers", _layers.IgnoreLayerMask, InternalEditorUtility.layers);
+
+			if (EditorGUI.EndChangeCheck())
+			{
+				Undo.RecordObject(_layers, "Set Layers");
+				_layers.IgnoreLayerMask = mask;
+			}
+
+			EditorGUILayout.Space();
+
 			_layersList.DoLayoutList();
 
 			EditorGUILayout.Space();
@@ -70,7 +82,14 @@ namespace UnityFx.Outline
 			var lineOffset = lineHeight + lineSpacing;
 			var y = rect.y + lineSpacing;
 			var layer = _layers[index];
-			var settingsDisabled = false;
+
+			var obj = layer.OutlineSettings;
+			var enabled = layer.Enabled;
+			var name = layer.NameTag;
+			var color = layer.OutlineColor;
+			var width = layer.OutlineWidth;
+			var renderMode = layer.OutlineRenderMode;
+			var blurIntensity = layer.OutlineIntensity;
 
 			EditorGUI.BeginChangeCheck();
 
@@ -86,87 +105,33 @@ namespace UnityFx.Outline
 				EditorGUI.DrawRect(new Rect(bgRect.x, bgRect.y, 1, bgRect.height), Color.gray);
 				EditorGUI.DrawRect(new Rect(bgRect.xMax, bgRect.y, 1, bgRect.height), Color.gray);
 
-				var obj = (OutlineSettings)EditorGUI.ObjectField(rc, " ", layer.OutlineSettings, typeof(OutlineSettings), true);
-
-				if (layer.OutlineSettings != obj)
-				{
-					Undo.RecordObject(_layers, "Settings");
-					layer.OutlineSettings = obj;
-				}
-
-				var enabled = EditorGUI.ToggleLeft(rc, "Layer #" + index.ToString(), layer.Enabled, EditorStyles.boldLabel);
-
-				if (layer.Enabled != enabled)
-				{
-					if (enabled)
-					{
-						Undo.RecordObject(_layers, "Enable Layer");
-					}
-					else
-					{
-						Undo.RecordObject(_layers, "Disable Layer");
-					}
-
-					layer.Enabled = enabled;
-				}
-
-				settingsDisabled = obj != null;
+				obj = (OutlineSettings)EditorGUI.ObjectField(rc, " ", obj, typeof(OutlineSettings), true);
+				enabled = EditorGUI.ToggleLeft(rc, "Layer #" + index.ToString(), enabled, EditorStyles.boldLabel);
 				y += lineOffset;
 			}
 
 			// Layer properties
 			{
-				var name = EditorGUI.TextField(new Rect(rect.x, y, rect.width, lineHeight), "Name", layer.NameTag);
-
-				if (name != layer.NameTag)
-				{
-					Undo.RecordObject(_layers, "Layer Name");
-					layer.NameTag = name;
-				}
-
+				name = EditorGUI.TextField(new Rect(rect.x, y, rect.width, lineHeight), "Name", name);
 				y += lineOffset;
 			}
 
 			// Outline settings
 			{
-				EditorGUI.BeginDisabledGroup(settingsDisabled);
+				EditorGUI.BeginDisabledGroup(obj != null);
 
-				var color = EditorGUI.ColorField(new Rect(rect.x, y, rect.width, lineHeight), "Color", layer.OutlineColor);
-
-				if (layer.OutlineColor != color)
-				{
-					Undo.RecordObject(_layers, "Color");
-					layer.OutlineColor = color;
-				}
-
+				color = EditorGUI.ColorField(new Rect(rect.x, y, rect.width, lineHeight), "Color", color);
 				y += lineOffset;
-				var width = EditorGUI.IntSlider(new Rect(rect.x, y, rect.width, lineHeight), "Width", layer.OutlineWidth, OutlineResources.MinWidth, OutlineResources.MaxWidth);
 
-				if (layer.OutlineWidth != width)
-				{
-					Undo.RecordObject(_layers, "Width");
-					layer.OutlineWidth = width;
-				}
-
+				width = EditorGUI.IntSlider(new Rect(rect.x, y, rect.width, lineHeight), "Width", width, OutlineResources.MinWidth, OutlineResources.MaxWidth);
 				y += lineOffset;
-				var renderMode = (OutlineRenderFlags)EditorGUI.EnumFlagsField(new Rect(rect.x, y, rect.width, lineHeight), "Render Flags", layer.OutlineRenderMode);
 
-				if (layer.OutlineRenderMode != renderMode)
-				{
-					Undo.RecordObject(_layers, "Render Flags");
-					layer.OutlineRenderMode = renderMode;
-				}
+				renderMode = (OutlineRenderFlags)EditorGUI.EnumFlagsField(new Rect(rect.x, y, rect.width, lineHeight), "Render Flags", renderMode);
+				y += lineOffset;
 
 				if ((renderMode & OutlineRenderFlags.Blurred) != 0)
 				{
-					y += lineOffset;
-					var i = EditorGUI.Slider(new Rect(rect.x, y, rect.width, lineHeight), "Blur Intensity", layer.OutlineIntensity, OutlineResources.MinIntensity, OutlineResources.MaxIntensity);
-
-					if (!Mathf.Approximately(layer.OutlineIntensity, i))
-					{
-						Undo.RecordObject(_layers, "Blur Intensity");
-						layer.OutlineIntensity = i;
-					}
+					blurIntensity = EditorGUI.Slider(new Rect(rect.x, y, rect.width, lineHeight), "Blur Intensity", blurIntensity, OutlineResources.MinIntensity, OutlineResources.MaxIntensity);
 				}
 
 				EditorGUI.EndDisabledGroup();
@@ -174,7 +139,16 @@ namespace UnityFx.Outline
 
 			if (EditorGUI.EndChangeCheck())
 			{
+				Undo.RecordObject(_layers, "Layers changed");
 				EditorUtility.SetDirty(_layers);
+
+				layer.OutlineSettings = obj;
+				layer.Enabled = enabled;
+				layer.NameTag = name;
+				layer.OutlineWidth = width;
+				layer.OutlineColor = color;
+				layer.OutlineRenderMode = renderMode;
+				layer.OutlineIntensity = blurIntensity;
 			}
 		}
 

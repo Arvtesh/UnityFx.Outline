@@ -39,27 +39,21 @@ namespace UnityFx.Outline
 		{
 			_renderers.Clear();
 
-			var renderers = _go.GetComponentsInChildren<Renderer>(includeInactive);
-
-			if (renderers != null)
+			if (ignoreLayerMask != 0)
 			{
-				if (ignoreLayerMask != 0)
+				var renderers = _go.GetComponentsInChildren<Renderer>(includeInactive);
+
+				foreach (var renderer in renderers)
 				{
-					foreach (var renderer in renderers)
-					{
-						if (((1 << renderer.gameObject.layer) & ignoreLayerMask) == 0)
-						{
-							_renderers.Add(renderer);
-						}
-					}
-				}
-				else
-				{
-					foreach (var renderer in renderers)
+					if (((1 << renderer.gameObject.layer) & ignoreLayerMask) == 0)
 					{
 						_renderers.Add(renderer);
 					}
 				}
+			}
+			else
+			{
+				_go.GetComponentsInChildren(includeInactive, _renderers);
 			}
 		}
 
