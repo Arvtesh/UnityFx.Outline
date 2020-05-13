@@ -28,7 +28,33 @@ namespace UnityFx.Outline
 			// 1) Outline settings.
 			EditorGUI.BeginChangeCheck();
 
-			OutlineEditorUtility.Render(_effect, _effect);
+			var obj = (OutlineSettings)EditorGUILayout.ObjectField("Outline Settings", _effect.OutlineSettings, typeof(OutlineSettings), true);
+
+			if (_effect.OutlineSettings != obj)
+			{
+				Undo.RecordObject(_effect, "Settings");
+				_effect.OutlineSettings = obj;
+			}
+
+			if (obj)
+			{
+				EditorGUI.BeginDisabledGroup(true);
+				EditorGUI.indentLevel += 1;
+
+				OutlineEditorUtility.Render(_effect, _effect);
+
+				EditorGUILayout.HelpBox(string.Format("Outline settings are overriden with values from {0}.", obj.name), MessageType.Info, true);
+				EditorGUI.indentLevel -= 1;
+				EditorGUI.EndDisabledGroup();
+			}
+			else
+			{
+				EditorGUI.indentLevel += 1;
+
+				OutlineEditorUtility.Render(_effect, _effect);
+
+				EditorGUI.indentLevel -= 1;
+			}
 
 			if (EditorGUI.EndChangeCheck())
 			{

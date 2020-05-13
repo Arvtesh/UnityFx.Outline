@@ -11,7 +11,7 @@ using NUnit.Framework;
 namespace UnityFx.Outline
 {
 	[Category("OutlineLayer"), TestOf(typeof(OutlineLayer))]
-	public class OutlineLayerTests : IOutlineSettingsExTests, IDisposable
+	public class OutlineLayerTests : IOutlineSettingsTests, IDisposable
 	{
 		private OutlineLayer _layer;
 
@@ -60,10 +60,8 @@ namespace UnityFx.Outline
 			go2.layer = LayerMask.NameToLayer("TransparentFX");
 			go2.transform.SetParent(go.transform, false);
 
-			ICollection<Renderer> r;
-
 			_layer.Add(go, "TransparentFX");
-			_layer.TryGetRenderers(go, out r);
+			_layer.TryGetRenderers(go, out var r);
 
 			Assert.AreEqual(1, r.Count);
 			Assert.IsTrue(r.Contains(go.GetComponent<Renderer>()));

@@ -21,7 +21,6 @@ MonoBehaviour:
       _outlineIntensity: 2
       _outlineMode: 0
     _name: My pretty layer
-    _zOrder: 0
     _enabled: 1
   - _settings:
       _outlineSettings: {fileID: 0}
@@ -30,7 +29,6 @@ MonoBehaviour:
       _outlineIntensity: 2
       _outlineMode: 1
     _name: The second layer
-    _zOrder: 0
     _enabled: 1
   - _settings:
       _outlineSettings: {fileID: 0}
@@ -39,5 +37,4 @@ MonoBehaviour:
       _outlineIntensity: 2
       _outlineMode: 0
     _name: The best layer
-    _zOrder: 0
     _enabled: 1

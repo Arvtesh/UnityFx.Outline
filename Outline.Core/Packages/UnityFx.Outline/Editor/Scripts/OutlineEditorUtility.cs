@@ -22,37 +22,6 @@ namespace UnityFx.Outline
 			EditorGUI.DrawRect(r, color);
 		}
 
-		public static void Render(IOutlineSettingsEx settings, UnityEngine.Object undoContext)
-		{
-			var obj = (OutlineSettings)EditorGUILayout.ObjectField("Outline Settings", settings.OutlineSettings, typeof(OutlineSettings), true);
-
-			if (settings.OutlineSettings != obj)
-			{
-				Undo.RecordObject(undoContext, "Settings");
-				settings.OutlineSettings = obj;
-			}
-
-			if (obj)
-			{
-				EditorGUI.BeginDisabledGroup(true);
-				EditorGUI.indentLevel += 1;
-
-				Render((IOutlineSettings)settings, undoContext);
-
-				EditorGUILayout.HelpBox(string.Format("Outline settings are overriden with values from {0}.", obj.name), MessageType.Info, true);
-				EditorGUI.indentLevel -= 1;
-				EditorGUI.EndDisabledGroup();
-			}
-			else
-			{
-				EditorGUI.indentLevel += 1;
-
-				Render((IOutlineSettings)settings, undoContext);
-
-				EditorGUI.indentLevel -= 1;
-			}
-		}
-
 		public static void Render(IOutlineSettings settings, UnityEngine.Object undoContext)
 		{
 			var color = EditorGUILayout.ColorField("Color", settings.OutlineColor);

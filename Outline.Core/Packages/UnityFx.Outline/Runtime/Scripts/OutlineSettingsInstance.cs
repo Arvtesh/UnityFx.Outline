@@ -7,7 +7,7 @@ using UnityEngine;
 namespace UnityFx.Outline
 {
 	[Serializable]
-	internal class OutlineSettingsInstance : IOutlineSettingsEx
+	internal class OutlineSettingsInstance : IOutlineSettings
 	{
 		#region data
 
@@ -38,14 +38,6 @@ namespace UnityFx.Outline
 				return (OutlineRenderMode & OutlineRenderFlags.EnableDepthTesting) != 0;
 			}
 		}
-
-		internal OutlineSettingsInstance()
-		{
-		}
-
-		#endregion
-
-		#region IOutlineSettingsEx
 
 		public OutlineSettings OutlineSettings
 		{

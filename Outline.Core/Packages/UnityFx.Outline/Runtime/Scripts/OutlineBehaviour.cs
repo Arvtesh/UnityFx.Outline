@@ -15,7 +15,7 @@ namespace UnityFx.Outline
 	/// <seealso cref="OutlineEffect"/>
 	[ExecuteInEditMode]
 	[DisallowMultipleComponent]
-	public sealed class OutlineBehaviour : MonoBehaviour, IOutlineSettingsEx
+	public sealed class OutlineBehaviour : MonoBehaviour, IOutlineSettings
 	{
 		#region data
 
@@ -42,6 +42,7 @@ namespace UnityFx.Outline
 		/// Gets or sets resources used by the effect implementation.
 		/// </summary>
 		/// <exception cref="ArgumentNullException">Thrown if setter argument is <see langword="null"/>.</exception>
+		/// <seealso cref="OutlineSettings"/>
 		public OutlineResources OutlineResources
 		{
 			get
@@ -56,6 +57,32 @@ namespace UnityFx.Outline
 				}
 
 				_outlineResources = value;
+			}
+		}
+
+		/// <summary>
+		/// Gets or sets outline settings. Set this to non-<see langword="null"/> value to share settings with other components.
+		/// </summary>
+		/// <seealso cref="OutlineResources"/>
+		public OutlineSettings OutlineSettings
+		{
+			get
+			{
+				if (_outlineSettings == null)
+				{
+					_outlineSettings = new OutlineSettingsInstance();
+				}
+
+				return _outlineSettings.OutlineSettings;
+			}
+			set
+			{
+				if (_outlineSettings == null)
+				{
+					_outlineSettings = new OutlineSettingsInstance();
+				}
+
+				_outlineSettings.OutlineSettings = value;
 			}
 		}
 
@@ -173,35 +200,6 @@ namespace UnityFx.Outline
 		}
 
 #endif
-
-		#endregion
-
-		#region IOutlineSettingsEx
-
-		/// <summary>
-		/// Gets or sets outline settings. Set this to non-<see langword="null"/> value to share settings with other components.
-		/// </summary>
-		public OutlineSettings OutlineSettings
-		{
-			get
-			{
-				if (_outlineSettings == null)
-				{
-					_outlineSettings = new OutlineSettingsInstance();
-				}
-
-				return _outlineSettings.OutlineSettings;
-			}
-			set
-			{
-				if (_outlineSettings == null)
-				{
-					_outlineSettings = new OutlineSettingsInstance();
-				}
-
-				_outlineSettings.OutlineSettings = value;
-			}
-		}
 
 		#endregion
 

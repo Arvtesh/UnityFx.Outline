@@ -16,7 +16,7 @@ namespace UnityFx.Outline
 	/// <seealso cref="OutlineLayerCollection"/>
 	/// <seealso cref="OutlineEffect"/>
 	[Serializable]
-	public sealed class OutlineLayer : ICollection<GameObject>, IReadOnlyCollection<GameObject>, IOutlineSettingsEx
+	public sealed class OutlineLayer : ICollection<GameObject>, IReadOnlyCollection<GameObject>, IOutlineSettings
 	{
 		#region data
 
@@ -201,6 +201,21 @@ namespace UnityFx.Outline
 		}
 
 		/// <summary>
+		/// Gets or sets outline settings. Set this to non-<see langword="null"/> value to share settings with other components.
+		/// </summary>
+		public OutlineSettings OutlineSettings
+		{
+			get
+			{
+				return _settings.OutlineSettings;
+			}
+			set
+			{
+				_settings.OutlineSettings = value;
+			}
+		}
+
+		/// <summary>
 		/// Initializes a new instance of the <see cref="OutlineLayer"/> class.
 		/// </summary>
 		public OutlineLayer()
@@ -358,25 +373,6 @@ namespace UnityFx.Outline
 			else
 			{
 				throw new InvalidOperationException("OutlineLayer can only belong to a single OutlineLayerCollection.");
-			}
-		}
-
-		#endregion
-
-		#region IOutlineSettingsEx
-
-		/// <summary>
-		/// Gets or sets outline settings. Set this to non-<see langword="null"/> value to share settings with other components.
-		/// </summary>
-		public OutlineSettings OutlineSettings
-		{
-			get
-			{
-				return _settings.OutlineSettings;
-			}
-			set
-			{
-				_settings.OutlineSettings = value;
 			}
 		}
 
