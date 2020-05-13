@@ -38,6 +38,7 @@ namespace UnityFx.Outline
 			_layersList.DoLayoutList();
 
 			EditorGUILayout.Space();
+			EditorGUILayout.HelpBox("Read-only lists below represent game objects assigned to specific outline layers. Only non-empty layers are displayed.", MessageType.Info);
 
 			foreach (var layer in _layers)
 			{
@@ -51,8 +52,7 @@ namespace UnityFx.Outline
 
 					foreach (var go in layer)
 					{
-						EditorGUILayout.ObjectField("#" + index, go, typeof(GameObject), true);
-						index++;
+						EditorGUILayout.ObjectField($"#{index++}", go, typeof(GameObject), true);
 					}
 
 					EditorGUI.indentLevel -= 1;
