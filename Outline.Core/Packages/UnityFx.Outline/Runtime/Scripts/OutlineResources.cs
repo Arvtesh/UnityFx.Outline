@@ -226,9 +226,9 @@ namespace UnityFx.Outline
 		}
 
 		/// <summary>
-		/// Gets or sets a value indicating whether DrawMesh calls should be used instead of DrawProcedural
+		/// Gets or sets a value indicating whether <see cref="FullscreenTriangleMesh"/> is used for image effects rendering even when procedural rendering is available.
 		/// </summary>
-		public bool UseDrawMesh
+		public bool UseFullscreenTriangleMesh
 		{
 			get
 			{

@@ -372,7 +372,7 @@ namespace UnityFx.Outline
 			// Set source texture as _MainTex to match Blit behavior.
 			cmdBuffer.SetGlobalTexture(resources.MainTexId, src);
 
-			if (SystemInfo.graphicsShaderLevel < 35)
+			if (SystemInfo.graphicsShaderLevel < 35 || resources.UseFullscreenTriangleMesh)
 			{
 				cmdBuffer.DrawMesh(resources.FullscreenTriangleMesh, Matrix4x4.identity, mat, 0, shaderPass, props);
 			}
