@@ -18,13 +18,15 @@ namespace UnityFx.Outline.URP
 
 		private OutlineResources _outlineResources;
 		private OutlineLayerCollection _outlineLayers;
+		private RenderTargetIdentifier _rt;
 		private RenderTargetIdentifier _depth;
 		private RenderTextureDescriptor _rtDesc;
 
-		public void Setup(OutlineResources resources, RenderTargetIdentifier depth, OutlineLayerCollection layers)
+		public void Setup(OutlineResources resources, OutlineLayerCollection layers, RenderTargetIdentifier rt, RenderTargetIdentifier depth)
 		{
 			_outlineResources = resources;
 			_outlineLayers = layers;
+			_rt = rt;
 			_depth = depth;
 		}
 
@@ -37,7 +39,7 @@ namespace UnityFx.Outline.URP
 		{
 			var cmd = CommandBufferPool.Get(OutlineRenderer.EffectName);
 
-			using (var renderer = new OutlineRenderer(cmd, _outlineResources, BuiltinRenderTextureType.CameraTarget, _depth, _rtDesc))
+			using (var renderer = new OutlineRenderer(cmd, _outlineResources, _rt, _depth, _rtDesc))
 			{
 				_renderObjects.Clear();
 				_outlineLayers.GetRenderObjects(_renderObjects);

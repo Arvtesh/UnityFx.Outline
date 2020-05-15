@@ -32,7 +32,7 @@ namespace UnityFx.Outline.URP
 
 		public override void AddRenderPasses(ScriptableRenderer renderer, ref RenderingData renderingData)
 		{
-			_outlinePass.Setup(_outlineResources, renderer.cameraDepth, _outlineLayers);
+			_outlinePass.Setup(_outlineResources, _outlineLayers, renderer.cameraColorTarget, renderer.cameraDepth);
 			renderer.EnqueuePass(_outlinePass);
 		}
 	}
