@@ -21,6 +21,7 @@ namespace UnityFx.Outline
 		private MaterialPropertyBlock _props;
 		private Mesh _fullscreenTriangleMesh;
 		private float[][] _gaussSamples;
+		private bool _useDrawMesh;
 
 		#endregion
 
@@ -163,6 +164,11 @@ namespace UnityFx.Outline
 						name = "Outline - Main",
 						hideFlags = HideFlags.HideAndDontSave
 					};
+
+					if (_useDrawMesh)
+					{
+						_outlineMaterial.EnableKeyword(UseDrawMeshFeatureName);
+					}
 				}
 
 				return _outlineMaterial;
@@ -220,15 +226,39 @@ namespace UnityFx.Outline
 		}
 
 		/// <summary>
-		/// Gets a value indicating whether the instance is in valid state.
+		/// Gets or sets a value indicating whether DrawMesh calls should be used instead of DrawProcedural
 		/// </summary>
-		public bool IsValid
+		public bool UseDrawMesh
 		{
 			get
 			{
-				return RenderShader && OutlineShader;
+				return _useDrawMesh;
+			}
+			set
+			{
+				if (_useDrawMesh != value)
+				{
+					_useDrawMesh = value;
+
+					if (_outlineMaterial)
+					{
+						if (_useDrawMesh)
+						{
+							_outlineMaterial.EnableKeyword(UseDrawMeshFeatureName);
+						}
+						else
+						{
+							_outlineMaterial.DisableKeyword(UseDrawMeshFeatureName);
+						}
+					}
+				}
 			}
 		}
+
+		/// <summary>
+		/// Gets a value indicating whether the instance is in valid state.
+		/// </summary>
+		public bool IsValid => RenderShader && OutlineShader;
 
 		/// <summary>
 		/// Returns a <see cref="MaterialPropertyBlock"/> instance initialized with values from <paramref name="settings"/>.
