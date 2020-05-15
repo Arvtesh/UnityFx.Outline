@@ -54,7 +54,7 @@ namespace UnityFx.Outline
 		/// <summary>
 		/// Gets the objects for rendering.
 		/// </summary>
-		public void GetRenderObjects(IList<OutlineObject> renderObjects)
+		public void GetRenderObjects(IList<OutlineRenderObject> renderObjects)
 		{
 			foreach (var layer in _layers)
 			{

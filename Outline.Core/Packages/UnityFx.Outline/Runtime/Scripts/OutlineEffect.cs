@@ -30,7 +30,7 @@ namespace UnityFx.Outline
 
 		private Camera _camera;
 		private CommandBuffer _commandBuffer;
-		private List<OutlineObject> _renderObjects = new List<OutlineObject>(16);
+		private List<OutlineRenderObject> _renderObjects = new List<OutlineRenderObject>(16);
 
 		#endregion
 

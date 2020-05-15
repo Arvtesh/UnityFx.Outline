@@ -12,7 +12,7 @@ namespace UnityFx.Outline
 	/// <summary>
 	/// A single outline object + its outline settings.
 	/// </summary>
-	public readonly struct OutlineObject : IEquatable<OutlineObject>
+	public readonly struct OutlineRenderObject : IEquatable<OutlineRenderObject>
 	{
 		#region data
 
@@ -40,9 +40,9 @@ namespace UnityFx.Outline
 		public IOutlineSettings OutlineSettings => _outlineSettings;
 
 		/// <summary>
-		/// Initializes a new instance of the <see cref="OutlineObject"/> struct.
+		/// Initializes a new instance of the <see cref="OutlineRenderObject"/> struct.
 		/// </summary>
-		public OutlineObject(GameObject go, IReadOnlyList<Renderer> renderers, IOutlineSettings outlineSettings)
+		public OutlineRenderObject(GameObject go, IReadOnlyList<Renderer> renderers, IOutlineSettings outlineSettings)
 		{
 			_go = go;
 			_renderers = renderers;
@@ -52,7 +52,7 @@ namespace UnityFx.Outline
 		/// <summary>
 		/// Implicit convertino to <see cref="GameObject"/>.
 		/// </summary>
-		public static implicit operator GameObject(OutlineObject o)
+		public static implicit operator GameObject(OutlineRenderObject o)
 		{
 			return o._go;
 		}
@@ -62,7 +62,7 @@ namespace UnityFx.Outline
 		#region IEquatable
 
 		/// <inheritdoc/>
-		public bool Equals(OutlineObject other)
+		public bool Equals(OutlineRenderObject other)
 		{
 			return _go == other._go && _renderers == other._renderers && _outlineSettings == other._outlineSettings;
 		}

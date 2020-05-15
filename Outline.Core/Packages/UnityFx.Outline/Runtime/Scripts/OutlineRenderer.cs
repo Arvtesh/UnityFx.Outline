@@ -206,7 +206,7 @@ namespace UnityFx.Outline
 		/// <param name="obj">An object to be outlined.</param>
 		/// <seealso cref="Render(IReadOnlyList{Renderer}, IOutlineSettings)"/>
 		/// <seealso cref="Render(Renderer, IOutlineSettings)"/>
-		public void Render(OutlineObject obj)
+		public void Render(OutlineRenderObject obj)
 		{
 			Render(obj.Renderers, obj.OutlineSettings);
 		}
@@ -217,7 +217,7 @@ namespace UnityFx.Outline
 		/// <param name="renderers">One or more renderers representing a single object to be outlined.</param>
 		/// <param name="settings">Outline settings.</param>
 		/// <exception cref="ArgumentNullException">Thrown if any of the arguments is <see langword="null"/>.</exception>
-		/// <seealso cref="Render(OutlineObject)"/>
+		/// <seealso cref="Render(OutlineRenderObject)"/>
 		/// <seealso cref="Render(Renderer, IOutlineSettings)"/>
 		public void Render(IReadOnlyList<Renderer> renderers, IOutlineSettings settings)
 		{
@@ -244,7 +244,7 @@ namespace UnityFx.Outline
 		/// <param name="renderer">A <see cref="Renderer"/> representing an object to be outlined.</param>
 		/// <param name="settings">Outline settings.</param>
 		/// <exception cref="ArgumentNullException">Thrown if any of the arguments is <see langword="null"/>.</exception>
-		/// <seealso cref="Render(OutlineObject)"/>
+		/// <seealso cref="Render(OutlineRenderObject)"/>
 		/// <seealso cref="Render(IReadOnlyList{Renderer}, IOutlineSettings)"/>
 		public void Render(Renderer renderer, IOutlineSettings settings)
 		{

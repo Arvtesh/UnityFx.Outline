@@ -165,7 +165,7 @@ namespace UnityFx.Outline
 		/// <summary>
 		/// Gets the objects for rendering.
 		/// </summary>
-		public void GetRenderObjects(IList<OutlineObject> renderObjects)
+		public void GetRenderObjects(IList<OutlineRenderObject> renderObjects)
 		{
 			if (_enabled)
 			{
@@ -175,7 +175,7 @@ namespace UnityFx.Outline
 
 					if (go && go.activeInHierarchy)
 					{
-						renderObjects.Add(new OutlineObject(go, kvp.Value.GetList(), _settings));
+						renderObjects.Add(new OutlineRenderObject(go, kvp.Value.GetList(), _settings));
 					}
 				}
 			}
