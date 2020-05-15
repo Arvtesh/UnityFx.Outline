@@ -38,6 +38,7 @@ namespace UnityFx.Outline
 
 		private const int _hPassId = 0;
 		private const int _vPassId = 1;
+		private const RenderTextureFormat _rtFormat = RenderTextureFormat.R8;
 
 		private static readonly int _maskRtId = Shader.PropertyToID("_MaskTex");
 		private static readonly int _hPassRtId = Shader.PropertyToID("_HPassTex");
@@ -68,7 +69,7 @@ namespace UnityFx.Outline
 		/// <param name="resources">Outline resources.</param>
 		/// <exception cref="ArgumentNullException">Thrown if <paramref name="cmd"/> is <see langword="null"/>.</exception>
 		public OutlineRenderer(CommandBuffer cmd, OutlineResources resources)
-			: this(cmd, resources, BuiltinRenderTextureType.CameraTarget, BuiltinRenderTextureType.Depth, GetDefaultRtDesc())
+			: this(cmd, resources, BuiltinRenderTextureType.CameraTarget, BuiltinRenderTextureType.Depth, Vector2Int.zero)
 		{
 		}
 
@@ -80,7 +81,7 @@ namespace UnityFx.Outline
 		/// <param name="renderingPath">The rendering path of target camera (<see cref="Camera.actualRenderingPath"/>).</param>
 		/// <exception cref="ArgumentNullException">Thrown if <paramref name="cmd"/> is <see langword="null"/>.</exception>
 		public OutlineRenderer(CommandBuffer cmd, OutlineResources resources, RenderingPath renderingPath)
-			: this(cmd, resources, BuiltinRenderTextureType.CameraTarget, GetBuiltinDepth(renderingPath), GetDefaultRtDesc())
+			: this(cmd, resources, BuiltinRenderTextureType.CameraTarget, GetBuiltinDepth(renderingPath), Vector2Int.zero)
 		{
 		}
 
@@ -92,7 +93,19 @@ namespace UnityFx.Outline
 		/// <param name="dst">Render target.</param>
 		/// <exception cref="ArgumentNullException">Thrown if <paramref name="cmd"/> is <see langword="null"/>.</exception>
 		public OutlineRenderer(CommandBuffer cmd, OutlineResources resources, RenderTargetIdentifier dst)
-			: this(cmd, resources, dst, BuiltinRenderTextureType.Depth, GetDefaultRtDesc())
+			: this(cmd, resources, dst, BuiltinRenderTextureType.Depth, Vector2Int.zero)
+		{
+		}
+
+		/// <summary>
+		/// Initializes a new instance of the <see cref="OutlineRenderer"/> struct.
+		/// </summary>
+		/// <param name="cmd">A <see cref="CommandBuffer"/> to render the effect to. It should be cleared manually (if needed) before passing to this method.</param>
+		/// <param name="dst">Render target.</param>
+		/// <param name="renderingPath">The rendering path of target camera (<see cref="Camera.actualRenderingPath"/>).</param>
+		/// <exception cref="ArgumentNullException">Thrown if <paramref name="cmd"/> is <see langword="null"/>.</exception>
+		public OutlineRenderer(CommandBuffer cmd, OutlineResources resources, RenderTargetIdentifier dst, RenderingPath renderingPath, Vector2Int rtSize)
+			: this(cmd, resources, dst, GetBuiltinDepth(renderingPath), rtSize)
 		{
 		}
 
@@ -104,21 +117,36 @@ namespace UnityFx.Outline
 		/// <param name="dst">Render target.</param>
 		/// <param name="depth">Depth dexture to use.</param>
 		/// <exception cref="ArgumentNullException">Thrown if <paramref name="cmd"/> is <see langword="null"/>.</exception>
-		public OutlineRenderer(CommandBuffer cmd, OutlineResources resources, RenderTargetIdentifier dst, RenderTargetIdentifier depth)
-			: this(cmd, resources, dst, depth, GetDefaultRtDesc())
+		public OutlineRenderer(CommandBuffer cmd, OutlineResources resources, RenderTargetIdentifier dst, RenderTargetIdentifier depth, Vector2Int rtSize)
 		{
-		}
+			if (cmd is null)
+			{
+				throw new ArgumentNullException(nameof(cmd));
+			}
 
-		/// <summary>
-		/// Initializes a new instance of the <see cref="OutlineRenderer"/> struct.
-		/// </summary>
-		/// <param name="cmd">A <see cref="CommandBuffer"/> to render the effect to. It should be cleared manually (if needed) before passing to this method.</param>
-		/// <param name="dst">Render target.</param>
-		/// <param name="renderingPath">The rendering path of target camera (<see cref="Camera.actualRenderingPath"/>).</param>
-		/// <exception cref="ArgumentNullException">Thrown if <paramref name="cmd"/> is <see langword="null"/>.</exception>
-		public OutlineRenderer(CommandBuffer cmd, OutlineResources resources, RenderTargetIdentifier dst, RenderingPath renderingPath)
-			: this(cmd, resources, dst, GetBuiltinDepth(renderingPath), GetDefaultRtDesc())
-		{
+			if (resources is null)
+			{
+				throw new ArgumentNullException(nameof(resources));
+			}
+
+			if (rtSize.x <= 0)
+			{
+				rtSize.x = -1;
+			}
+
+			if (rtSize.y <= 0)
+			{
+				rtSize.y = -1;
+			}
+
+			cmd.BeginSample(EffectName);
+			cmd.GetTemporaryRT(_maskRtId, rtSize.x, rtSize.y, 0, FilterMode.Bilinear, _rtFormat);
+			cmd.GetTemporaryRT(_hPassRtId, rtSize.x, rtSize.y, 0, FilterMode.Bilinear, _rtFormat);
+
+			_rt = dst;
+			_depth = depth;
+			_commandBuffer = cmd;
+			_resources = resources;
 		}
 
 		/// <summary>
@@ -159,7 +187,7 @@ namespace UnityFx.Outline
 
 			rtDesc.shadowSamplingMode = ShadowSamplingMode.None;
 			rtDesc.depthBufferBits = 0;
-			rtDesc.colorFormat = RenderTextureFormat.R8;
+			rtDesc.colorFormat = _rtFormat;
 			rtDesc.volumeDepth = 1;
 
 			cmd.BeginSample(EffectName);

@@ -15,6 +15,11 @@ namespace UnityFx.Outline.PostProcessing
 		private OutlineResources _defaultResources;
 		private List<OutlineObject> _objects = new List<OutlineObject>();
 
+		public override DepthTextureMode GetCameraFlags()
+		{
+			return DepthTextureMode.Depth;
+		}
+
 		public override void Render(PostProcessRenderContext context)
 		{
 			OutlineResources resources;
@@ -39,7 +44,7 @@ namespace UnityFx.Outline.PostProcessing
 			{
 				RuntimeUtilities.CopyTexture(context.command, context.source, context.destination);
 
-				using (var renderer = new OutlineRenderer(context.command, resources, context.destination, context.camera.actualRenderingPath))
+				using (var renderer = new OutlineRenderer(context.command, resources, context.destination, context.camera.actualRenderingPath, new Vector2Int(context.width, context.height)))
 				{
 					_objects.Clear();
 					settings.Layers.value.GetRenderObjects(_objects);
