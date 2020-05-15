@@ -2,6 +2,7 @@
 // See the LICENSE.md file in the project root for more information.
 
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.Universal;
@@ -13,14 +14,42 @@ namespace UnityFx.Outline.URP
 	/// </summary>
 	internal class OutlinePass : ScriptableRenderPass
 	{
+		private List<OutlineRenderObject> _renderObjects = new List<OutlineRenderObject>();
+
+		private OutlineResources _outlineResources;
+		private OutlineLayerCollection _outlineLayers;
+		private RenderTargetIdentifier _depth;
+		private RenderTextureDescriptor _rtDesc;
+
+		public void Setup(OutlineResources resources, RenderTargetIdentifier depth, OutlineLayerCollection layers)
+		{
+			_outlineResources = resources;
+			_outlineLayers = layers;
+			_depth = depth;
+		}
+
 		public override void Configure(CommandBuffer cmd, RenderTextureDescriptor cameraTextureDescriptor)
 		{
-			// TODO
+			_rtDesc = cameraTextureDescriptor;
 		}
 
 		public override void Execute(ScriptableRenderContext context, ref RenderingData renderingData)
 		{
-			throw new NotImplementedException();
+			var cmd = CommandBufferPool.Get(OutlineRenderer.EffectName);
+
+			using (var renderer = new OutlineRenderer(cmd, _outlineResources, BuiltinRenderTextureType.CameraTarget, _depth, _rtDesc))
+			{
+				_renderObjects.Clear();
+				_outlineLayers.GetRenderObjects(_renderObjects);
+
+				foreach (var obj in _renderObjects)
+				{
+					renderer.Render(obj);
+				}
+			}
+
+			context.ExecuteCommandBuffer(cmd);
+			CommandBufferPool.Release(cmd);
 		}
 
 		public override void FrameCleanup(CommandBuffer cmd)

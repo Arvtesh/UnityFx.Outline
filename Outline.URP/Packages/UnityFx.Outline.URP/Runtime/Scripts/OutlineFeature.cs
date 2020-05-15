@@ -11,28 +11,28 @@ namespace UnityFx.Outline.URP
 	/// <summary>
 	/// Outline feature (URP).
 	/// </summary>
-	[CreateAssetMenu(fileName = "OutlineFeature", menuName = "UnityFx/Outline/Outline (URP)")]
 	public class OutlineFeature : ScriptableRendererFeature
 	{
-		private OutlineRenderColorPass _renderColorPass;
+#pragma warning disable 0649
+
+		[SerializeField]
+		private OutlineResources _outlineResources;
+		[SerializeField]
+		private OutlineLayerCollection _outlineLayers;
+
+#pragma warning restore 0649
+
 		private OutlinePass _outlinePass;
 
 		public override void Create()
 		{
-			_renderColorPass = new OutlineRenderColorPass();
 			_outlinePass = new OutlinePass();
-
-			// Configures where the render pass should be injected.
-			_renderColorPass.renderPassEvent = RenderPassEvent.BeforeRenderingPostProcessing;
+			_outlinePass.renderPassEvent = RenderPassEvent.BeforeRenderingPostProcessing;
 		}
 
-		// Here you can inject one or multiple render passes in the renderer.
-		// This method is called when setting up the renderer once per-camera.
 		public override void AddRenderPasses(ScriptableRenderer renderer, ref RenderingData renderingData)
 		{
-			_renderColorPass.SetDepth(renderer.cameraDepth);
-
-			renderer.EnqueuePass(_renderColorPass);
+			_outlinePass.Setup(_outlineResources, renderer.cameraDepth, _outlineLayers);
 			renderer.EnqueuePass(_outlinePass);
 		}
 	}
