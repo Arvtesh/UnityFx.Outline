@@ -124,7 +124,7 @@ Shader "Hidden/UnityFx/Outline"
 			HLSLPROGRAM
 
 			#pragma target 3.5
-			#pragma shader_feature _USE_DRAWMESH
+			#pragma shader_feature_local _USE_DRAWMESH
 			#pragma vertex vert
 			#pragma fragment frag_h
 
@@ -140,7 +140,7 @@ Shader "Hidden/UnityFx/Outline"
 			HLSLPROGRAM
 
 			#pragma target 3.5
-			#pragma shader_feature _USE_DRAWMESH
+			#pragma shader_feature_local _USE_DRAWMESH
 			#pragma vertex vert
 			#pragma fragment frag_v
 
