@@ -35,5 +35,5 @@ MonoBehaviour:
     overrideState: 0
     value: {fileID: 11400000, guid: d28e70f030b1a634db9a6a6d5478ef19, type: 2}
   Layers:
-    overrideState: 0
-    value: {fileID: 0}
+    overrideState: 1
+    value: {fileID: 11400000, guid: 747aa7f9a78f24945a8d07c0ba1511c6, type: 2}

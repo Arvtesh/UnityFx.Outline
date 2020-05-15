@@ -192,6 +192,7 @@ GameObject:
   - component: {fileID: 692811816}
   - component: {fileID: 692811815}
   - component: {fileID: 692811813}
+  - component: {fileID: 692811814}
   m_Layer: 0
   m_Name: Main Camera
   m_TagString: MainCamera
@@ -261,6 +262,19 @@ MonoBehaviour:
   - assemblyQualifiedName: UnityFx.Outline.PostProcessing.Outline, UnityFx.Outline.PostProcessing,
       Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
   m_AfterStackBundles: []
+--- !u!114 &692811814
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 692811812}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e746e776b0ae00d4a9d458b9430b95d7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _outlineLayers: {fileID: 11400000, guid: 747aa7f9a78f24945a8d07c0ba1511c6, type: 2}
 --- !u!20 &692811815
 Camera:
   m_ObjectHideFlags: 0

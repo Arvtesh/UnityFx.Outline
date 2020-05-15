@@ -20,53 +20,56 @@ namespace UnityFx.Outline
 		{
 			_builder = (OutlineBuilder)target;
 
-			foreach (var layer in _builder.OutlineLayers)
+			if (_builder.OutlineLayers)
 			{
-				var list0 = new ArrayList(layer.Count);
-
-				foreach (var go in layer)
+				foreach (var layer in _builder.OutlineLayers)
 				{
-					list0.Add(go);
-				}
+					var list0 = new ArrayList(layer.Count);
 
-				var editorList = new ReorderableList(list0, typeof(GameObject), false, true, true, true);
-
-				editorList.onAddCallback += (list) =>
-				{
-					list.list.Add(null);
-				};
-
-				editorList.onRemoveCallback += (list) =>
-				{
-					var go = list.list[list.index];
-					list.list.RemoveAt(list.index);
-					layer.Remove(go as GameObject);
-				};
-
-				editorList.drawElementCallback += (rect, index, isActive, isFocused) =>
-				{
-					var prevGo = list0[index] as GameObject;
-					var go = (GameObject)EditorGUI.ObjectField(new Rect(rect.x, rect.y, rect.width, EditorGUIUtility.singleLineHeight), $"#{index}", prevGo, typeof(GameObject), true);
-
-					if (prevGo != go)
+					foreach (var go in layer)
 					{
-						list0[index] = go;
-						layer.Remove(prevGo);
-						layer.Add(go);
+						list0.Add(go);
 					}
-				};
 
-				editorList.drawHeaderCallback += (rect) =>
-				{
-					EditorGUI.LabelField(rect, layer.Name);
-				};
+					var editorList = new ReorderableList(list0, typeof(GameObject), false, true, true, true);
 
-				editorList.elementHeightCallback += (index) =>
-				{
-					return EditorGUIUtility.singleLineHeight + EditorGUIUtility.standardVerticalSpacing;
-				};
+					editorList.onAddCallback += (list) =>
+					{
+						list.list.Add(null);
+					};
 
-				_lists.Add(editorList);
+					editorList.onRemoveCallback += (list) =>
+					{
+						var go = list.list[list.index];
+						list.list.RemoveAt(list.index);
+						layer.Remove(go as GameObject);
+					};
+
+					editorList.drawElementCallback += (rect, index, isActive, isFocused) =>
+					{
+						var prevGo = list0[index] as GameObject;
+						var go = (GameObject)EditorGUI.ObjectField(new Rect(rect.x, rect.y, rect.width, EditorGUIUtility.singleLineHeight), $"#{index}", prevGo, typeof(GameObject), true);
+
+						if (prevGo != go)
+						{
+							list0[index] = go;
+							layer.Remove(prevGo);
+							layer.Add(go);
+						}
+					};
+
+					editorList.drawHeaderCallback += (rect) =>
+					{
+						EditorGUI.LabelField(rect, layer.Name);
+					};
+
+					editorList.elementHeightCallback += (index) =>
+					{
+						return EditorGUIUtility.singleLineHeight + EditorGUIUtility.standardVerticalSpacing;
+					};
+
+					_lists.Add(editorList);
+				}
 			}
 		}
 
@@ -74,25 +77,32 @@ namespace UnityFx.Outline
 		{
 			base.OnInspectorGUI();
 
-			EditorGUILayout.Space();
-
-			for (var i = 0; i < _lists.Count; ++i)
+			if (_lists.Count > 0)
 			{
-				_lists[i].DoLayoutList();
 				EditorGUILayout.Space();
-			}
 
-			if (GUILayout.Button("Clear"))
-			{
-				foreach (var list in _lists)
+				for (var i = 0; i < _lists.Count; ++i)
 				{
-					list.list.Clear();
+					_lists[i].DoLayoutList();
+					EditorGUILayout.Space();
 				}
 
-				_builder.Clear();
-			}
+				if (GUILayout.Button("Clear"))
+				{
+					foreach (var list in _lists)
+					{
+						list.list.Clear();
+					}
 
-			serializedObject.ApplyModifiedProperties();
+					_builder.Clear();
+				}
+
+				serializedObject.ApplyModifiedProperties();
+			}
+			else
+			{
+				// TODO
+			}
 		}
 	}
 }
