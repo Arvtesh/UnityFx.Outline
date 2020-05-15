@@ -71,6 +71,11 @@ namespace UnityFx.Outline
 		}
 
 		/// <summary>
+		/// Gets outline layers (for internal use only).
+		/// </summary>
+		internal OutlineLayerCollection OutlineLayersInternal => _outlineLayers;
+
+		/// <summary>
 		/// Gets or sets <see cref="CameraEvent"/> used to render the outlines.
 		/// </summary>
 		public CameraEvent RenderEvent

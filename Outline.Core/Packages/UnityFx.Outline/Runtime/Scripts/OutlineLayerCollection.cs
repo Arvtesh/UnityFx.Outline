@@ -62,6 +62,17 @@ namespace UnityFx.Outline
 			}
 		}
 
+		/// <summary>
+		/// Removes all game objects registered in layers.
+		/// </summary>
+		public void ClearLayerContent()
+		{
+			foreach (var layer in _layers)
+			{
+				layer.Clear();
+			}
+		}
+
 		#endregion
 
 		#region internals
