@@ -139,7 +139,6 @@ namespace UnityFx.Outline
 				rtSize.y = -1;
 			}
 
-			cmd.BeginSample(EffectName);
 			cmd.GetTemporaryRT(_maskRtId, rtSize.x, rtSize.y, 0, FilterMode.Bilinear, _rtFormat);
 			cmd.GetTemporaryRT(_hPassRtId, rtSize.x, rtSize.y, 0, FilterMode.Bilinear, _rtFormat);
 
@@ -190,7 +189,6 @@ namespace UnityFx.Outline
 			rtDesc.colorFormat = _rtFormat;
 			rtDesc.volumeDepth = 1;
 
-			cmd.BeginSample(EffectName);
 			cmd.GetTemporaryRT(_maskRtId, rtDesc, FilterMode.Bilinear);
 			cmd.GetTemporaryRT(_hPassRtId, rtDesc, FilterMode.Bilinear);
 
@@ -208,7 +206,7 @@ namespace UnityFx.Outline
 		/// <seealso cref="Render(Renderer, IOutlineSettings)"/>
 		public void Render(OutlineRenderObject obj)
 		{
-			Render(obj.Renderers, obj.OutlineSettings);
+			Render(obj.Renderers, obj.OutlineSettings, obj.Go.name);
 		}
 
 		/// <summary>
@@ -216,10 +214,11 @@ namespace UnityFx.Outline
 		/// </summary>
 		/// <param name="renderers">One or more renderers representing a single object to be outlined.</param>
 		/// <param name="settings">Outline settings.</param>
+		/// <param name="sampleName">Optional name of the sample (visible in profiler).</param>
 		/// <exception cref="ArgumentNullException">Thrown if any of the arguments is <see langword="null"/>.</exception>
 		/// <seealso cref="Render(OutlineRenderObject)"/>
-		/// <seealso cref="Render(Renderer, IOutlineSettings)"/>
-		public void Render(IReadOnlyList<Renderer> renderers, IOutlineSettings settings)
+		/// <seealso cref="Render(Renderer, IOutlineSettings, string)"/>
+		public void Render(IReadOnlyList<Renderer> renderers, IOutlineSettings settings, string sampleName = null)
 		{
 			if (renderers is null)
 			{
@@ -233,8 +232,15 @@ namespace UnityFx.Outline
 
 			if (renderers.Count > 0)
 			{
+				if (string.IsNullOrEmpty(sampleName))
+				{
+					sampleName = renderers[0].name;
+				}
+
+				_commandBuffer.BeginSample(sampleName);
 				RenderObject(settings, renderers);
 				RenderOutline(settings);
+				_commandBuffer.EndSample(sampleName);
 			}
 		}
 
@@ -243,10 +249,11 @@ namespace UnityFx.Outline
 		/// </summary>
 		/// <param name="renderer">A <see cref="Renderer"/> representing an object to be outlined.</param>
 		/// <param name="settings">Outline settings.</param>
+		/// <param name="sampleName">Optional name of the sample (visible in profiler).</param>
 		/// <exception cref="ArgumentNullException">Thrown if any of the arguments is <see langword="null"/>.</exception>
 		/// <seealso cref="Render(OutlineRenderObject)"/>
-		/// <seealso cref="Render(IReadOnlyList{Renderer}, IOutlineSettings)"/>
-		public void Render(Renderer renderer, IOutlineSettings settings)
+		/// <seealso cref="Render(IReadOnlyList{Renderer}, IOutlineSettings, string)"/>
+		public void Render(Renderer renderer, IOutlineSettings settings, string sampleName = null)
 		{
 			if (renderer is null)
 			{
@@ -258,8 +265,15 @@ namespace UnityFx.Outline
 				throw new ArgumentNullException(nameof(settings));
 			}
 
+			if (string.IsNullOrEmpty(sampleName))
+			{
+				sampleName = renderer.name;
+			}
+
+			_commandBuffer.BeginSample(sampleName);
 			RenderObject(settings, renderer);
 			RenderOutline(settings);
+			_commandBuffer.EndSample(sampleName);
 		}
 
 		/// <summary>
@@ -289,7 +303,6 @@ namespace UnityFx.Outline
 		{
 			_commandBuffer.ReleaseTemporaryRT(_hPassRtId);
 			_commandBuffer.ReleaseTemporaryRT(_maskRtId);
-			_commandBuffer.EndSample(EffectName);
 		}
 
 		#endregion
