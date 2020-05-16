@@ -38,7 +38,9 @@ namespace UnityFx.Outline.PostProcessing
 		}
 
 		// NOTE: PostProcessEffectSettings.OnEnable implementation requires the fields to be public to function properly.
+		[Tooltip(OutlineResources.OutlineResourcesTooltip)]
 		public OutlineResourcesParameter Resources = new OutlineResourcesParameter();
+		[Tooltip(OutlineResources.OutlineLayerCollectionTooltip)]
 		public OutlineLayersParameter Layers = new OutlineLayersParameter();
 
 		public Outline()

@@ -13,7 +13,7 @@ namespace UnityFx.Outline.PostProcessing
 	public sealed class OutlineEffectRenderer : PostProcessEffectRenderer<Outline>
 	{
 		private OutlineResources _defaultResources;
-		private List<OutlineObject> _objects = new List<OutlineObject>();
+		private List<OutlineRenderObject> _objects = new List<OutlineRenderObject>();
 
 		public override DepthTextureMode GetCameraFlags()
 		{

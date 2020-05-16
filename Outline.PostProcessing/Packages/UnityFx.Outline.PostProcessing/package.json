@@ -1,12 +1,12 @@
 {
     "name": "com.unityfx.outline.postprocessing",
-    "version": "0.1.0",
+    "version": "0.2.0",
     "displayName": "Screen-space outline (Post-processing v2)",
-    "description": "Configurable outline implementation for Unity post-processing stack (v2). Both solid and blurred modes supported (Gauss blur). Scriptable render pipeline is not supported.",
+    "description": "Configurable screen-space outline implementation for Unity post-processing stack (v2).",
     "unity": "2018.4",
     "dependencies": {
-        "com.unityfx.outline": "0.7.2",
-        "com.unity.postprocessing": "2.2.2"
+        "com.unityfx.outline": "0.8.0",
+        "com.unity.postprocessing": "2.3.0"
     },
     "keywords": [
         "UnityFx",
