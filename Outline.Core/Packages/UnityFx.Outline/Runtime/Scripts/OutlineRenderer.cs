@@ -58,11 +58,6 @@ namespace UnityFx.Outline
 		public const CameraEvent RenderEvent = CameraEvent.BeforeImageEffects;
 
 		/// <summary>
-		/// Name of the outline effect.
-		/// </summary>
-		public const string EffectName = "Outline";
-
-		/// <summary>
 		/// Initializes a new instance of the <see cref="OutlineRenderer"/> struct.
 		/// </summary>
 		/// <param name="cmd">A <see cref="CommandBuffer"/> to render the effect to. It should be cleared manually (if needed) before passing to this method.</param>

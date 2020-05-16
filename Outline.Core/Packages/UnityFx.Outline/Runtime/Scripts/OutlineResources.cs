@@ -91,6 +91,21 @@ namespace UnityFx.Outline
 		public const string UseDrawMeshFeatureName = "_USE_DRAWMESH";
 
 		/// <summary>
+		/// Name of the outline effect.
+		/// </summary>
+		public const string EffectName = "Outline";
+
+		/// <summary>
+		/// Tooltip text for <see cref="OutlineResources"/> field.
+		/// </summary>
+		public const string OutlineResourcesTooltip = "Outline resources to use (shaders, materials etc). Do not change defaults unless you know what you're doing.";
+
+		/// <summary>
+		/// Tooltip text for <see cref="OutlineLayerCollection"/> field.
+		/// </summary>
+		public const string OutlineLayerCollectionTooltip = "Collection of outline layers to use. This can be used to share outline settings between multiple cameras.";
+
+		/// <summary>
 		/// Hashed name of _MainTex shader parameter.
 		/// </summary>
 		public readonly int MainTexId = Shader.PropertyToID(MainTexName);

@@ -16,11 +16,10 @@ MonoBehaviour:
   - _settings:
       _outlineSettings: {fileID: 0}
       _outlineColor: {r: 1, g: 0, b: 0, a: 1}
-      _outlineWidth: 4
+      _outlineWidth: 25
       _outlineIntensity: 2
-      _outlineMode: 0
+      _outlineMode: 1
     _name: 
-    _zOrder: 0
     _enabled: 1
   - _settings:
       _outlineSettings: {fileID: 0}
@@ -29,5 +28,5 @@ MonoBehaviour:
       _outlineIntensity: 2
       _outlineMode: 1
     _name: 
-    _zOrder: 0
     _enabled: 1
+  _layerMask: 0

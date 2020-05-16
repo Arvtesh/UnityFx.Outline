@@ -21,7 +21,7 @@ namespace UnityFx.Outline
 
 #pragma warning disable 0649
 
-		[SerializeField, Tooltip("Sets outline resources to use. Do not change the defaults unless you know what you're doing.")]
+		[SerializeField, Tooltip(OutlineResources.OutlineResourcesTooltip)]
 		private OutlineResources _outlineResources;
 		[SerializeField, HideInInspector]
 		private OutlineSettingsInstance _outlineSettings;

@@ -11,13 +11,18 @@ namespace UnityFx.Outline.URP
 	/// <summary>
 	/// Outline feature (URP).
 	/// </summary>
+	/// <remarks>
+	/// Add instance of this class to <see cref="ScriptableRendererData.rendererFeatures"/>. Configure
+	/// and assign outline resources and layers collection. Make sure <see cref="UniversalRenderPipelineAsset.supportsCameraDepthTexture"/>
+	/// is set if you use <see cref="OutlineRenderFlags.EnableDepthTesting"/>.
+	/// </remarks>
 	public class OutlineFeature : ScriptableRendererFeature
 	{
 #pragma warning disable 0649
 
-		[SerializeField]
+		[SerializeField, Tooltip(OutlineResources.OutlineResourcesTooltip)]
 		private OutlineResources _outlineResources;
-		[SerializeField]
+		[SerializeField, Tooltip(OutlineResources.OutlineLayerCollectionTooltip)]
 		private OutlineLayerCollection _outlineLayers;
 
 #pragma warning restore 0649
@@ -32,8 +37,11 @@ namespace UnityFx.Outline.URP
 
 		public override void AddRenderPasses(ScriptableRenderer renderer, ref RenderingData renderingData)
 		{
-			_outlinePass.Setup(_outlineResources, _outlineLayers, renderer.cameraColorTarget, renderer.cameraDepth);
-			renderer.EnqueuePass(_outlinePass);
+			if (_outlineResources && _outlineLayers)
+			{
+				_outlinePass.Setup(_outlineResources, _outlineLayers, renderer.cameraColorTarget, renderer.cameraDepth);
+				renderer.EnqueuePass(_outlinePass);
+			}
 		}
 	}
 }

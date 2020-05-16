@@ -21,9 +21,9 @@ namespace UnityFx.Outline
 	{
 		#region data
 
-		[SerializeField, Tooltip("Sets outline resources to use. Do not change the defaults unless you know what you're doing.")]
+		[SerializeField, Tooltip(OutlineResources.OutlineResourcesTooltip)]
 		private OutlineResources _outlineResources;
-		[SerializeField, Tooltip("Collection of outline layers to use. This can be used to share outline settings between multiple cameras.")]
+		[SerializeField, Tooltip(OutlineResources.OutlineLayerCollectionTooltip)]
 		private OutlineLayerCollection _outlineLayers;
 		[SerializeField, HideInInspector]
 		private CameraEvent _cameraEvent = OutlineRenderer.RenderEvent;

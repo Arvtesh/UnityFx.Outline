@@ -14,10 +14,10 @@ namespace UnityFx.Outline.URP
 	/// </summary>
 	internal class OutlinePass : ScriptableRenderPass
 	{
-		private List<OutlineRenderObject> _renderObjects = new List<OutlineRenderObject>();
-
 		private OutlineResources _outlineResources;
 		private OutlineLayerCollection _outlineLayers;
+
+		private List<OutlineRenderObject> _renderObjects = new List<OutlineRenderObject>();
 		private RenderTargetIdentifier _rt;
 		private RenderTargetIdentifier _depth;
 		private RenderTextureDescriptor _rtDesc;
@@ -37,7 +37,7 @@ namespace UnityFx.Outline.URP
 
 		public override void Execute(ScriptableRenderContext context, ref RenderingData renderingData)
 		{
-			var cmd = CommandBufferPool.Get(OutlineRenderer.EffectName);
+			var cmd = CommandBufferPool.Get(OutlineResources.EffectName);
 
 			using (var renderer = new OutlineRenderer(cmd, _outlineResources, _rt, _depth, _rtDesc))
 			{
@@ -52,11 +52,6 @@ namespace UnityFx.Outline.URP
 
 			context.ExecuteCommandBuffer(cmd);
 			CommandBufferPool.Release(cmd);
-		}
-
-		public override void FrameCleanup(CommandBuffer cmd)
-		{
-			// TODO
 		}
 	}
 }
