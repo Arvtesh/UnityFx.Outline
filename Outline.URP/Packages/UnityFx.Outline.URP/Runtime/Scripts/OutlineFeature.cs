@@ -18,6 +18,8 @@ namespace UnityFx.Outline.URP
 	/// </remarks>
 	public class OutlineFeature : ScriptableRendererFeature
 	{
+		#region data
+
 #pragma warning disable 0649
 
 		[SerializeField, Tooltip(OutlineResources.OutlineResourcesTooltip)]
@@ -29,19 +31,43 @@ namespace UnityFx.Outline.URP
 
 		private OutlinePass _outlinePass;
 
+		#endregion
+
+		#region interface
+
+		/// <summary>
+		/// Gets the outline resources.
+		/// </summary>
+		public OutlineResources OutlineResources => _outlineResources;
+
+		/// <summary>
+		/// Gets outline layers collection attached.
+		/// </summary>
+		public OutlineLayerCollection OutlineLayers => _outlineLayers;
+
+		#endregion
+
+		#region ScriptableRendererFeature
+
+		/// <inheritdoc/>
 		public override void Create()
 		{
-			_outlinePass = new OutlinePass();
-			_outlinePass.renderPassEvent = RenderPassEvent.BeforeRenderingPostProcessing;
+			_outlinePass = new OutlinePass(this)
+			{
+				renderPassEvent = RenderPassEvent.BeforeRenderingPostProcessing
+			};
 		}
 
+		/// <inheritdoc/>
 		public override void AddRenderPasses(ScriptableRenderer renderer, ref RenderingData renderingData)
 		{
-			if (_outlineResources && _outlineLayers)
+			if (_outlineResources && _outlineResources.IsValid && _outlineLayers)
 			{
-				_outlinePass.Setup(_outlineResources, _outlineLayers, renderer.cameraColorTarget, renderer.cameraDepth);
+				_outlinePass.Setup(renderer.cameraColorTarget, renderer.cameraDepth);
 				renderer.EnqueuePass(_outlinePass);
 			}
 		}
+
+		#endregion
 	}
 }

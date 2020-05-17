@@ -9,23 +9,22 @@ using UnityEngine.Rendering.Universal;
 
 namespace UnityFx.Outline.URP
 {
-	/// <summary>
-	/// 
-	/// </summary>
 	internal class OutlinePass : ScriptableRenderPass
 	{
-		private OutlineResources _outlineResources;
-		private OutlineLayerCollection _outlineLayers;
+		private readonly OutlineFeature _feature;
+		private readonly List<OutlineRenderObject> _renderObjects = new List<OutlineRenderObject>();
 
-		private List<OutlineRenderObject> _renderObjects = new List<OutlineRenderObject>();
 		private RenderTargetIdentifier _rt;
 		private RenderTargetIdentifier _depth;
 		private RenderTextureDescriptor _rtDesc;
 
-		public void Setup(OutlineResources resources, OutlineLayerCollection layers, RenderTargetIdentifier rt, RenderTargetIdentifier depth)
+		public OutlinePass(OutlineFeature feature)
 		{
-			_outlineResources = resources;
-			_outlineLayers = layers;
+			_feature = feature;
+		}
+
+		public void Setup(RenderTargetIdentifier rt, RenderTargetIdentifier depth)
+		{
 			_rt = rt;
 			_depth = depth;
 		}
@@ -39,10 +38,10 @@ namespace UnityFx.Outline.URP
 		{
 			var cmd = CommandBufferPool.Get(OutlineResources.EffectName);
 
-			using (var renderer = new OutlineRenderer(cmd, _outlineResources, _rt, _depth, _rtDesc))
+			using (var renderer = new OutlineRenderer(cmd, _feature.OutlineResources, _rt, _depth, _rtDesc))
 			{
 				_renderObjects.Clear();
-				_outlineLayers.GetRenderObjects(_renderObjects);
+				_feature.OutlineLayers.GetRenderObjects(_renderObjects);
 
 				foreach (var obj in _renderObjects)
 				{
