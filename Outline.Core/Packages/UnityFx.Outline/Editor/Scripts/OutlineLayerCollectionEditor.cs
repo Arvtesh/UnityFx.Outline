@@ -49,26 +49,29 @@ namespace UnityFx.Outline
 
 			_layersList.DoLayoutList();
 
-			EditorGUILayout.Space();
-			EditorGUILayout.HelpBox("Read-only lists below represent game objects assigned to specific outline layers. Only non-empty layers are displayed.", MessageType.Info);
-
-			foreach (var layer in _layers)
+			if (_layers.NumberOfObjects > 0)
 			{
-				if (layer.Count > 0)
+				EditorGUILayout.Space();
+				EditorGUILayout.HelpBox("Read-only lists below represent game objects assigned to specific outline layers. Only non-empty layers are displayed.", MessageType.Info);
+
+				foreach (var layer in _layers)
 				{
-					EditorGUILayout.LabelField(layer.Name, EditorStyles.boldLabel);
-					EditorGUI.BeginDisabledGroup(true);
-					EditorGUI.indentLevel += 1;
-
-					var index = 0;
-
-					foreach (var go in layer)
+					if (layer.Count > 0)
 					{
-						EditorGUILayout.ObjectField($"#{index++}", go, typeof(GameObject), true);
-					}
+						EditorGUILayout.LabelField(layer.Name, EditorStyles.boldLabel);
+						EditorGUI.BeginDisabledGroup(true);
+						EditorGUI.indentLevel += 1;
 
-					EditorGUI.indentLevel -= 1;
-					EditorGUI.EndDisabledGroup();
+						var index = 0;
+
+						foreach (var go in layer)
+						{
+							EditorGUILayout.ObjectField($"#{index++}", go, typeof(GameObject), true);
+						}
+
+						EditorGUI.indentLevel -= 1;
+						EditorGUI.EndDisabledGroup();
+					}
 				}
 			}
 

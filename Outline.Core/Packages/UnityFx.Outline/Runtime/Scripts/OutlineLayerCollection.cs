@@ -52,6 +52,24 @@ namespace UnityFx.Outline
 		}
 
 		/// <summary>
+		/// Gets number of game objects in the layers.
+		/// </summary>
+		public int NumberOfObjects
+		{
+			get
+			{
+				var result = 0;
+
+				foreach (var layer in _layers)
+				{
+					result += layer.Count;
+				}
+
+				return result;
+			}
+		}
+
+		/// <summary>
 		/// Gets the objects for rendering.
 		/// </summary>
 		public void GetRenderObjects(IList<OutlineRenderObject> renderObjects)
