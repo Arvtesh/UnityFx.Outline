@@ -1,8 +1,8 @@
 {
   "name": "com.unityfx.outline.urp",
   "version": "0.1.0",
-  "displayName": "Screen-space outline (URP)",
-  "description": "Configurable outline for URP.",
+  "displayName": "Outline toolkit (URP)",
+  "description": "This package contains configurable outline implementation for Universal Render Pipeline.",
   "unity": "2019.3",
   "dependencies": {
     "com.unityfx.outline": "0.8.0",
