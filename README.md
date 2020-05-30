@@ -1,11 +1,12 @@
 # UnityFx.Outline
 
 Channel | UnityFx.Outline |
----------|---------------|
+--------|-----------------|
 Github | [![GitHub release](https://img.shields.io/github/release/Arvtesh/UnityFx.Outline.svg?logo=github)](https://github.com/Arvtesh/UnityFx.Outline/releases)
 Npm (core + built-in RP) | [![Npm release](https://img.shields.io/npm/v/com.unityfx.outline.svg)](https://www.npmjs.com/package/com.unityfx.outline) ![npm](https://img.shields.io/npm/dt/com.unityfx.outline)
 Npm (Post-processing v2) | [![Npm release](https://img.shields.io/npm/v/com.unityfx.outline.postprocessing.svg)](https://www.npmjs.com/package/com.unityfx.outline.postprocessing) ![npm](https://img.shields.io/npm/dt/com.unityfx.outline.postprocessing)
 Npm (URP) | [![Npm release](https://img.shields.io/npm/v/com.unityfx.outline.urp.svg)](https://www.npmjs.com/package/com.unityfx.outline.urp) ![npm](https://img.shields.io/npm/dt/com.unityfx.outline.urp)
+Npm (HDRP) | TODO
 
 **Requires Unity 2018.4 or higher.**<br/>
 **Compatible with [Unity Post-processing Stack v2](https://github.com/Unity-Technologies/PostProcessing/tree/v2).**<br/>
@@ -137,13 +138,20 @@ outlineBehaviour.OutlineIntensity = 10;
 ```
 
 ### Depth testing
-By default depth testing is disabled when rendering outlines. This behaviour can be overriden by setting `OutlineRenderFlags.EnableDepthTesting` flag of `OutlineRenderMode` or settings the corresponding checkbox in editor.
+By default depth testing is disabled when rendering outlines. This behaviour can be overriden by setting `EnableDepthTesting` flag of `Rander Flags` (either via scripting API or with editor).
 ```csharp
 var outlineSettings = GetComponent<OutlineBehaviour>();
 
 outlineSettings.OutlineColor = Color.green;
 outlineSettings.OutlineWidth = 2;
 outlineSettings.OutlineRenderMode = OutlineRenderFlags.Blurred | OutlineRenderFlags.EnableDepthTesting;
+```
+
+### Ignore layers
+When adding a `GameObject` to outline collection it is often desirable to ignore child renderers in specific layers (for instance, `TransparentFX`). This can be achieved by settings the `IgnoreLayers` mask in outline settings (or through corresponding API).
+```csharp
+var outlineSettings = GetComponent<OutlineBehaviour>();
+outlineSettings.IgnoreLayerMask = LayerMask.GetMask("TransparentFX", "UI");
 ```
 
 ### Extensibility
@@ -175,7 +183,7 @@ using (var renderer = new OutlineRenderer(commandBuffer, resources))
 myCamera.AddCommandBuffer(OutlineRenderer.RenderEvent, commandBuffer);
 ```
 
-### Integration with Unity post-processing.
+## Integration with Unity post-processing v2.
 [![NPM](https://nodei.co/npm/com.unityfx.outline.postprocessing.png)](https://www.npmjs.com/package/com.unityfx.outline.postprocessing)
 
 Install the package, add `Outline` effect to `PostProcessProfile`'s overrides list. Configure the effect parameters, make sure outline resources and layer collection are set:
@@ -186,7 +194,7 @@ Assign the configured `PostProcessProfile` to `PostProcessVolume` and that's it!
 
 More info on writing custom post processing effects can be found [here](https://docs.unity3d.com/Packages/com.unity.postprocessing@2.3/manual/Writing-Custom-Effects.html).
 
-### Integration with Universal Render Pipeline (URP).
+## Integration with Universal Render Pipeline (URP).
 [![NPM](https://nodei.co/npm/com.unityfx.outline.urp.png)](https://www.npmjs.com/package/com.unityfx.outline.urp)
 
 Install the package, add `OutlineFeature` to `ScriptableRendererData`'s list of features. Configure the feature parameters (make sure outline resources and layer collection are set):
