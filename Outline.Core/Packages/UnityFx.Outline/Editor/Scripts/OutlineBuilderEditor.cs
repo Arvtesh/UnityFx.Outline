@@ -109,7 +109,7 @@ namespace UnityFx.Outline
 
 			if (_content != null)
 			{
-				EditorGUILayout.Space();
+				EditorGUILayout.HelpBox("Game objectes listed below will be added to corresponding outline layers when application is started. Only scene references are allowed.", MessageType.Info);
 				_content.DoLayoutList();
 				EditorGUILayout.Space();
 
@@ -122,7 +122,7 @@ namespace UnityFx.Outline
 			}
 			else if (_lists != null && _lists.Count > 0)
 			{
-				EditorGUILayout.Space();
+				EditorGUILayout.HelpBox("Settings below are not serialized, they only exist in runtime.", MessageType.Info);
 
 				for (var i = 0; i < _lists.Count; ++i)
 				{
