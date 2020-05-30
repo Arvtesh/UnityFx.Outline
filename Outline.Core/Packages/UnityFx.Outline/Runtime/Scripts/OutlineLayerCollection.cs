@@ -70,6 +70,34 @@ namespace UnityFx.Outline
 		}
 
 		/// <summary>
+		/// Gets a layer with the specified index. If layer at the <paramref name="index"/> does not exist, creates one.
+		/// </summary>
+		public OutlineLayer GetOrAddLayer(int index)
+		{
+			if (index < 0)
+			{
+				throw new ArgumentOutOfRangeException(nameof(index));
+			}
+
+			while (index >= _layers.Count)
+			{
+				_layers.Add(new OutlineLayer(this));
+			}
+
+			return _layers[index];
+		}
+
+		/// <summary>
+		/// Adds a new layer.
+		/// </summary>
+		public OutlineLayer AddLayer()
+		{
+			var layer = new OutlineLayer(this);
+			_layers.Add(layer);
+			return layer;
+		}
+
+		/// <summary>
 		/// Gets the objects for rendering.
 		/// </summary>
 		public void GetRenderObjects(IList<OutlineRenderObject> renderObjects)

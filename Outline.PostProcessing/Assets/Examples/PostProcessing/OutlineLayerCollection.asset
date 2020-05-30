@@ -21,4 +21,20 @@ MonoBehaviour:
       _outlineMode: 0
     _name: 
     _enabled: 1
+  - _settings:
+      _outlineSettings: {fileID: 0}
+      _outlineColor: {r: 1, g: 0, b: 0, a: 1}
+      _outlineWidth: 6
+      _outlineIntensity: 2
+      _outlineMode: 2
+    _name: 
+    _enabled: 1
+  - _settings:
+      _outlineSettings: {fileID: 0}
+      _outlineColor: {r: 0, g: 0.23238373, b: 1, a: 1}
+      _outlineWidth: 10
+      _outlineIntensity: 2
+      _outlineMode: 1
+    _name: 
+    _enabled: 1
   _layerMask: 0

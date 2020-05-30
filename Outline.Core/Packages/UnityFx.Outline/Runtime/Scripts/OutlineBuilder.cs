@@ -15,16 +15,27 @@ namespace UnityFx.Outline
 	{
 		#region data
 
+		[Serializable]
+		internal class ContentItem
+		{
+			public GameObject Go;
+			public int LayerIndex;
+		}
+
 #pragma warning disable 0649
 
-		[SerializeField, Tooltip("Collection of outline layers to manage.")]
+		[SerializeField, Tooltip(OutlineResources.OutlineLayerCollectionTooltip)]
 		private OutlineLayerCollection _outlineLayers;
+		[SerializeField, HideInInspector]
+		private List<ContentItem> _content;
 
 #pragma warning restore 0649
 
 		#endregion
 
 		#region interface
+
+		internal List<ContentItem> Content { get => _content; set => _content = value; }
 
 		/// <summary>
 		/// Gets or sets a collection of layers to manage.
@@ -43,6 +54,20 @@ namespace UnityFx.Outline
 		#endregion
 
 		#region MonoBehaviour
+
+		private void OnEnable()
+		{
+			if (_outlineLayers && _content != null)
+			{
+				foreach (var item in _content)
+				{
+					if (item.LayerIndex >= 0 && item.LayerIndex < _outlineLayers.Count && item.Go)
+					{
+						_outlineLayers.GetOrAddLayer(item.LayerIndex).Add(item.Go);
+					}
+				}
+			}
+		}
 
 #if UNITY_EDITOR
 

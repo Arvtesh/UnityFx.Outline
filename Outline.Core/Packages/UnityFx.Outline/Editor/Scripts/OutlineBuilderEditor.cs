@@ -6,6 +6,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEditor;
 using UnityEditorInternal;
+using UnityEditor.SceneManagement;
 using UnityEngine;
 
 namespace UnityFx.Outline
@@ -14,62 +15,89 @@ namespace UnityFx.Outline
 	public class OutlineBuilderEditor : Editor
 	{
 		private OutlineBuilder _builder;
-		private List<ReorderableList> _lists = new List<ReorderableList>();
+		private ReorderableList _content;
+		private List<ReorderableList> _lists;
 
 		private void OnEnable()
 		{
 			_builder = (OutlineBuilder)target;
 
-			if (_builder.OutlineLayers)
+			if (EditorApplication.isPlaying)
 			{
-				foreach (var layer in _builder.OutlineLayers)
+				if (_builder.OutlineLayers)
 				{
-					var list0 = new ArrayList(layer.Count);
+					_lists = new List<ReorderableList>(_builder.OutlineLayers.Count);
 
-					foreach (var go in layer)
+					foreach (var layer in _builder.OutlineLayers)
 					{
-						list0.Add(go);
-					}
+						var list0 = new ArrayList(layer.Count);
 
-					var editorList = new ReorderableList(list0, typeof(GameObject), false, true, true, true);
-
-					editorList.onAddCallback += (list) =>
-					{
-						list.list.Add(null);
-					};
-
-					editorList.onRemoveCallback += (list) =>
-					{
-						var go = list.list[list.index];
-						list.list.RemoveAt(list.index);
-						layer.Remove(go as GameObject);
-					};
-
-					editorList.drawElementCallback += (rect, index, isActive, isFocused) =>
-					{
-						var prevGo = list0[index] as GameObject;
-						var go = (GameObject)EditorGUI.ObjectField(new Rect(rect.x, rect.y, rect.width, EditorGUIUtility.singleLineHeight), $"#{index}", prevGo, typeof(GameObject), true);
-
-						if (prevGo != go)
+						foreach (var go in layer)
 						{
-							list0[index] = go;
-							layer.Remove(prevGo);
-							layer.Add(go);
+							list0.Add(go);
 						}
-					};
 
-					editorList.drawHeaderCallback += (rect) =>
-					{
-						EditorGUI.LabelField(rect, layer.Name);
-					};
+						var editorList = new ReorderableList(list0, typeof(GameObject), false, true, true, true);
 
-					editorList.elementHeightCallback += (index) =>
-					{
-						return EditorGUIUtility.singleLineHeight + EditorGUIUtility.standardVerticalSpacing;
-					};
+						editorList.onAddCallback += (list) =>
+						{
+							list.list.Add(null);
+						};
 
-					_lists.Add(editorList);
+						editorList.onRemoveCallback += (list) =>
+						{
+							var go = list.list[list.index];
+							list.list.RemoveAt(list.index);
+							layer.Remove(go as GameObject);
+						};
+
+						editorList.drawElementCallback += (rect, index, isActive, isFocused) =>
+						{
+							var prevGo = list0[index] as GameObject;
+							var go = (GameObject)EditorGUI.ObjectField(new Rect(rect.x, rect.y, rect.width, EditorGUIUtility.singleLineHeight), $"#{index}", prevGo, typeof(GameObject), true);
+
+							if (prevGo != go)
+							{
+								list0[index] = go;
+								layer.Remove(prevGo);
+								layer.Add(go);
+							}
+						};
+
+						editorList.drawHeaderCallback += (rect) =>
+						{
+							EditorGUI.LabelField(rect, layer.Name);
+						};
+
+						editorList.elementHeightCallback += (index) =>
+						{
+							return EditorGUIUtility.singleLineHeight + EditorGUIUtility.standardVerticalSpacing;
+						};
+
+						_lists.Add(editorList);
+					}
 				}
+			}
+			else
+			{
+				_content = new ReorderableList(_builder.Content, typeof(OutlineBuilder.ContentItem), true, true, true, true);
+
+				_content.drawElementCallback += (rect, index, isActive, isFocused) =>
+				{
+					var item = _builder.Content[index];
+					item.Go = (GameObject)EditorGUI.ObjectField(new Rect(rect.x + rect.width * 0.3f + 1, rect.y, rect.width * 0.7f, EditorGUIUtility.singleLineHeight), item.Go, typeof(GameObject), true);
+					item.LayerIndex = EditorGUI.IntField(new Rect(rect.x, rect.y, rect.width * 0.3f - 1, EditorGUIUtility.singleLineHeight), item.LayerIndex);
+				};
+
+				_content.drawHeaderCallback += (rect) =>
+				{
+					EditorGUI.LabelField(rect, "Content");
+				};
+
+				_content.elementHeightCallback += (index) =>
+				{
+					return EditorGUIUtility.singleLineHeight + EditorGUIUtility.standardVerticalSpacing;
+				};
 			}
 		}
 
@@ -77,7 +105,22 @@ namespace UnityFx.Outline
 		{
 			base.OnInspectorGUI();
 
-			if (_lists.Count > 0)
+			EditorGUI.BeginChangeCheck();
+
+			if (_content != null)
+			{
+				EditorGUILayout.Space();
+				_content.DoLayoutList();
+				EditorGUILayout.Space();
+
+				if (GUILayout.Button("Clear"))
+				{
+					_builder.Content.Clear();
+				}
+
+				serializedObject.ApplyModifiedProperties();
+			}
+			else if (_lists != null && _lists.Count > 0)
 			{
 				EditorGUILayout.Space();
 
@@ -102,6 +145,17 @@ namespace UnityFx.Outline
 			else
 			{
 				// TODO
+			}
+
+			if (EditorGUI.EndChangeCheck())
+			{
+				Undo.RecordObject(_builder, "Builder");
+
+				if (!EditorApplication.isPlayingOrWillChangePlaymode)
+				{
+					EditorUtility.SetDirty(_builder.gameObject);
+					EditorSceneManager.MarkSceneDirty(_builder.gameObject.scene);
+				}
 			}
 		}
 	}

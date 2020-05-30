@@ -107,6 +107,14 @@ namespace UnityFx.Outline
 		/// <summary>
 		/// Initializes a new instance of the <see cref="OutlineLayer"/> class.
 		/// </summary>
+		internal OutlineLayer(OutlineLayerCollection parentCollection)
+		{
+			_parentCollection = parentCollection;
+		}
+
+		/// <summary>
+		/// Initializes a new instance of the <see cref="OutlineLayer"/> class.
+		/// </summary>
 		public OutlineLayer(string name)
 		{
 			_name = name;

@@ -275,6 +275,13 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _outlineLayers: {fileID: 11400000, guid: 747aa7f9a78f24945a8d07c0ba1511c6, type: 2}
+  _content:
+  - Go: {fileID: 1579373802}
+    LayerIndex: 0
+  - Go: {fileID: 748173439}
+    LayerIndex: 1
+  - Go: {fileID: 1789341920}
+    LayerIndex: 2
 --- !u!20 &692811815
 Camera:
   m_ObjectHideFlags: 0
