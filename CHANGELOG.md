@@ -3,7 +3,7 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/); this project adheres to [Semantic Versioning](http://semver.org/).
 
-## [0.8.0] - unreleased
+## [0.8.0] - 2020.05.30
 
 [URP](https://docs.unity3d.com/Packages/com.unity.render-pipelines.universal@8.1/manual/index.html) support, core refactoring and bugfixes.
 
@@ -12,7 +12,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/); this proj
 - Use procedural geometry ([DrawProcedural](https://docs.unity3d.com/ScriptReference/Rendering.CommandBuffer.DrawProcedural.html)) on SM3.5+.
 - Added support for both forward and deferred renderers (built-in RP).
 - Added ignore layer mask settings to `OutlineLayerCollection` (previously the ignore layers were specified when adding game objects to layers).
-- Added `OutlineBuilder` helper script for managinf `OutlineLayerCollection` content from editor.
+- Added `OutlineBuilder` helper script for managinf `OutlineLayerCollection` content from editor ([#8](https://github.com/Arvtesh/UnityFx.Outline/issues/8)).
 
 ### Changed
 - Changed `OutlineSettings` to display enum mask instead of checkboxes.
