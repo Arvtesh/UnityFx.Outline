@@ -16,7 +16,7 @@ namespace UnityFx.Outline
 	/// <seealso cref="OutlineLayerCollection"/>
 	/// <seealso cref="OutlineEffect"/>
 	[Serializable]
-	public sealed partial class OutlineLayer : ICollection<GameObject>, IOutlineSettingsEx
+	public sealed class OutlineLayer : ICollection<GameObject>, IReadOnlyCollection<GameObject>, IOutlineSettings
 	{
 		#region data
 
@@ -24,8 +24,6 @@ namespace UnityFx.Outline
 		private OutlineSettingsInstance _settings = new OutlineSettingsInstance();
 		[SerializeField, HideInInspector]
 		private string _name;
-		[SerializeField, HideInInspector]
-		private int _zOrder;
 		[SerializeField, HideInInspector]
 		private bool _enabled = true;
 
@@ -69,31 +67,6 @@ namespace UnityFx.Outline
 		}
 
 		/// <summary>
-		/// Gets or sets the layer priority. Layers with greater <see cref="Priority"/> values are rendered on top of layers with lower priority.
-		/// Layers with equal priorities are rendered according to index in parent collection.
-		/// </summary>
-		/// <seealso cref="Enabled"/>
-		public int Priority
-		{
-			get
-			{
-				return _zOrder;
-			}
-			set
-			{
-				if (_zOrder != value)
-				{
-					if (_parentCollection != null)
-					{
-						_parentCollection.SetOrderChanged();
-					}
-
-					_zOrder = value;
-				}
-			}
-		}
-
-		/// <summary>
 		/// Gets index of the layer in parent collection.
 		/// </summary>
 		public int Index
@@ -110,10 +83,33 @@ namespace UnityFx.Outline
 		}
 
 		/// <summary>
+		/// Gets or sets outline settings. Set this to non-<see langword="null"/> value to share settings with other components.
+		/// </summary>
+		public OutlineSettings OutlineSettings
+		{
+			get
+			{
+				return _settings.OutlineSettings;
+			}
+			set
+			{
+				_settings.OutlineSettings = value;
+			}
+		}
+
+		/// <summary>
 		/// Initializes a new instance of the <see cref="OutlineLayer"/> class.
 		/// </summary>
 		public OutlineLayer()
 		{
+		}
+
+		/// <summary>
+		/// Initializes a new instance of the <see cref="OutlineLayer"/> class.
+		/// </summary>
+		internal OutlineLayer(OutlineLayerCollection parentCollection)
+		{
+			_parentCollection = parentCollection;
 		}
 
 		/// <summary>
@@ -130,9 +126,9 @@ namespace UnityFx.Outline
 		/// <exception cref="ArgumentNullException">Thrown if <paramref name="settings"/> is <see langword="null"/>.</exception>
 		public OutlineLayer(OutlineSettings settings)
 		{
-			if (ReferenceEquals(settings, null))
+			if (settings is null)
 			{
-				throw new ArgumentNullException("settings");
+				throw new ArgumentNullException(nameof(settings));
 			}
 
 			_settings.OutlineSettings = settings;
@@ -144,41 +140,13 @@ namespace UnityFx.Outline
 		/// <exception cref="ArgumentNullException">Thrown if <paramref name="settings"/> is <see langword="null"/>.</exception>
 		public OutlineLayer(string name, OutlineSettings settings)
 		{
-			if (ReferenceEquals(settings, null))
+			if (settings is null)
 			{
-				throw new ArgumentNullException("settings");
+				throw new ArgumentNullException(nameof(settings));
 			}
 
 			_name = name;
 			_settings.OutlineSettings = settings;
-		}
-
-		/// <summary>
-		/// Adds a new object to the layer.
-		/// </summary>
-		/// <exception cref="ArgumentNullException">Thrown if <paramref name="go"/> is <see langword="null"/>.</exception>
-		public void Add(GameObject go, int ignoreLayerMask)
-		{
-			if (ReferenceEquals(go, null))
-			{
-				throw new ArgumentNullException("go");
-			}
-
-			if (!_outlineObjects.ContainsKey(go))
-			{
-				var renderers = new OutlineRendererCollection(go);
-				renderers.Reset(false, ignoreLayerMask);
-				_outlineObjects.Add(go, renderers);
-			}
-		}
-
-		/// <summary>
-		/// Adds a new object to the layer.
-		/// </summary>
-		/// <exception cref="ArgumentNullException">Thrown if <paramref name="go"/> is <see langword="null"/>.</exception>
-		public void Add(GameObject go, string ignoreLayer)
-		{
-			Add(go, 1 << LayerMask.NameToLayer(ignoreLayer));
 		}
 
 		/// <summary>
@@ -187,14 +155,12 @@ namespace UnityFx.Outline
 		/// <exception cref="ArgumentNullException">Thrown if <paramref name="go"/> is <see langword="null"/>.</exception>
 		public bool TryGetRenderers(GameObject go, out ICollection<Renderer> renderers)
 		{
-			if (ReferenceEquals(go, null))
+			if (go is null)
 			{
-				throw new ArgumentNullException("go");
+				throw new ArgumentNullException(nameof(go));
 			}
 
-			OutlineRendererCollection result;
-
-			if (_outlineObjects.TryGetValue(go, out result))
+			if (_outlineObjects.TryGetValue(go, out var result))
 			{
 				renderers = result;
 				return true;
@@ -205,19 +171,19 @@ namespace UnityFx.Outline
 		}
 
 		/// <summary>
-		/// Renders the layers.
+		/// Gets the objects for rendering.
 		/// </summary>
-		public void Render(OutlineRenderer renderer, OutlineResources resources)
+		public void GetRenderObjects(IList<OutlineRenderObject> renderObjects)
 		{
 			if (_enabled)
 			{
-				_settings.OutlineResources = resources;
-
 				foreach (var kvp in _outlineObjects)
 				{
-					if (kvp.Key && kvp.Key.activeInHierarchy)
+					var go = kvp.Key;
+
+					if (go && go.activeInHierarchy)
 					{
-						renderer.Render(kvp.Value.GetList(), resources, _settings);
+						renderObjects.Add(new OutlineRenderObject(go, kvp.Value.GetList(), _settings));
 					}
 				}
 			}
@@ -239,17 +205,18 @@ namespace UnityFx.Outline
 			}
 		}
 
-		internal OutlineLayerCollection ParentCollection
+		internal OutlineLayerCollection ParentCollection => _parentCollection;
+
+		internal void UpdateRenderers(int ignoreLayers)
 		{
-			get
+			foreach (var renderers in _outlineObjects.Values)
 			{
-				return _parentCollection;
+				renderers.Reset(false, ignoreLayers);
 			}
 		}
 
 		internal void Reset()
 		{
-			_settings.OutlineResources = null;
 			_outlineObjects.Clear();
 		}
 
@@ -262,25 +229,6 @@ namespace UnityFx.Outline
 			else
 			{
 				throw new InvalidOperationException("OutlineLayer can only belong to a single OutlineLayerCollection.");
-			}
-		}
-
-		#endregion
-
-		#region IOutlineSettingsEx
-
-		/// <summary>
-		/// Gets or sets outline settings. Set this to non-<see langword="null"/> value to share settings with other components.
-		/// </summary>
-		public OutlineSettings OutlineSettings
-		{
-			get
-			{
-				return _settings.OutlineSettings;
-			}
-			set
-			{
-				_settings.OutlineSettings = value;
 			}
 		}
 
@@ -345,44 +293,42 @@ namespace UnityFx.Outline
 		#region ICollection
 
 		/// <inheritdoc/>
-		public int Count
-		{
-			get
-			{
-				return _outlineObjects.Count;
-			}
-		}
+		public int Count => _outlineObjects.Count;
 
 		/// <inheritdoc/>
-		public bool IsReadOnly
-		{
-			get
-			{
-				return false;
-			}
-		}
+		public bool IsReadOnly => false;
 
 		/// <inheritdoc/>
 		public void Add(GameObject go)
 		{
-			Add(go, 0);
+			if (go is null)
+			{
+				throw new ArgumentNullException(nameof(go));
+			}
+
+			if (!_outlineObjects.ContainsKey(go))
+			{
+				var renderers = new OutlineRendererCollection(go);
+				renderers.Reset(false, _parentCollection.IgnoreLayerMask);
+				_outlineObjects.Add(go, renderers);
+			}
 		}
 
 		/// <inheritdoc/>
 		public bool Remove(GameObject go)
 		{
-			if (!ReferenceEquals(go, null))
+			if (go is null)
 			{
-				return _outlineObjects.Remove(go);
+				return false;
 			}
 
-			return false;
+			return _outlineObjects.Remove(go);
 		}
 
 		/// <inheritdoc/>
 		public bool Contains(GameObject go)
 		{
-			if (ReferenceEquals(go, null))
+			if (go is null)
 			{
 				return false;
 			}
@@ -449,12 +395,6 @@ namespace UnityFx.Outline
 			{
 				text.Append(" #");
 				text.Append(_parentCollection.IndexOf(this));
-			}
-
-			if (_zOrder > 0)
-			{
-				text.Append(" z");
-				text.Append(_zOrder);
 			}
 
 			if (_outlineObjects.Count > 0)

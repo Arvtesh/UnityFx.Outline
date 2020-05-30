@@ -17,5 +17,6 @@ jobs:
       - run: |
           npm publish Outline.Core/Packages/UnityFx.Outline
           npm publish Outline.PostProcessing/Packages/UnityFx.Outline.PostProcessing
+          npm publish Outline.URP/Packages/UnityFx.Outline.URP
         env:
           NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}

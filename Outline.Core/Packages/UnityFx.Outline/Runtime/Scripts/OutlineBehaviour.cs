@@ -15,26 +15,26 @@ namespace UnityFx.Outline
 	/// <seealso cref="OutlineEffect"/>
 	[ExecuteInEditMode]
 	[DisallowMultipleComponent]
-	public sealed class OutlineBehaviour : MonoBehaviour, IOutlineSettingsEx
+	public sealed class OutlineBehaviour : MonoBehaviour, IOutlineSettings
 	{
 		#region data
 
 #pragma warning disable 0649
 
-		[SerializeField, Tooltip("Sets outline resources to use. Do not change the defaults unless you know what you're doing.")]
+		[SerializeField, Tooltip(OutlineResources.OutlineResourcesTooltip)]
 		private OutlineResources _outlineResources;
 		[SerializeField, HideInInspector]
 		private OutlineSettingsInstance _outlineSettings;
+		[SerializeField, HideInInspector]
+		private int _layerMask;
 		[SerializeField, Tooltip("If set, list of object renderers is updated on each frame. Enable if the object has child renderers which are enabled/disabled frequently.")]
 		private bool _updateRenderers;
 
 #pragma warning restore 0649
 
-		private OutlineRendererCollection _renderers;
-		private CommandBuffer _commandBuffer;
-
 		private Dictionary<Camera, CommandBuffer> _cameraMap = new Dictionary<Camera, CommandBuffer>();
-		private float _cameraMapUpdateTimer;
+		private List<Camera> _camerasToRemove = new List<Camera>();
+		private OutlineRendererCollection _renderers;
 
 		#endregion
 
@@ -44,6 +44,7 @@ namespace UnityFx.Outline
 		/// Gets or sets resources used by the effect implementation.
 		/// </summary>
 		/// <exception cref="ArgumentNullException">Thrown if setter argument is <see langword="null"/>.</exception>
+		/// <seealso cref="OutlineSettings"/>
 		public OutlineResources OutlineResources
 		{
 			get
@@ -52,150 +53,19 @@ namespace UnityFx.Outline
 			}
 			set
 			{
-				if (value == null)
+				if (value is null)
 				{
-					throw new ArgumentNullException("OutlineResources");
+					throw new ArgumentNullException(nameof(OutlineResources));
 				}
 
-				if (_outlineResources != value)
-				{
-					CreateSettingsIfNeeded();
-
-					_outlineResources = value;
-					_outlineSettings.OutlineResources = _outlineResources;
-				}
+				_outlineResources = value;
 			}
 		}
-
-		/// <summary>
-		/// Gets outline renderers. By default all child <see cref="Renderer"/> components are used for outlining.
-		/// </summary>
-		public ICollection<Renderer> OutlineRenderers
-		{
-			get
-			{
-				CreateRenderersIfNeeded();
-				return _renderers;
-			}
-		}
-
-		/// <summary>
-		/// Gets all cameras outline data is rendered to.
-		/// </summary>
-		public ICollection<Camera> Cameras
-		{
-			get
-			{
-				return _cameraMap.Keys;
-			}
-		}
-
-		#endregion
-
-		#region MonoBehaviour
-
-		private void Awake()
-		{
-			CreateRenderersIfNeeded();
-			CreateSettingsIfNeeded();
-
-			_outlineSettings.OutlineResources = _outlineResources;
-		}
-
-		private void OnDestroy()
-		{
-			if (_outlineSettings != null)
-			{
-				_outlineSettings.OutlineResources = null;
-			}
-		}
-
-		private void OnEnable()
-		{
-			CreateCommandBufferIfNeeded();
-			Camera.onPreRender += OnCameraPreRender;
-		}
-
-		private void OnDisable()
-		{
-			Camera.onPreRender -= OnCameraPreRender;
-
-			foreach (var kvp in _cameraMap)
-			{
-				if (kvp.Key)
-				{
-					kvp.Key.RemoveCommandBuffer(OutlineRenderer.RenderEvent, kvp.Value);
-				}
-			}
-
-			_cameraMap.Clear();
-
-			if (_commandBuffer != null)
-			{
-				_commandBuffer.Dispose();
-				_commandBuffer = null;
-			}
-		}
-
-		private void Update()
-		{
-			_cameraMapUpdateTimer += Time.deltaTime;
-
-			if (_cameraMapUpdateTimer > 16)
-			{
-				RemoveDestroyedCameras();
-				_cameraMapUpdateTimer = 0;
-			}
-
-			if (_outlineResources != null && _renderers != null)
-			{
-				if (_updateRenderers)
-				{
-					_renderers.Reset(false);
-				}
-
-				_commandBuffer.Clear();
-
-				using (var renderer = new OutlineRenderer(_commandBuffer, BuiltinRenderTextureType.CameraTarget))
-				{
-					renderer.Render(_renderers.GetList(), _outlineSettings.OutlineResources, _outlineSettings);
-				}
-			}
-		}
-
-#if UNITY_EDITOR
-
-		private void OnValidate()
-		{
-			CreateRenderersIfNeeded();
-			CreateCommandBufferIfNeeded();
-			CreateSettingsIfNeeded();
-
-			_outlineSettings.OutlineResources = _outlineResources;
-		}
-
-		private void Reset()
-		{
-			if (_outlineSettings != null)
-			{
-				_outlineSettings.OutlineResources = _outlineResources;
-			}
-
-			if (_renderers != null)
-			{
-				_renderers.Reset(true);
-			}
-		}
-
-#endif
-
-		#endregion
-
-		#region IOutlineSettingsEx
 
 		/// <summary>
 		/// Gets or sets outline settings. Set this to non-<see langword="null"/> value to share settings with other components.
 		/// </summary>
+		/// <seealso cref="OutlineResources"/>
 		public OutlineSettings OutlineSettings
 		{
 			get
@@ -217,6 +87,144 @@ namespace UnityFx.Outline
 				_outlineSettings.OutlineSettings = value;
 			}
 		}
+
+		/// <summary>
+		/// Gets or sets layer mask to use for ignored <see cref="Renderer"/> components in this game object.
+		/// </summary>
+		public int IgnoreLayerMask
+		{
+			get
+			{
+				return _layerMask;
+			}
+			set
+			{
+				if (_layerMask != value)
+				{
+					_layerMask = value;
+					_renderers?.Reset(false, value);
+				}
+			}
+		}
+
+		/// <summary>
+		/// Gets outline renderers. By default all child <see cref="Renderer"/> components are used for outlining.
+		/// </summary>
+		/// <seealso cref="UpdateRenderers"/>
+		public ICollection<Renderer> OutlineRenderers
+		{
+			get
+			{
+				CreateRenderersIfNeeded();
+				return _renderers;
+			}
+		}
+
+		/// <summary>
+		/// Gets all cameras outline data is rendered to.
+		/// </summary>
+		public ICollection<Camera> Cameras => _cameraMap.Keys;
+
+		/// <summary>
+		/// Updates renderer list.
+		/// </summary>
+		/// <seealso cref="OutlineRenderers"/>
+		public void UpdateRenderers()
+		{
+			_renderers?.Reset(false, _layerMask);
+		}
+
+		#endregion
+
+		#region MonoBehaviour
+
+		private void Awake()
+		{
+			CreateRenderersIfNeeded();
+			CreateSettingsIfNeeded();
+		}
+
+		private void OnEnable()
+		{
+			Camera.onPreRender += OnCameraPreRender;
+		}
+
+		private void OnDisable()
+		{
+			Camera.onPreRender -= OnCameraPreRender;
+
+			foreach (var kvp in _cameraMap)
+			{
+				if (kvp.Key)
+				{
+					kvp.Key.RemoveCommandBuffer(OutlineRenderer.RenderEvent, kvp.Value);
+				}
+
+				kvp.Value.Dispose();
+			}
+
+			_cameraMap.Clear();
+		}
+
+		private void Update()
+		{
+			if (_outlineResources != null && _renderers != null)
+			{
+				_camerasToRemove.Clear();
+
+				if (_updateRenderers)
+				{
+					_renderers.Reset(false, _layerMask);
+				}
+
+				foreach (var kvp in _cameraMap)
+				{
+					var camera = kvp.Key;
+					var cmdBuffer = kvp.Value;
+
+					if (camera)
+					{
+						cmdBuffer.Clear();
+
+						if (_renderers.Count > 0)
+						{
+							using (var renderer = new OutlineRenderer(cmdBuffer, _outlineResources, camera.actualRenderingPath))
+							{
+								renderer.Render(_renderers.GetList(), _outlineSettings, name);
+							}
+						}
+					}
+					else
+					{
+						cmdBuffer.Dispose();
+						_camerasToRemove.Add(camera);
+					}
+				}
+
+				foreach (var camera in _camerasToRemove)
+				{
+					_cameraMap.Remove(camera);
+				}
+			}
+		}
+
+#if UNITY_EDITOR
+
+		private void OnValidate()
+		{
+			CreateRenderersIfNeeded();
+			CreateSettingsIfNeeded();
+		}
+
+		private void Reset()
+		{
+			if (_renderers != null)
+			{
+				_renderers.Reset(false, _layerMask);
+			}
+		}
+
+#endif
 
 		#endregion
 
@@ -307,46 +315,12 @@ namespace UnityFx.Outline
 
 				if (!_cameraMap.ContainsKey(camera))
 				{
-					camera.AddCommandBuffer(OutlineRenderer.RenderEvent, _commandBuffer);
-					_cameraMap.Add(camera, _commandBuffer);
+					var cmdBuf = new CommandBuffer();
+					cmdBuf.name = string.Format("{0} - {1}", GetType().Name, name);
+					camera.AddCommandBuffer(OutlineRenderer.RenderEvent, cmdBuf);
+
+					_cameraMap.Add(camera, cmdBuf);
 				}
-			}
-		}
-
-		private void RemoveDestroyedCameras()
-		{
-			List<Camera> camerasToRemove = null;
-
-			foreach (var camera in _cameraMap.Keys)
-			{
-				if (camera == null)
-				{
-					if (camerasToRemove != null)
-					{
-						camerasToRemove.Add(camera);
-					}
-					else
-					{
-						camerasToRemove = new List<Camera>() { camera };
-					}
-				}
-			}
-
-			if (camerasToRemove != null)
-			{
-				foreach (var camera in camerasToRemove)
-				{
-					_cameraMap.Remove(camera);
-				}
-			}
-		}
-
-		private void CreateCommandBufferIfNeeded()
-		{
-			if (_commandBuffer == null)
-			{
-				_commandBuffer = new CommandBuffer();
-				_commandBuffer.name = string.Format("{0} - {1}", GetType().Name, name);
 			}
 		}
 
@@ -354,7 +328,7 @@ namespace UnityFx.Outline
 		{
 			if (_outlineSettings == null)
 			{
-				_outlineSettings = new OutlineSettingsInstance(_outlineResources);
+				_outlineSettings = new OutlineSettingsInstance();
 			}
 		}
 
@@ -363,7 +337,7 @@ namespace UnityFx.Outline
 			if (_renderers == null)
 			{
 				_renderers = new OutlineRendererCollection(gameObject);
-				_renderers.Reset(true);
+				_renderers.Reset(false, _layerMask);
 			}
 		}
 

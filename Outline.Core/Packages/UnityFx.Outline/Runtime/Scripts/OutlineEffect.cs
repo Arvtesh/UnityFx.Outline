@@ -21,14 +21,16 @@ namespace UnityFx.Outline
 	{
 		#region data
 
-		[SerializeField, Tooltip("Sets outline resources to use. Do not change the defaults unless you know what you're doing.")]
+		[SerializeField, Tooltip(OutlineResources.OutlineResourcesTooltip)]
 		private OutlineResources _outlineResources;
-		[SerializeField, Tooltip("Collection of outline layers to use. This can be used to share outline settings between multiple cameras.")]
+		[SerializeField, Tooltip(OutlineResources.OutlineLayerCollectionTooltip)]
 		private OutlineLayerCollection _outlineLayers;
 		[SerializeField, HideInInspector]
 		private CameraEvent _cameraEvent = OutlineRenderer.RenderEvent;
 
+		private Camera _camera;
 		private CommandBuffer _commandBuffer;
+		private List<OutlineRenderObject> _renderObjects = new List<OutlineRenderObject>(16);
 
 		#endregion
 
@@ -46,9 +48,9 @@ namespace UnityFx.Outline
 			}
 			set
 			{
-				if (ReferenceEquals(value, null))
+				if (value is null)
 				{
-					throw new ArgumentNullException("OutlineResources");
+					throw new ArgumentNullException(nameof(OutlineResources));
 				}
 
 				_outlineResources = value;
@@ -67,6 +69,11 @@ namespace UnityFx.Outline
 				return _outlineLayers;
 			}
 		}
+
+		/// <summary>
+		/// Gets outline layers (for internal use only).
+		/// </summary>
+		internal OutlineLayerCollection OutlineLayersInternal => _outlineLayers;
 
 		/// <summary>
 		/// Gets or sets <see cref="CameraEvent"/> used to render the outlines.
@@ -153,27 +160,25 @@ namespace UnityFx.Outline
 
 		private void OnEnable()
 		{
-			var camera = GetComponent<Camera>();
+			_camera = GetComponent<Camera>();
 
-			if (camera)
+			if (_camera)
 			{
 				_commandBuffer = new CommandBuffer
 				{
 					name = string.Format("{0} - {1}", GetType().Name, name)
 				};
 
-				camera.depthTextureMode |= DepthTextureMode.Depth;
-				camera.AddCommandBuffer(_cameraEvent, _commandBuffer);
+				_camera.depthTextureMode |= DepthTextureMode.Depth;
+				_camera.AddCommandBuffer(_cameraEvent, _commandBuffer);
 			}
 		}
 
 		private void OnDisable()
 		{
-			var camera = GetComponent<Camera>();
-
-			if (camera)
+			if (_camera)
 			{
-				camera.RemoveCommandBuffer(_cameraEvent, _commandBuffer);
+				_camera.RemoveCommandBuffer(_cameraEvent, _commandBuffer);
 			}
 
 			if (_commandBuffer != null)
@@ -185,7 +190,7 @@ namespace UnityFx.Outline
 
 		private void Update()
 		{
-			if (_outlineLayers)
+			if (_camera && _outlineLayers)
 			{
 				FillCommandBuffer();
 			}
@@ -219,16 +224,22 @@ namespace UnityFx.Outline
 
 			if (_outlineResources && _outlineResources.IsValid)
 			{
-				using (var renderer = new OutlineRenderer(_commandBuffer, BuiltinRenderTextureType.CameraTarget))
+				using (var renderer = new OutlineRenderer(_commandBuffer, _outlineResources, _camera.actualRenderingPath))
 				{
-					_outlineLayers.Render(renderer, _outlineResources);
+					_renderObjects.Clear();
+					_outlineLayers.GetRenderObjects(_renderObjects);
+
+					foreach (var renderObject in _renderObjects)
+					{
+						renderer.Render(renderObject);
+					}
 				}
 			}
 		}
 
 		private void CreateLayersIfNeeded()
 		{
-			if (ReferenceEquals(_outlineLayers, null))
+			if (_outlineLayers is null)
 			{
 				_outlineLayers = ScriptableObject.CreateInstance<OutlineLayerCollection>();
 				_outlineLayers.name = "OutlineLayers";

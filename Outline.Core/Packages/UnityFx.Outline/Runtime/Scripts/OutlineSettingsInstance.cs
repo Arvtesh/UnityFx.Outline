@@ -7,7 +7,7 @@ using UnityEngine;
 namespace UnityFx.Outline
 {
 	[Serializable]
-	internal class OutlineSettingsInstance : IOutlineSettingsEx
+	internal class OutlineSettingsInstance : IOutlineSettings
 	{
 		#region data
 
@@ -27,51 +27,17 @@ namespace UnityFx.Outline
 
 #pragma warning restore 0649
 
-		private OutlineResources _resources;
-
 		#endregion
 
 		#region interface
-
-		public OutlineResources OutlineResources
-		{
-			get
-			{
-				return _resources;
-			}
-			set
-			{
-				_resources = value;
-			}
-		}
 
 		public bool RequiresCameraDepth
 		{
 			get
 			{
-				var renderMode = _outlineMode;
-
-				if (!ReferenceEquals(_outlineSettings, null))
-				{
-					renderMode = _outlineSettings.OutlineRenderMode;
-				}
-
-				return (renderMode & OutlineRenderFlags.EnableDepthTesting) != 0;
+				return (OutlineRenderMode & OutlineRenderFlags.EnableDepthTesting) != 0;
 			}
 		}
-
-		internal OutlineSettingsInstance()
-		{
-		}
-
-		internal OutlineSettingsInstance(OutlineResources resources)
-		{
-			_resources = resources;
-		}
-
-		#endregion
-
-		#region IOutlineSettingsEx
 
 		public OutlineSettings OutlineSettings
 		{
@@ -94,12 +60,7 @@ namespace UnityFx.Outline
 		{
 			get
 			{
-				if (!ReferenceEquals(_outlineSettings, null))
-				{
-					return _outlineSettings.OutlineColor;
-				}
-
-				return _outlineColor;
+				return _outlineSettings is null ? _outlineColor : _outlineSettings.OutlineColor;
 			}
 			set
 			{
@@ -112,16 +73,11 @@ namespace UnityFx.Outline
 		{
 			get
 			{
-				if (!ReferenceEquals(_outlineSettings, null))
-				{
-					return _outlineSettings.OutlineWidth;
-				}
-
-				return _outlineWidth;
+				return _outlineSettings is null ? _outlineWidth : _outlineSettings.OutlineWidth;
 			}
 			set
 			{
-				_outlineWidth = Mathf.Clamp(value, OutlineRenderer.MinWidth, OutlineRenderer.MaxWidth);
+				_outlineWidth = Mathf.Clamp(value, OutlineResources.MinWidth, OutlineResources.MaxWidth);
 			}
 		}
 
@@ -130,16 +86,11 @@ namespace UnityFx.Outline
 		{
 			get
 			{
-				if (!ReferenceEquals(_outlineSettings, null))
-				{
-					return _outlineSettings.OutlineIntensity;
-				}
-
-				return _outlineIntensity;
+				return _outlineSettings is null ? _outlineIntensity : _outlineSettings.OutlineIntensity;
 			}
 			set
 			{
-				_outlineIntensity = Mathf.Clamp(value, OutlineRenderer.MinIntensity, OutlineRenderer.MaxIntensity);
+				_outlineIntensity = Mathf.Clamp(value, OutlineResources.MinIntensity, OutlineResources.MaxIntensity);
 			}
 		}
 
@@ -148,12 +99,7 @@ namespace UnityFx.Outline
 		{
 			get
 			{
-				if (!ReferenceEquals(_outlineSettings, null))
-				{
-					return _outlineSettings.OutlineRenderMode;
-				}
-
-				return _outlineMode;
+				return _outlineSettings is null ? _outlineMode : _outlineSettings.OutlineRenderMode;
 			}
 			set
 			{

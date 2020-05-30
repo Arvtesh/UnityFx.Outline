@@ -3,8 +3,19 @@
 
 // Renders everything with while color.
 // Modified version of 'Custom/DrawSimple' shader taken from https://willweissman.wordpress.com/tutorials/shaders/unity-shaderlab-object-outlines/.
-Shader "UnityFx/Outline/RenderColor"
+Shader "Hidden/UnityFx/OutlineColor"
 {
+	HLSLINCLUDE
+
+		#include "UnityCG.cginc"
+
+		half4 frag() : SV_Target
+		{
+			return 1;
+		}
+
+	ENDHLSL
+
 	SubShader
 	{
 		Cull Off
@@ -16,26 +27,8 @@ Shader "UnityFx/Outline/RenderColor"
 		{
 			HLSLPROGRAM
 
-			#pragma vertex Vert
-			#pragma fragment Frag
-			#include "UnityCG.cginc"
-
-			struct v2f
-			{
-				float4 pos: POSITION;
-			};
-
-			v2f Vert(v2f i)
-			{
-				v2f o;
-				o.pos = UnityObjectToClipPos(i.pos);
-				return o;
-			}
-
-			half4 Frag(): COLOR0
-			{
-				return half4(1, 1, 1, 1);
-			}
+			#pragma vertex vert_img
+			#pragma fragment frag
 
 			ENDHLSL
 		}

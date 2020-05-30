@@ -15,62 +15,113 @@ namespace UnityFx.Outline
 	/// <seealso cref="OutlineEffect"/>
 	/// <seealso cref="OutlineSettings"/>
 	[CreateAssetMenu(fileName = "OutlineLayerCollection", menuName = "UnityFx/Outline/Outline Layer Collection")]
-	public sealed class OutlineLayerCollection : ScriptableObject, IList<OutlineLayer>
+	public sealed class OutlineLayerCollection : ScriptableObject, IList<OutlineLayer>, IReadOnlyList<OutlineLayer>
 	{
 		#region data
 
-		private class OutlineLayerComparer : IComparer<OutlineLayer>
-		{
-			public int Compare(OutlineLayer x, OutlineLayer y)
-			{
-				return x.Priority - y.Priority;
-			}
-		}
-
 		[SerializeField, HideInInspector]
 		private List<OutlineLayer> _layers = new List<OutlineLayer>();
-
-		private List<OutlineLayer> _sortedLayers = new List<OutlineLayer>();
-		private OutlineLayerComparer _sortComparer = new OutlineLayerComparer();
-		private bool _orderChanged = true;
+		[SerializeField, HideInInspector]
+		private int _layerMask;
 
 		#endregion
 
 		#region interface
 
 		/// <summary>
-		/// Gets layers ordered by <see cref="OutlineLayer.Priority"/>.
+		/// Gets or sets layer mask to use for ignored <see cref="Renderer"/> components in layer game objects.
 		/// </summary>
-		public OutlineLayer[] SortedLayers
+		public int IgnoreLayerMask
 		{
 			get
 			{
-				UpdateSortedLayersIfNeeded();
-				return _sortedLayers.ToArray();
+				return _layerMask;
+			}
+			set
+			{
+				if (_layerMask != value)
+				{
+					_layerMask = value;
+
+					foreach (var layer in _layers)
+					{
+						layer.UpdateRenderers(value);
+					}
+				}
 			}
 		}
 
 		/// <summary>
-		/// Renders all layers.
+		/// Gets number of game objects in the layers.
 		/// </summary>
-		public void Render(OutlineRenderer renderer, OutlineResources resources)
+		public int NumberOfObjects
 		{
-			UpdateSortedLayersIfNeeded();
-
-			foreach (var layer in _sortedLayers)
+			get
 			{
-				layer.Render(renderer, resources);
+				var result = 0;
+
+				foreach (var layer in _layers)
+				{
+					result += layer.Count;
+				}
+
+				return result;
+			}
+		}
+
+		/// <summary>
+		/// Gets a layer with the specified index. If layer at the <paramref name="index"/> does not exist, creates one.
+		/// </summary>
+		public OutlineLayer GetOrAddLayer(int index)
+		{
+			if (index < 0)
+			{
+				throw new ArgumentOutOfRangeException(nameof(index));
+			}
+
+			while (index >= _layers.Count)
+			{
+				_layers.Add(new OutlineLayer(this));
+			}
+
+			return _layers[index];
+		}
+
+		/// <summary>
+		/// Adds a new layer.
+		/// </summary>
+		public OutlineLayer AddLayer()
+		{
+			var layer = new OutlineLayer(this);
+			_layers.Add(layer);
+			return layer;
+		}
+
+		/// <summary>
+		/// Gets the objects for rendering.
+		/// </summary>
+		public void GetRenderObjects(IList<OutlineRenderObject> renderObjects)
+		{
+			foreach (var layer in _layers)
+			{
+				layer.GetRenderObjects(renderObjects);
+			}
+		}
+
+		/// <summary>
+		/// Removes all game objects registered in layers.
+		/// </summary>
+		public void ClearLayerContent()
+		{
+			foreach (var layer in _layers)
+			{
+				layer.Clear();
 			}
 		}
 
 		#endregion
 
 		#region internals
-
-		internal void SetOrderChanged()
-		{
-			_orderChanged = true;
-		}
 
 		internal void Reset()
 		{
@@ -88,10 +139,9 @@ namespace UnityFx.Outline
 		{
 			foreach (var layer in _layers)
 			{
+				layer.Clear();
 				layer.SetCollection(this);
 			}
-
-			_orderChanged = true;
 		}
 
 		#endregion
@@ -107,14 +157,14 @@ namespace UnityFx.Outline
 			}
 			set
 			{
-				if (value == null)
+				if (value is null)
 				{
 					throw new ArgumentNullException("layer");
 				}
 
 				if (layerIndex < 0 || layerIndex >= _layers.Count)
 				{
-					throw new ArgumentOutOfRangeException("layerIndex");
+					throw new ArgumentOutOfRangeException(nameof(layerIndex));
 				}
 
 				if (_layers[layerIndex] != value)
@@ -123,8 +173,6 @@ namespace UnityFx.Outline
 
 					_layers[layerIndex].SetCollection(null);
 					_layers[layerIndex] = value;
-
-					_orderChanged = true;
 				}
 			}
 		}
@@ -143,18 +191,15 @@ namespace UnityFx.Outline
 		/// <inheritdoc/>
 		public void Insert(int index, OutlineLayer layer)
 		{
-			if (layer == null)
+			if (layer is null)
 			{
-				throw new ArgumentNullException("layer");
+				throw new ArgumentNullException(nameof(layer));
 			}
 
 			if (layer.ParentCollection != this)
 			{
 				layer.SetCollection(this);
-
 				_layers.Insert(index, layer);
-
-				_orderChanged = true;
 			}
 		}
 
@@ -165,8 +210,6 @@ namespace UnityFx.Outline
 			{
 				_layers[index].SetCollection(null);
 				_layers.RemoveAt(index);
-
-				_orderChanged = true;
 			}
 		}
 
@@ -175,37 +218,23 @@ namespace UnityFx.Outline
 		#region ICollection
 
 		/// <inheritdoc/>
-		public int Count
-		{
-			get
-			{
-				return _layers.Count;
-			}
-		}
+		public int Count => _layers.Count;
 
 		/// <inheritdoc/>
-		public bool IsReadOnly
-		{
-			get
-			{
-				return false;
-			}
-		}
+		public bool IsReadOnly => false;
 
 		/// <inheritdoc/>
 		public void Add(OutlineLayer layer)
 		{
-			if (layer == null)
+			if (layer is null)
 			{
-				throw new ArgumentNullException("layer");
+				throw new ArgumentNullException(nameof(layer));
 			}
 
 			if (layer.ParentCollection != this)
 			{
 				layer.SetCollection(this);
-
 				_layers.Add(layer);
-				_orderChanged = true;
 			}
 		}
 
@@ -215,9 +244,6 @@ namespace UnityFx.Outline
 			if (_layers.Remove(layer))
 			{
 				layer.SetCollection(null);
-
-				_sortedLayers.Remove(layer);
-
 				return true;
 			}
 
@@ -235,14 +261,13 @@ namespace UnityFx.Outline
 				}
 
 				_layers.Clear();
-				_sortedLayers.Clear();
 			}
 		}
 
 		/// <inheritdoc/>
 		public bool Contains(OutlineLayer layer)
 		{
-			if (layer == null)
+			if (layer is null)
 			{
 				return false;
 			}
@@ -274,18 +299,6 @@ namespace UnityFx.Outline
 		#endregion
 
 		#region implementation
-
-		private void UpdateSortedLayersIfNeeded()
-		{
-			if (_orderChanged)
-			{
-				_sortedLayers.Clear();
-				_sortedLayers.AddRange(_layers);
-				_sortedLayers.Sort(_sortComparer);
-				_orderChanged = false;
-			}
-		}
-
 		#endregion
 	}
 }

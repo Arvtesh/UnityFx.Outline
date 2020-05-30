@@ -4,5 +4,8 @@
 EditorBuildSettings:
   m_ObjectHideFlags: 0
   serializedVersion: 2
-  m_Scenes: []
+  m_Scenes:
+  - enabled: 1
+    path: Assets/Examples/SimplePerCamera/Outline.unity
+    guid: e1f1f5e7ceb61b746b9f2016f0e53a93
   m_configObjects: {}

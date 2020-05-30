@@ -3,6 +3,32 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/); this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [0.8.0] - 2020.05.30
+
+[URP](https://docs.unity3d.com/Packages/com.unity.render-pipelines.universal@8.1/manual/index.html) support, core refactoring and bugfixes.
+
+### Added
+- Added [URP](https://docs.unity3d.com/Packages/com.unity.render-pipelines.universal@8.1/manual/index.html) support ([#5](https://github.com/Arvtesh/UnityFx.Outline/issues/5)).
+- Use procedural geometry ([DrawProcedural](https://docs.unity3d.com/ScriptReference/Rendering.CommandBuffer.DrawProcedural.html)) on SM3.5+.
+- Added support for both forward and deferred renderers (built-in RP).
+- Added ignore layer mask settings to `OutlineLayerCollection` (previously the ignore layers were specified when adding game objects to layers).
+- Added `OutlineBuilder` helper script for managinf `OutlineLayerCollection` content from editor ([#8](https://github.com/Arvtesh/UnityFx.Outline/issues/8)).
+
+### Changed
+- Changed `OutlineSettings` to display enum mask instead of checkboxes.
+- Changed inspector look and feel for `OutlineLayerCollection` assets.
+- Merged shaders for the 2 outline passes into one multi-pass shader.
+- `OutlineLayerCollection` doe not depend on `OutlineRenderer` now.
+
+### Fixed
+- Fixed outline rendering on mobiles ([#7](https://github.com/Arvtesh/UnityFx.Outline/issues/7)).
+- Fixed outline shader error on low-end devices.
+- Fixed post-ptocessing implementation to require depth texture.
+
+### Removed
+- Dropped .NET 3.5 support, minimal Unity version is set to 2018.4.
+- Removed `IOutlineSettingsEx` interface.
+
 ## [0.7.2] - 2020.04.08
 
 Depth testing support and performance optimizations.

@@ -17,36 +17,118 @@ namespace UnityFx.Outline
 		#region data
 
 		private Material _renderMaterial;
-		private Material _hPassMaterial;
-		private Material _vPassMaterial;
-		private MaterialPropertyBlock _hPassProperties;
-		private MaterialPropertyBlock _vPassProperties;
+		private Material _outlineMaterial;
+		private MaterialPropertyBlock _props;
 		private Mesh _fullscreenTriangleMesh;
 		private float[][] _gaussSamples;
+		private bool _useDrawMesh;
 
 		#endregion
 
 		#region interface
 
 		/// <summary>
+		/// Minimum value of outline width parameter.
+		/// </summary>
+		/// <seealso cref="MaxWidth"/>
+		public const int MinWidth = 1;
+
+		/// <summary>
+		/// Maximum value of outline width parameter.
+		/// </summary>
+		/// <seealso cref="MinWidth"/>
+		public const int MaxWidth = 32;
+
+		/// <summary>
+		/// Minimum value of outline intensity parameter.
+		/// </summary>
+		/// <seealso cref="MaxIntensity"/>
+		/// <seealso cref="SolidIntensity"/>
+		public const int MinIntensity = 1;
+
+		/// <summary>
+		/// Maximum value of outline intensity parameter.
+		/// </summary>
+		/// <seealso cref="MinIntensity"/>
+		/// <seealso cref="SolidIntensity"/>
+		public const int MaxIntensity = 64;
+
+		/// <summary>
+		/// Value of outline intensity parameter that is treated as solid fill.
+		/// </summary>
+		/// <seealso cref="MinIntensity"/>
+		/// <seealso cref="MaxIntensity"/>
+		public const int SolidIntensity = 100;
+
+		/// <summary>
+		/// Name of _MainTex shader parameter.
+		/// </summary>
+		public const string MainTexName = "_MainTex";
+
+		/// <summary>
+		/// Name of _Color shader parameter.
+		/// </summary>
+		public const string ColorName = "_Color";
+
+		/// <summary>
+		/// Name of _Width shader parameter.
+		/// </summary>
+		public const string WidthName = "_Width";
+
+		/// <summary>
+		/// Name of _Intensity shader parameter.
+		/// </summary>
+		public const string IntensityName = "_Intensity";
+
+		/// <summary>
+		/// Name of _GaussSamples shader parameter.
+		/// </summary>
+		public const string GaussSamplesName = "_GaussSamples";
+
+		/// <summary>
+		/// Name of the _USE_DRAWMESH shader feature.
+		/// </summary>
+		public const string UseDrawMeshFeatureName = "_USE_DRAWMESH";
+
+		/// <summary>
+		/// Name of the outline effect.
+		/// </summary>
+		public const string EffectName = "Outline";
+
+		/// <summary>
+		/// Tooltip text for <see cref="OutlineResources"/> field.
+		/// </summary>
+		public const string OutlineResourcesTooltip = "Outline resources to use (shaders, materials etc). Do not change defaults unless you know what you're doing.";
+
+		/// <summary>
+		/// Tooltip text for <see cref="OutlineLayerCollection"/> field.
+		/// </summary>
+		public const string OutlineLayerCollectionTooltip = "Collection of outline layers to use. This can be used to share outline settings between multiple cameras.";
+
+		/// <summary>
+		/// Hashed name of _MainTex shader parameter.
+		/// </summary>
+		public readonly int MainTexId = Shader.PropertyToID(MainTexName);
+
+		/// <summary>
 		/// Hashed name of _Color shader parameter.
 		/// </summary>
-		public readonly int ColorId = Shader.PropertyToID("_Color");
+		public readonly int ColorId = Shader.PropertyToID(ColorName);
 
 		/// <summary>
 		/// Hashed name of _Width shader parameter.
 		/// </summary>
-		public readonly int WidthId = Shader.PropertyToID("_Width");
+		public readonly int WidthId = Shader.PropertyToID(WidthName);
 
 		/// <summary>
 		/// Hashed name of _Intensity shader parameter.
 		/// </summary>
-		public readonly int IntensityId = Shader.PropertyToID("_Intensity");
+		public readonly int IntensityId = Shader.PropertyToID(IntensityName);
 
 		/// <summary>
 		/// Hashed name of _GaussSamples shader parameter.
 		/// </summary>
-		public readonly int GaussSamplesId = Shader.PropertyToID("_GaussSamples");
+		public readonly int GaussSamplesId = Shader.PropertyToID(GaussSamplesName);
 
 		/// <summary>
 		/// Temp materials list. Used by <see cref="OutlineRenderer"/> to avoid GC allocations.
@@ -59,14 +141,9 @@ namespace UnityFx.Outline
 		public Shader RenderShader;
 
 		/// <summary>
-		/// Gets or sets a <see cref="Shader"/> that renders outline around the mask, that was generated with <see cref="RenderShader"/> (pass 1).
+		/// Gets or sets a <see cref="Shader"/> that renders outline around the mask, that was generated with <see cref="RenderShader"/>.
 		/// </summary>
-		public Shader HPassShader;
-
-		/// <summary>
-		/// Gets or sets a <see cref="Shader"/> that renders outline around the mask, that was generated with <see cref="RenderShader"/> and <see cref="HPassShader"/> (pass 2).
-		/// </summary>
-		public Shader VPassBlendShader;
+		public Shader OutlineShader;
 
 		/// <summary>
 		/// Gets a <see cref="RenderShader"/>-based material.
@@ -79,7 +156,7 @@ namespace UnityFx.Outline
 				{
 					_renderMaterial = new Material(RenderShader)
 					{
-						name = "Outline - SimpleRender",
+						name = "Outline - RenderColor",
 						hideFlags = HideFlags.HideAndDontSave
 					};
 				}
@@ -89,80 +166,55 @@ namespace UnityFx.Outline
 		}
 
 		/// <summary>
-		/// Gets a <see cref="HPassShader"/>-based material.
+		/// Gets a <see cref="OutlineShader"/>-based material.
 		/// </summary>
-		public Material HPassMaterial
+		public Material OutlineMaterial
 		{
 			get
 			{
-				if (_hPassMaterial == null)
+				if (_outlineMaterial == null)
 				{
-					_hPassMaterial = new Material(HPassShader)
+					_outlineMaterial = new Material(OutlineShader)
 					{
-						name = "Outline - HPassRender",
+						name = "Outline - Main",
 						hideFlags = HideFlags.HideAndDontSave
 					};
-				}
 
-				return _hPassMaterial;
-			}
-		}
-
-		/// <summary>
-		/// Gets a <see cref="VPassBlendShader"/>-based material.
-		/// </summary>
-		public Material VPassBlendMaterial
-		{
-			get
-			{
-				if (_vPassMaterial == null)
-				{
-					_vPassMaterial = new Material(VPassBlendShader)
+					if (_useDrawMesh)
 					{
-						name = "Outline - VPassBlendRender",
-						hideFlags = HideFlags.HideAndDontSave
-					};
+						_outlineMaterial.EnableKeyword(UseDrawMeshFeatureName);
+					}
 				}
 
-				return _vPassMaterial;
-			}
-		}
-
-		/// <summary>
-		/// Gets a <see cref="MaterialPropertyBlock"/> for <see cref="HPassMaterial"/>.
-		/// </summary>
-		public MaterialPropertyBlock HPassProperties
-		{
-			get
-			{
-				if (_hPassProperties == null)
-				{
-					_hPassProperties = new MaterialPropertyBlock();
-				}
-
-				return _hPassProperties;
+				return _outlineMaterial;
 			}
 		}
 
 		/// <summary>
 		/// Gets a <see cref="MaterialPropertyBlock"/> for <see cref="VPassBlendMaterial"/>.
 		/// </summary>
-		public MaterialPropertyBlock VPassBlendProperties
+		public MaterialPropertyBlock Properties
 		{
 			get
 			{
-				if (_vPassProperties == null)
+				if (_props is null)
 				{
-					_vPassProperties = new MaterialPropertyBlock();
+					_props = new MaterialPropertyBlock();
 				}
 
-				return _vPassProperties;
+				return _props;
 			}
 		}
 
 		/// <summary>
-		/// Gets or sets a fullscreen triangle mesh.
+		/// Gets or sets a fullscreen triangle mesh. The mesh is lazy-initialized on the first access.
 		/// </summary>
+		/// <remarks>
+		/// This is used by <see cref="OutlineRenderer"/> to avoid Blit() calls and use DrawMesh() passing
+		/// this mesh as the first argument. When running on a device with Shader Model 3.5 support this
+		/// should not be used at all, as the vertices are generated in vertex shader with DrawProcedural() call.
+		/// </remarks>
+		/// <seealso cref="OutlineRenderer"/>
 		public Mesh FullscreenTriangleMesh
 		{
 			get
@@ -173,8 +225,8 @@ namespace UnityFx.Outline
 					{
 						name = "Outline - FullscreenTriangle",
 						hideFlags = HideFlags.HideAndDontSave,
-						vertices = new Vector3[] { new Vector3(-1f, -1f, 0f), new Vector3(-1f,  3f, 0f), new Vector3( 3f, -1f, 0f) },
-						triangles = new int[] {0, 1, 2 }
+						vertices = new Vector3[] { new Vector3(-1, -1, 0), new Vector3(3, -1, 0), new Vector3(-1, 3, 0) },
+						triangles = new int[] { 0, 1, 2 }
 					};
 
 					_fullscreenTriangleMesh.UploadMeshData(true);
@@ -189,14 +241,63 @@ namespace UnityFx.Outline
 		}
 
 		/// <summary>
-		/// Gets a value indicating whether the instance is in valid state.
+		/// Gets or sets a value indicating whether <see cref="FullscreenTriangleMesh"/> is used for image effects rendering even when procedural rendering is available.
 		/// </summary>
-		public bool IsValid
+		public bool UseFullscreenTriangleMesh
 		{
 			get
 			{
-				return RenderShader && HPassShader && VPassBlendShader;
+				return _useDrawMesh;
 			}
+			set
+			{
+				if (_useDrawMesh != value)
+				{
+					_useDrawMesh = value;
+
+					if (_outlineMaterial)
+					{
+						if (_useDrawMesh)
+						{
+							_outlineMaterial.EnableKeyword(UseDrawMeshFeatureName);
+						}
+						else
+						{
+							_outlineMaterial.DisableKeyword(UseDrawMeshFeatureName);
+						}
+					}
+				}
+			}
+		}
+
+		/// <summary>
+		/// Gets a value indicating whether the instance is in valid state.
+		/// </summary>
+		public bool IsValid => RenderShader && OutlineShader;
+
+		/// <summary>
+		/// Returns a <see cref="MaterialPropertyBlock"/> instance initialized with values from <paramref name="settings"/>.
+		/// </summary>
+		public MaterialPropertyBlock GetProperties(IOutlineSettings settings)
+		{
+			if (_props is null)
+			{
+				_props = new MaterialPropertyBlock();
+			}
+
+			_props.SetFloat(WidthId, settings.OutlineWidth);
+			_props.SetColor(ColorId, settings.OutlineColor);
+
+			if ((settings.OutlineRenderMode & OutlineRenderFlags.Blurred) != 0)
+			{
+				_props.SetFloat(IntensityId, settings.OutlineIntensity);
+			}
+			else
+			{
+				_props.SetFloat(IntensityId, SolidIntensity);
+			}
+
+			return _props;
 		}
 
 		/// <summary>
@@ -204,16 +305,16 @@ namespace UnityFx.Outline
 		/// </summary>
 		public float[] GetGaussSamples(int width)
 		{
-			var index = Mathf.Clamp(width, 1, OutlineRenderer.MaxWidth) - 1;
+			var index = Mathf.Clamp(width, 1, MaxWidth) - 1;
 
-			if (_gaussSamples == null)
+			if (_gaussSamples is null)
 			{
-				_gaussSamples = new float[OutlineRenderer.MaxWidth][];
+				_gaussSamples = new float[MaxWidth][];
 			}
 
-			if (_gaussSamples[index] == null)
+			if (_gaussSamples[index] is null)
 			{
-				_gaussSamples[index] = OutlineRenderer.GetGaussSamples(width, null);
+				_gaussSamples[index] = GetGaussSamples(width, null);
 			}
 
 			return _gaussSamples[index];
@@ -224,9 +325,45 @@ namespace UnityFx.Outline
 		/// </summary>
 		public void ResetToDefaults()
 		{
-			RenderShader = Shader.Find("UnityFx/Outline/RenderColor");
-			HPassShader = Shader.Find("UnityFx/Outline/HPass");
-			VPassBlendShader = Shader.Find("UnityFx/Outline/VPassBlend");
+			RenderShader = Shader.Find("Hidden/UnityFx/OutlineColor");
+			OutlineShader = Shader.Find("Hidden/UnityFx/Outline");
+		}
+
+		/// <summary>
+		/// Calculates value of Gauss function for the specified <paramref name="x"/> and <paramref name="stdDev"/> values.
+		/// </summary>
+		/// <seealso href="https://en.wikipedia.org/wiki/Gaussian_blur"/>
+		/// <seealso href="https://en.wikipedia.org/wiki/Normal_distribution"/>
+		public static float Gauss(float x, float stdDev)
+		{
+			var stdDev2 = stdDev * stdDev * 2;
+			var a = 1 / Mathf.Sqrt(Mathf.PI * stdDev2);
+			var gauss = a * Mathf.Pow((float)Math.E, -x * x / stdDev2);
+
+			return gauss;
+		}
+
+		/// <summary>
+		/// Samples Gauss function for the specified <paramref name="width"/>.
+		/// </summary>
+		/// <seealso href="https://en.wikipedia.org/wiki/Normal_distribution"/>
+		public static float[] GetGaussSamples(int width, float[] samples)
+		{
+			// NOTE: According to '3 sigma' rule there is no reason to have StdDev less then width / 3.
+			// In practice blur looks best when StdDev is within range [width / 3,  width / 2].
+			var stdDev = width * 0.5f;
+
+			if (samples is null)
+			{
+				samples = new float[MaxWidth];
+			}
+
+			for (var i = 0; i < width; i++)
+			{
+				samples[i] = Gauss(i, stdDev);
+			}
+
+			return samples;
 		}
 
 		#endregion

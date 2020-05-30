@@ -25,7 +25,7 @@ namespace UnityFx.Outline
 			_go = go;
 		}
 
-		internal List<Renderer> GetList()
+		internal IReadOnlyList<Renderer> GetList()
 		{
 			return _renderers;
 		}
@@ -39,27 +39,21 @@ namespace UnityFx.Outline
 		{
 			_renderers.Clear();
 
-			var renderers = _go.GetComponentsInChildren<Renderer>(includeInactive);
-
-			if (renderers != null)
+			if (ignoreLayerMask != 0)
 			{
-				if (ignoreLayerMask != 0)
+				var renderers = _go.GetComponentsInChildren<Renderer>(includeInactive);
+
+				foreach (var renderer in renderers)
 				{
-					foreach (var renderer in renderers)
-					{
-						if (((1 << renderer.gameObject.layer) & ignoreLayerMask) == 0)
-						{
-							_renderers.Add(renderer);
-						}
-					}
-				}
-				else
-				{
-					foreach (var renderer in renderers)
+					if (((1 << renderer.gameObject.layer) & ignoreLayerMask) == 0)
 					{
 						_renderers.Add(renderer);
 					}
 				}
+			}
+			else
+			{
+				_go.GetComponentsInChildren(includeInactive, _renderers);
 			}
 		}
 
@@ -67,21 +61,9 @@ namespace UnityFx.Outline
 
 		#region ICollection
 
-		public int Count
-		{
-			get
-			{
-				return _renderers.Count;
-			}
-		}
+		public int Count => _renderers.Count;
 
-		public bool IsReadOnly
-		{
-			get
-			{
-				return false;
-			}
-		}
+		public bool IsReadOnly => false;
 
 		public void Add(Renderer renderer)
 		{
@@ -130,14 +112,14 @@ namespace UnityFx.Outline
 
 		private void Validate(Renderer renderer)
 		{
-			if (renderer == null)
+			if (renderer is null)
 			{
-				throw new ArgumentNullException("renderer");
+				throw new ArgumentNullException(nameof(renderer));
 			}
 
 			if (!renderer.transform.IsChildOf(_go.transform))
 			{
-				throw new ArgumentException(string.Format("Only children of the {0} are allowed.", _go.name), "renderer");
+				throw new ArgumentException(string.Format("Only children of the {0} are allowed.", _go.name), nameof(renderer));
 			}
 		}
 

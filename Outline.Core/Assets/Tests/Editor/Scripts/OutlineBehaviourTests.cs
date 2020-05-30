@@ -11,7 +11,7 @@ using NUnit.Framework;
 namespace UnityFx.Outline
 {
 	[Category("OutlineBehaviour"), TestOf(typeof(OutlineBehaviour))]
-	public class OutlineBehaviourTests : IOutlineSettingsExTests, IDisposable
+	public class OutlineBehaviourTests : IOutlineSettingsTests, IDisposable
 	{
 		private GameObject _go;
 		private OutlineBehaviour _outlineEffect;

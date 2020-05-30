@@ -14,7 +14,7 @@ namespace UnityFx.Outline
 		/// <summary>
 		/// Outline frame is a solid line.
 		/// </summary>
-		Solid = 0,
+		None = 0,
 
 		/// <summary>
 		/// Outline frame is blurred.
@@ -24,6 +24,6 @@ namespace UnityFx.Outline
 		/// <summary>
 		/// Enabled depth testing when rendering object outlines. Only visible parts of objects are outlined.
 		/// </summary>
-		EnableDepthTesting = 0x100
+		EnableDepthTesting = 2
 	}
 }

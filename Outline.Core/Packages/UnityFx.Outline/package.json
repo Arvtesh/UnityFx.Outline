@@ -1,9 +1,9 @@
 {
     "name": "com.unityfx.outline",
-    "version": "0.7.2",
-    "displayName": "Screen-space outline",
-    "description": "Configurable per-object and per-camera outline effect implementation for built-in render pipeline. Both solid and blurred outline modes are supported (Gauss blur). Scriptable render pipeline is not supported.",
-    "unity": "2017.2",
+    "version": "0.8.0",
+    "displayName": "Outline toolkit",
+    "description": "This package contains configurable per-object and per-camera outline effect implementation for built-in render pipeline. Both solid and blurred outline modes are supported (Gauss blur), as well as depth testing. Reusable and extensible API.",
+    "unity": "2018.4",
     "keywords": [
         "UnityFx",
         "UnityFx.Outline",

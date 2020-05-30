@@ -1,0 +1,32 @@
+{
+  "name": "com.unityfx.outline.urp",
+  "version": "0.1.0",
+  "displayName": "Outline toolkit (URP)",
+  "description": "This package contains configurable outline implementation for Universal Render Pipeline.",
+  "unity": "2019.3",
+  "dependencies": {
+    "com.unityfx.outline": "0.8.0",
+    "com.unity.render-pipelines.universal": "7.0.0"
+  },
+  "keywords": [
+    "UnityFx",
+    "UnityFx.Outline",
+    "UnityFx.Outline.URP",
+    "Outline",
+    "URP"
+  ],
+  "category": "UnityFx",
+  "author": {
+    "name": "Arvtesh",
+    "email": "arvtesh@gmail.com"
+  },
+  "license": "MIT",
+  "homepage": "https://github.com/Arvtesh/UnityFx.Outline",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Arvtesh/UnityFx.Outline.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Arvtesh/UnityFx.Outline/issues"
+  }
+}

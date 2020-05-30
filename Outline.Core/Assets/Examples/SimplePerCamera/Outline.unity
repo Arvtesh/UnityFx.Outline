@@ -191,8 +191,9 @@ GameObject:
   m_Component:
   - component: {fileID: 692811816}
   - component: {fileID: 692811815}
+  - component: {fileID: 692811813}
   - component: {fileID: 692811818}
-  - component: {fileID: 692811817}
+  - component: {fileID: 692811814}
   m_Layer: 0
   m_Name: Main Camera
   m_TagString: MainCamera
@@ -200,6 +201,36 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
+--- !u!114 &692811813
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 692811812}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c9e1f138162751048bdb3432e85d7a73, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &692811814
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 692811812}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e746e776b0ae00d4a9d458b9430b95d7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _outlineLayers: {fileID: 11400000, guid: 3a6c3b3c5f6e3ad4ab8e09fc219865bd, type: 2}
+  _content:
+  - Go: {fileID: 1579373802}
+    LayerIndex: 0
+  - Go: {fileID: 748173439}
+    LayerIndex: 1
 --- !u!20 &692811815
 Camera:
   m_ObjectHideFlags: 0
@@ -259,21 +290,6 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &692811817
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 692811812}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5a318c96b1bc1614683eccf7abd717a1, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  _outlineGos:
-  - {fileID: 1579373802}
-  - {fileID: 748173439}
 --- !u!114 &692811818
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -524,7 +540,8 @@ MonoBehaviour:
     _outlineWidth: 15
     _outlineIntensity: 2
     _outlineMode: 1
-    _depthTestEnabled: 0
+  _layerMask: 0
+  _updateRenderers: 0
 --- !u!23 &1789341923
 MeshRenderer:
   m_ObjectHideFlags: 0
