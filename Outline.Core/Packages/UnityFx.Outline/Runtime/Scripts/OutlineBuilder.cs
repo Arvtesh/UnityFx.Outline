@@ -81,6 +81,11 @@ namespace UnityFx.Outline
 			}
 		}
 
+		private void OnDestroy()
+		{
+			_outlineLayers?.ClearLayerContent();
+		}
+
 #endif
 
 		#endregion

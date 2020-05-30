@@ -139,6 +139,7 @@ namespace UnityFx.Outline
 		{
 			foreach (var layer in _layers)
 			{
+				layer.Clear();
 				layer.SetCollection(this);
 			}
 		}
