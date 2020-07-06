@@ -55,7 +55,7 @@ namespace UnityFx.Outline
 		/// <summary>
 		/// A default <see cref="CameraEvent"/> outline rendering should be assosiated with.
 		/// </summary>
-		public const CameraEvent RenderEvent = CameraEvent.BeforeImageEffects;
+		public const CameraEvent RenderEvent = CameraEvent.AfterSkybox;
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="OutlineRenderer"/> struct.
@@ -233,8 +233,10 @@ namespace UnityFx.Outline
 				}
 
 				_commandBuffer.BeginSample(sampleName);
-				RenderObject(settings, renderers);
-				RenderOutline(settings);
+				{
+					RenderObject(settings, renderers);
+					RenderOutline(settings);
+				}
 				_commandBuffer.EndSample(sampleName);
 			}
 		}
@@ -266,8 +268,10 @@ namespace UnityFx.Outline
 			}
 
 			_commandBuffer.BeginSample(sampleName);
-			RenderObject(settings, renderer);
-			RenderOutline(settings);
+			{
+				RenderObject(settings, renderer);
+				RenderOutline(settings);
+			}
 			_commandBuffer.EndSample(sampleName);
 		}
 
