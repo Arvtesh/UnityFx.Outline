@@ -9,8 +9,17 @@ Shader "Hidden/UnityFx/OutlineColor"
 
 		#include "UnityCG.cginc"
 
+		UNITY_DECLARE_TEX2D(_MainTex);
+
 		half4 frag() : SV_Target
 		{
+			return 1;
+		}
+
+		half4 frag_clip(appdata_img i) : SV_Target
+		{
+			half4 c = UNITY_SAMPLE_TEX2D(_MainTex, i.texcoord);
+			clip(c.a - 1);
 			return 1;
 		}
 
@@ -29,6 +38,16 @@ Shader "Hidden/UnityFx/OutlineColor"
 
 			#pragma vertex vert_img
 			#pragma fragment frag
+
+			ENDHLSL
+		}
+
+		Pass
+		{
+			HLSLPROGRAM
+
+			#pragma vertex vert_img
+			#pragma fragment frag_clip
 
 			ENDHLSL
 		}
