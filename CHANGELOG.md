@@ -3,6 +3,16 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/); this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [0.8.1] - unreleased
+
+Alpha test support and misc improvements.
+
+### Added
+- Added support for alpha-test when rendering outlines.
+
+### Changed
+- Changed default render event to AfterSkybox.
+
 ## [0.8.0] - 2020.05.30
 
 [URP](https://docs.unity3d.com/Packages/com.unity.render-pipelines.universal@8.1/manual/index.html) support, core refactoring and bugfixes.
