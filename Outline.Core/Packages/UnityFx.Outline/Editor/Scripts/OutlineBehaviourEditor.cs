@@ -46,6 +46,14 @@ namespace UnityFx.Outline
 				_effect.RenderEvent = e;
 			}
 
+			var c = (Camera)EditorGUILayout.ObjectField("Target Camera", _effect.Camera, typeof(Camera), true);
+
+			if (c != _effect.Camera)
+			{
+				Undo.RecordObject(_effect, "Set Target Camera");
+				_effect.Camera = c;
+			}
+
 			var obj = (OutlineSettings)EditorGUILayout.ObjectField("Outline Settings", _effect.OutlineSettings, typeof(OutlineSettings), true);
 
 			if (_effect.OutlineSettings != obj)

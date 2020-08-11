@@ -29,6 +29,8 @@ namespace UnityFx.Outline
 		private int _layerMask;
 		[SerializeField, HideInInspector]
 		private CameraEvent _cameraEvent = OutlineRenderer.RenderEvent;
+		[SerializeField, HideInInspector]
+		private Camera _targetCamera;
 		[SerializeField, Tooltip("If set, list of object renderers is updated on each frame. Enable if the object has child renderers which are enabled/disabled frequently.")]
 		private bool _updateRenderers;
 
@@ -150,8 +152,49 @@ namespace UnityFx.Outline
 		}
 
 		/// <summary>
+		/// Gets or sets camera to render outlines to. If not set, outlines are rendered to all active cameras.
+		/// </summary>
+		/// <seealso cref="Cameras"/>
+		public Camera Camera
+		{
+			get
+			{
+				return _targetCamera;
+			}
+			set
+			{
+				if (_targetCamera != value)
+				{
+					if (value)
+					{
+						_camerasToRemove.Clear();
+
+						foreach (var kvp in _cameraMap)
+						{
+							if (kvp.Key && kvp.Key != value)
+							{
+								kvp.Key.RemoveCommandBuffer(_cameraEvent, kvp.Value);
+								kvp.Value.Dispose();
+
+								_camerasToRemove.Add(kvp.Key);
+							}
+						}
+
+						foreach (var camera in _camerasToRemove)
+						{
+							_cameraMap.Remove(camera);
+						}
+					}
+
+					_targetCamera = value;
+				}
+			}
+		}
+
+		/// <summary>
 		/// Gets all cameras outline data is rendered to.
 		/// </summary>
+		/// <seealso cref="Camera"/>
 		public ICollection<Camera> Cameras => _cameraMap.Keys;
 
 		/// <summary>
@@ -335,7 +378,7 @@ namespace UnityFx.Outline
 
 		private void OnCameraPreRender(Camera camera)
 		{
-			if (camera)
+			if (camera && (!_targetCamera || _targetCamera == camera))
 			{
 				if (_outlineSettings.RequiresCameraDepth)
 				{
