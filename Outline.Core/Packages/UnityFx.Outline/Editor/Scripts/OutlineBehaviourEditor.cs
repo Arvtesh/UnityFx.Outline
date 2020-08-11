@@ -6,6 +6,7 @@ using UnityEditor;
 using UnityEditorInternal;
 using UnityEditor.SceneManagement;
 using UnityEngine;
+using UnityEngine.Rendering;
 
 namespace UnityFx.Outline
 {
@@ -35,6 +36,14 @@ namespace UnityFx.Outline
 			{
 				Undo.RecordObject(_effect, "Set Ignore Layers");
 				_effect.IgnoreLayerMask = mask;
+			}
+
+			var e = (CameraEvent)EditorGUILayout.EnumPopup("Render Event", _effect.RenderEvent);
+
+			if (e != _effect.RenderEvent)
+			{
+				Undo.RecordObject(_effect, "Set Render Event");
+				_effect.RenderEvent = e;
 			}
 
 			var obj = (OutlineSettings)EditorGUILayout.ObjectField("Outline Settings", _effect.OutlineSettings, typeof(OutlineSettings), true);

@@ -27,6 +27,8 @@ namespace UnityFx.Outline
 		private OutlineSettingsInstance _outlineSettings;
 		[SerializeField, HideInInspector]
 		private int _layerMask;
+		[SerializeField, HideInInspector]
+		private CameraEvent _cameraEvent = OutlineRenderer.RenderEvent;
 		[SerializeField, Tooltip("If set, list of object renderers is updated on each frame. Enable if the object has child renderers which are enabled/disabled frequently.")]
 		private bool _updateRenderers;
 
@@ -108,6 +110,33 @@ namespace UnityFx.Outline
 		}
 
 		/// <summary>
+		/// Gets or sets <see cref="CameraEvent"/> used to render the outlines.
+		/// </summary>
+		public CameraEvent RenderEvent
+		{
+			get
+			{
+				return _cameraEvent;
+			}
+			set
+			{
+				if (_cameraEvent != value)
+				{
+					foreach (var kvp in _cameraMap)
+					{
+						if (kvp.Key)
+						{
+							kvp.Key.RemoveCommandBuffer(_cameraEvent, kvp.Value);
+							kvp.Key.AddCommandBuffer(value, kvp.Value);
+						}
+					}
+
+					_cameraEvent = value;
+				}
+			}
+		}
+
+		/// <summary>
 		/// Gets outline renderers. By default all child <see cref="Renderer"/> components are used for outlining.
 		/// </summary>
 		/// <seealso cref="UpdateRenderers"/>
@@ -157,7 +186,7 @@ namespace UnityFx.Outline
 			{
 				if (kvp.Key)
 				{
-					kvp.Key.RemoveCommandBuffer(OutlineRenderer.RenderEvent, kvp.Value);
+					kvp.Key.RemoveCommandBuffer(_cameraEvent, kvp.Value);
 				}
 
 				kvp.Value.Dispose();
@@ -317,7 +346,7 @@ namespace UnityFx.Outline
 				{
 					var cmdBuf = new CommandBuffer();
 					cmdBuf.name = string.Format("{0} - {1}", GetType().Name, name);
-					camera.AddCommandBuffer(OutlineRenderer.RenderEvent, cmdBuf);
+					camera.AddCommandBuffer(_cameraEvent, cmdBuf);
 
 					_cameraMap.Add(camera, cmdBuf);
 				}
