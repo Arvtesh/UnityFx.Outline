@@ -14,6 +14,7 @@ namespace UnityFx.Outline
 	public class OutlineBehaviourEditor : Editor
 	{
 		private OutlineBehaviour _effect;
+		private SerializedProperty _settingsProp;
 		private bool _debugOpened;
 		private bool _renderersOpened;
 		private bool _camerasOpened;
@@ -21,6 +22,7 @@ namespace UnityFx.Outline
 		private void OnEnable()
 		{
 			_effect = (OutlineBehaviour)target;
+			_settingsProp = serializedObject.FindProperty("_outlineSettings");
 		}
 
 		public override void OnInspectorGUI()
@@ -54,33 +56,8 @@ namespace UnityFx.Outline
 				_effect.Camera = c;
 			}
 
-			var obj = (OutlineSettings)EditorGUILayout.ObjectField("Outline Settings", _effect.OutlineSettings, typeof(OutlineSettings), true);
-
-			if (_effect.OutlineSettings != obj)
-			{
-				Undo.RecordObject(_effect, "Set Settings");
-				_effect.OutlineSettings = obj;
-			}
-
-			if (obj)
-			{
-				EditorGUI.BeginDisabledGroup(true);
-				EditorGUI.indentLevel += 1;
-
-				OutlineEditorUtility.Render(_effect, _effect);
-
-				EditorGUILayout.HelpBox(string.Format("Outline settings are overriden with values from {0}.", obj.name), MessageType.Info, true);
-				EditorGUI.indentLevel -= 1;
-				EditorGUI.EndDisabledGroup();
-			}
-			else
-			{
-				EditorGUI.indentLevel += 1;
-
-				OutlineEditorUtility.Render(_effect, _effect);
-
-				EditorGUI.indentLevel -= 1;
-			}
+			EditorGUILayout.PropertyField(_settingsProp);
+			serializedObject.ApplyModifiedProperties();
 
 			if (EditorGUI.EndChangeCheck())
 			{

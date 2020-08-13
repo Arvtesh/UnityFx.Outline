@@ -27,3 +27,4 @@ using System.Runtime.InteropServices;
 
 // Make internals visible to the editor assembly.
 [assembly: InternalsVisibleTo("UnityFx.Outline.Editor")]
+[assembly: InternalsVisibleTo("UnityFx.Outline.URP")]

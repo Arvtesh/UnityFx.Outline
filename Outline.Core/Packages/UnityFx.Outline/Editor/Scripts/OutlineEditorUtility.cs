@@ -11,56 +11,6 @@ namespace UnityFx.Outline
 {
 	public static class OutlineEditorUtility
 	{
-		public static void RenderDivider(Color color, int thickness = 1, int padding = 5)
-		{
-			var r = EditorGUILayout.GetControlRect(GUILayout.Height(padding + thickness));
-
-			r.height = thickness;
-			r.y += padding / 2;
-			r.x -= 2;
-
-			EditorGUI.DrawRect(r, color);
-		}
-
-		public static void Render(IOutlineSettings settings, UnityEngine.Object undoContext)
-		{
-			var color = EditorGUILayout.ColorField("Color", settings.OutlineColor);
-
-			if (settings.OutlineColor != color)
-			{
-				Undo.RecordObject(undoContext, "Color");
-				settings.OutlineColor = color;
-			}
-
-			var width = EditorGUILayout.IntSlider("Width", settings.OutlineWidth, OutlineResources.MinWidth, OutlineResources.MaxWidth);
-
-			if (settings.OutlineWidth != width)
-			{
-				Undo.RecordObject(undoContext, "Width");
-				settings.OutlineWidth = width;
-			}
-
-			var prevRenderMode = settings.OutlineRenderMode;
-			var renderMode = (OutlineRenderFlags)EditorGUILayout.EnumFlagsField("Render Flags", prevRenderMode);
-
-			if (renderMode != prevRenderMode)
-			{
-				Undo.RecordObject(undoContext, "Render Flags");
-				settings.OutlineRenderMode = renderMode;
-			}
-
-			if ((renderMode & OutlineRenderFlags.Blurred) != 0)
-			{
-				var i = EditorGUILayout.Slider("Blur Intensity", settings.OutlineIntensity, OutlineResources.MinIntensity, OutlineResources.MaxIntensity);
-
-				if (!Mathf.Approximately(settings.OutlineIntensity, i))
-				{
-					Undo.RecordObject(undoContext, "Blur Intensity");
-					settings.OutlineIntensity = i;
-				}
-			}
-		}
-
 		public static void RenderPreview(OutlineLayer layer, int layerIndex, bool showObjects)
 		{
 			if (layer != null)
