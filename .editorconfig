@@ -8,6 +8,8 @@ root = true
 indent_style = tab
 trim_trailing_whitespace = true
 insert_final_newline = true
+charset = utf-8-bom
+end_of_line = crlf
 # (Please don't specify an indent_size here; that has too many unintended consequences.)
 
 # Code files
