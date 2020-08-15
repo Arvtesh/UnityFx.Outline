@@ -12,11 +12,14 @@ namespace UnityFx.Outline
 	[CustomEditor(typeof(OutlineSettings))]
 	public class OutlineSettingsEditor : Editor
 	{
+		private const string _layerMaskPropName = "_outlineLayerMask";
+		private const string _settingsPropName = "_outlineSettings";
 		private const string _colorPropName = "_outlineColor";
 		private const string _widthPropName = "_outlineWidth";
 		private const string _intensityPropName = "_outlineIntensity";
 		private const string _renderModePropName = "_outlineMode";
 
+		private static readonly GUIContent _layerMaskContent = new GUIContent("Outline Layer Mask", OutlineResources.OutlineLayerMaskTooltip);
 		private static readonly GUIContent _colorContent = new GUIContent("Color", "Outline color.");
 		private static readonly GUIContent _widthContent = new GUIContent("Width", "Outline width in pixels.");
 		private static readonly GUIContent _renderModeContent = new GUIContent("Render Flags", "Outline render flags. Multiple values can be selected at the same time.");
@@ -44,7 +47,7 @@ namespace UnityFx.Outline
 			serializedObject.ApplyModifiedProperties();
 		}
 
-		internal static float GetSettingsHeight(SerializedProperty property)
+		internal static float GetSettingsInstanceHeight(SerializedProperty property)
 		{
 			var lineCy = EditorGUIUtility.singleLineHeight + EditorGUIUtility.standardVerticalSpacing;
 			var renderModeProp = property.FindPropertyRelative(_renderModePropName);
@@ -58,24 +61,70 @@ namespace UnityFx.Outline
 			return lineCy * 4;
 		}
 
-		internal static void DrawSettings(Rect rc, SerializedProperty property)
+		internal static float GetSettingsWithMaskHeight(SerializedProperty property)
 		{
-			var colorProp = property.FindPropertyRelative(_colorPropName);
-			var widthProp = property.FindPropertyRelative(_widthPropName);
-			var intensityProp = property.FindPropertyRelative(_intensityPropName);
-			var renderModeProp = property.FindPropertyRelative(_renderModePropName);
+			var lineCy = EditorGUIUtility.singleLineHeight + EditorGUIUtility.standardVerticalSpacing;
+			var layerMaskProp = property.FindPropertyRelative(_layerMaskPropName);
 
-			DrawSettingsInternal(rc, colorProp, widthProp, intensityProp, renderModeProp);
+			if (layerMaskProp.intValue != 0)
+			{
+				var renderModeProp = property.FindPropertyRelative(_renderModePropName);
+				var renderMode = (OutlineRenderFlags)renderModeProp.intValue;
+
+				if ((renderMode & OutlineRenderFlags.Blurred) != 0)
+				{
+					return lineCy * 6;
+				}
+
+				return lineCy * 5;
+			}
+
+			return lineCy;
 		}
 
-		internal static void DrawSettings(Rect rc, SerializedObject obj)
+		internal static void DrawSettingsInstance(Rect rc, SerializedProperty property)
 		{
-			var colorProp = obj.FindProperty(_colorPropName);
-			var widthProp = obj.FindProperty(_widthPropName);
-			var intensityProp = obj.FindProperty(_intensityPropName);
-			var renderModeProp = obj.FindProperty(_renderModePropName);
+			var settingsProp = property.FindPropertyRelative(_settingsPropName);
 
-			DrawSettingsInternal(rc, colorProp, widthProp, intensityProp, renderModeProp);
+			EditorGUI.PropertyField(new Rect(rc.x, rc.y, rc.width, EditorGUIUtility.singleLineHeight), settingsProp);
+			EditorGUI.indentLevel += 1;
+
+			if (settingsProp.objectReferenceValue)
+			{
+				var obj = new SerializedObject(settingsProp.objectReferenceValue);
+				var colorProp = obj.FindProperty(_colorPropName);
+				var widthProp = obj.FindProperty(_widthPropName);
+				var intensityProp = obj.FindProperty(_intensityPropName);
+				var renderModeProp = obj.FindProperty(_renderModePropName);
+
+				EditorGUI.BeginDisabledGroup(true);
+				DrawSettingsInternal(rc, colorProp, widthProp, intensityProp, renderModeProp);
+				EditorGUI.EndDisabledGroup();
+			}
+			else
+			{
+				var colorProp = property.FindPropertyRelative(_colorPropName);
+				var widthProp = property.FindPropertyRelative(_widthPropName);
+				var intensityProp = property.FindPropertyRelative(_intensityPropName);
+				var renderModeProp = property.FindPropertyRelative(_renderModePropName);
+
+				DrawSettingsInternal(rc, colorProp, widthProp, intensityProp, renderModeProp);
+			}
+
+			EditorGUI.indentLevel -= 1;
+		}
+
+		internal static void DrawSettingsWithMask(Rect rc, SerializedProperty property)
+		{
+			var layerMaskProp = property.FindPropertyRelative(_layerMaskPropName);
+
+			EditorGUI.PropertyField(new Rect(rc.x, rc.y, rc.width, EditorGUIUtility.singleLineHeight), layerMaskProp, _layerMaskContent);
+
+			if (layerMaskProp.intValue != 0)
+			{
+				var lineCy = EditorGUIUtility.singleLineHeight + EditorGUIUtility.standardVerticalSpacing;
+				DrawSettingsInstance(new Rect(rc.x, rc.y + lineCy, rc.width, rc.height - lineCy), property);
+			}
 		}
 
 		private static void DrawSettingsInternal(Rect rc, SerializedProperty colorProp, SerializedProperty widthProp, SerializedProperty intensityProp, SerializedProperty renderModeProp)

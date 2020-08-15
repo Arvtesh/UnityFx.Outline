@@ -106,6 +106,11 @@ namespace UnityFx.Outline
 		public const string OutlineLayerCollectionTooltip = "Collection of outline layers to use. This can be used to share outline settings between multiple cameras.";
 
 		/// <summary>
+		/// Tooltip text for outline <see cref="LayerMask"/> field.
+		/// </summary>
+		public const string OutlineLayerMaskTooltip = "Layer mask for outined objects.";
+
+		/// <summary>
 		/// Hashed name of _MainTex shader parameter.
 		/// </summary>
 		public readonly int MainTexId = Shader.PropertyToID(MainTexName);
