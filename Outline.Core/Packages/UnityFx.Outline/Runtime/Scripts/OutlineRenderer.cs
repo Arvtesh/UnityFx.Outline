@@ -38,8 +38,6 @@ namespace UnityFx.Outline
 
 		private const int _defaultRenderPassId = 0;
 		private const int _alphaTestRenderPassId = 1;
-		private const int _outlineHPassId = 0;
-		private const int _outlineVPassId = 1;
 		private const RenderTextureFormat _rtFormat = RenderTextureFormat.R8;
 
 		private static readonly int _maskRtId = Shader.PropertyToID("_MaskTex");
@@ -293,6 +291,25 @@ namespace UnityFx.Outline
 			return new RenderTextureDescriptor(-1, -1, RenderTextureFormat.R8, 0);
 		}
 
+		/// <summary>
+		/// Specialized blit. Do not use if not sure.
+		/// </summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static void Blit(CommandBuffer cmdBuffer, RenderTargetIdentifier src, OutlineResources resources, int shaderPass, Material mat, MaterialPropertyBlock props)
+		{
+			// Set source texture as _MainTex to match Blit behavior.
+			cmdBuffer.SetGlobalTexture(resources.MainTexId, src);
+
+			if (SystemInfo.graphicsShaderLevel < 35 || resources.UseFullscreenTriangleMesh)
+			{
+				cmdBuffer.DrawMesh(resources.FullscreenTriangleMesh, Matrix4x4.identity, mat, 0, shaderPass, props);
+			}
+			else
+			{
+				cmdBuffer.DrawProcedural(Matrix4x4.identity, mat, shaderPass, MeshTopology.Triangles, 3, 1, props);
+			}
+		}
+
 		#endregion
 
 		#region IDisposable
@@ -378,27 +395,11 @@ namespace UnityFx.Outline
 
 			// HPass
 			_commandBuffer.SetRenderTarget(_hPassRtId, RenderBufferLoadAction.DontCare, RenderBufferStoreAction.Store);
-			Blit(_commandBuffer, _maskRtId, _resources, _outlineHPassId, mat, props);
+			Blit(_commandBuffer, _maskRtId, _resources, OutlineResources.OutlineShaderHPassId, mat, props);
 
 			// VPassBlend
 			_commandBuffer.SetRenderTarget(_rt, RenderBufferLoadAction.Load, RenderBufferStoreAction.Store);
-			Blit(_commandBuffer, _hPassRtId, _resources, _outlineVPassId, mat, props);
-		}
-
-		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		private static void Blit(CommandBuffer cmdBuffer, RenderTargetIdentifier src, OutlineResources resources, int shaderPass, Material mat, MaterialPropertyBlock props)
-		{
-			// Set source texture as _MainTex to match Blit behavior.
-			cmdBuffer.SetGlobalTexture(resources.MainTexId, src);
-
-			if (SystemInfo.graphicsShaderLevel < 35 || resources.UseFullscreenTriangleMesh)
-			{
-				cmdBuffer.DrawMesh(resources.FullscreenTriangleMesh, Matrix4x4.identity, mat, 0, shaderPass, props);
-			}
-			else
-			{
-				cmdBuffer.DrawProcedural(Matrix4x4.identity, mat, shaderPass, MeshTopology.Triangles, 3, 1, props);
-			}
+			Blit(_commandBuffer, _hPassRtId, _resources, OutlineResources.OutlineShaderVPassId, mat, props);
 		}
 
 		#endregion

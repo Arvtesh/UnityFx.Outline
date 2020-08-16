@@ -26,24 +26,30 @@ namespace UnityFx.Outline.URP
 		private OutlineResources _outlineResources;
 		[SerializeField, Tooltip(OutlineResources.OutlineLayerCollectionTooltip)]
 		private OutlineLayerCollection _outlineLayers;
+		[SerializeField]
+		private OutlineSettingsWithLayerMask _outlineSettings;
+		[SerializeField]
+		private RenderPassEvent _renderPassEvent = RenderPassEvent.AfterRenderingSkybox;
 
 #pragma warning restore 0649
 
+		private RenderTargetHandle _renderTexture;
+		private RenderTargetHandle _hpassTexture;
+
 		private OutlinePass _outlinePass;
+		private OutlineRenderObjectsPass _outlineRenderPass;
+		private OutlineHBlurPass _outlineHBlurPass;
+		private OutlineVBlurBlendPass _outlineVBlurBlendPass;
 
 		#endregion
 
 		#region interface
 
-		/// <summary>
-		/// Gets the outline resources.
-		/// </summary>
-		public OutlineResources OutlineResources => _outlineResources;
+		internal OutlineResources OutlineResources => _outlineResources;
 
-		/// <summary>
-		/// Gets outline layers collection attached.
-		/// </summary>
-		public OutlineLayerCollection OutlineLayers => _outlineLayers;
+		internal OutlineLayerCollection OutlineLayers => _outlineLayers;
+
+		internal IOutlineSettings OutlineSettings => _outlineSettings;
 
 		#endregion
 
@@ -52,19 +58,48 @@ namespace UnityFx.Outline.URP
 		/// <inheritdoc/>
 		public override void Create()
 		{
+			_renderTexture.Init("_TmpRt");
+			_hpassTexture.Init("_HPassRt");
+
 			_outlinePass = new OutlinePass(this)
 			{
-				renderPassEvent = RenderPassEvent.BeforeRenderingPostProcessing
+				renderPassEvent = _renderPassEvent
+			};
+
+			_outlineRenderPass = new OutlineRenderObjectsPass(this, _outlineSettings.OutlineLayerMask, _renderTexture)
+			{
+				renderPassEvent = _renderPassEvent
+			};
+
+			_outlineHBlurPass = new OutlineHBlurPass(this, _renderTexture, _hpassTexture)
+			{
+				renderPassEvent = _renderPassEvent
+			};
+
+			_outlineVBlurBlendPass = new OutlineVBlurBlendPass(this, _hpassTexture)
+			{
+				renderPassEvent = _renderPassEvent
 			};
 		}
 
 		/// <inheritdoc/>
 		public override void AddRenderPasses(ScriptableRenderer renderer, ref RenderingData renderingData)
 		{
-			if (_outlineResources && _outlineResources.IsValid && _outlineLayers)
+			if (_outlineResources && _outlineResources.IsValid)
 			{
-				_outlinePass.Setup(renderer.cameraColorTarget, renderer.cameraDepth);
-				renderer.EnqueuePass(_outlinePass);
+				if (_outlineSettings.OutlineLayerMask != 0)
+				{
+					_outlineRenderPass.Setup(renderer.cameraDepth);
+					renderer.EnqueuePass(_outlineRenderPass);
+					renderer.EnqueuePass(_outlineHBlurPass);
+					renderer.EnqueuePass(_outlineVBlurBlendPass);
+				}
+
+				if (_outlineLayers)
+				{
+					_outlinePass.Setup(renderer.cameraColorTarget, renderer.cameraDepth);
+					renderer.EnqueuePass(_outlinePass);
+				}
 			}
 		}
 
