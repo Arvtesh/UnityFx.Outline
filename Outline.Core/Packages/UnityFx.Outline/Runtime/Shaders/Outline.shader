@@ -5,13 +5,6 @@
 // Modified version of 'Custom/Post Outline' shader taken from https://willweissman.wordpress.com/tutorials/shaders/unity-shaderlab-object-outlines/.
 Shader "Hidden/UnityFx/Outline"
 {
-	Properties
-	{
-		_Width("Outline thickness (in pixels)", Range(1, 32)) = 5
-		_Intensity("Outline intensity", Range(0.1, 100)) = 2
-		_Color("Outline color", Color) = (1, 0, 0, 1)
-	}
-
 	HLSLINCLUDE
 
 		#include "UnityCG.cginc"
@@ -116,7 +109,6 @@ Shader "Hidden/UnityFx/Outline"
 		ZTest Always
 		Lighting Off
 
-		// 0) HPass
 		Pass
 		{
 			Name "HPass"
@@ -131,7 +123,6 @@ Shader "Hidden/UnityFx/Outline"
 			ENDHLSL
 		}
 
-		// 1) VPass
 		Pass
 		{
 			Name "VPassBlend"
@@ -156,7 +147,6 @@ Shader "Hidden/UnityFx/Outline"
 		ZTest Always
 		Lighting Off
 
-		// 0) HPass
 		Pass
 		{
 			Name "HPass"
@@ -169,7 +159,6 @@ Shader "Hidden/UnityFx/Outline"
 			ENDHLSL
 		}
 
-		// 1) VPass
 		Pass
 		{
 			Name "VPassBlend"

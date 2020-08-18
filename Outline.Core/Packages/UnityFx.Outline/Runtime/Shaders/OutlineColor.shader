@@ -34,6 +34,8 @@ Shader "Hidden/UnityFx/OutlineColor"
 
 		Pass
 		{
+			Name "Opaque"
+
 			HLSLPROGRAM
 
 			#pragma vertex vert_img
@@ -44,6 +46,8 @@ Shader "Hidden/UnityFx/OutlineColor"
 
 		Pass
 		{
+			Name "Transparent"
+
 			HLSLPROGRAM
 
 			#pragma vertex vert_img
