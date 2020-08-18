@@ -4,7 +4,7 @@ MonoImporter:
   externalObjects: {}
   serializedVersion: 2
   defaultReferences:
-  - _outlineResources: {fileID: 11400000, guid: d28e70f030b1a634db9a6a6d5478ef19,
+  - _outlineResources: {fileID: 11400000, guid: cdd721ae860e14b49b74e1aea4a90427,
       type: 2}
   - _outlineLayers: {instanceID: 0}
   executionOrder: 0
