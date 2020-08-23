@@ -212,6 +212,11 @@ namespace UnityFx.Outline
 
 		private void Awake()
 		{
+			if (GraphicsSettings.renderPipelineAsset)
+			{
+				Debug.LogWarningFormat(this, OutlineResources.SrpNotSupported, GetType().Name);
+			}
+
 			CreateRenderersIfNeeded();
 			CreateSettingsIfNeeded();
 		}

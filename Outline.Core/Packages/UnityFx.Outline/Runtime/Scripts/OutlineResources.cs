@@ -111,6 +111,16 @@ namespace UnityFx.Outline
 		public const string OutlineLayerMaskTooltip = "Layer mask for outined objects.";
 
 		/// <summary>
+		/// SRP not supported message.
+		/// </summary>
+		internal const string SrpNotSupported = "{0} does not support SRP.";
+
+		/// <summary>
+		/// Post-processing not supported message.
+		/// </summary>
+		internal const string PpNotSupported = "{0} does not support Unity Post-processing stack v2.";
+
+		/// <summary>
 		/// Hashed name of _MainTex shader parameter.
 		/// </summary>
 		public readonly int MainTexId = Shader.PropertyToID(MainTexName);
