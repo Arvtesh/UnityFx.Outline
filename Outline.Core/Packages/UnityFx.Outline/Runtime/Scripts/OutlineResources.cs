@@ -113,12 +113,12 @@ namespace UnityFx.Outline
 		/// <summary>
 		/// SRP not supported message.
 		/// </summary>
-		internal const string SrpNotSupported = "{0} does not support SRP.";
+		internal const string SrpNotSupported = "{0} works with built-in render pipeline only. It does not support SRP (including URP and HDRP).";
 
 		/// <summary>
 		/// Post-processing not supported message.
 		/// </summary>
-		internal const string PpNotSupported = "{0} does not support Unity Post-processing stack v2.";
+		internal const string PpNotSupported = "{0} does not support Unity Post-processing stack v2. It might not work as expected.";
 
 		/// <summary>
 		/// Hashed name of _MainTex shader parameter.

@@ -160,6 +160,10 @@ namespace UnityFx.Outline
 			{
 				Debug.LogWarningFormat(this, OutlineResources.SrpNotSupported, GetType().Name);
 			}
+
+#if UNITY_POST_PROCESSING_STACK_V2
+			Debug.LogWarningFormat(this, OutlineResources.PpNotSupported, GetType().Name);
+#endif
 		}
 
 		private void OnEnable()
