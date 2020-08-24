@@ -61,6 +61,18 @@ namespace UnityFx.Outline
 		public const int SolidIntensity = 100;
 
 		/// <summary>
+		/// Minimum value of outline alpha cutoff parameter.
+		/// </summary>
+		/// <seealso cref="MaxAlphaCutoff"/>
+		public const float MinAlphaCutoff = 0;
+
+		/// <summary>
+		/// Maximum value of outline alpha cutoff parameter.
+		/// </summary>
+		/// <seealso cref="MinAlphaCutoff"/>
+		public const float MaxAlphaCutoff = 1;
+
+		/// <summary>
 		/// Name of _MainTex shader parameter.
 		/// </summary>
 		public const string MainTexName = "_MainTex";
@@ -79,6 +91,11 @@ namespace UnityFx.Outline
 		/// Name of _Intensity shader parameter.
 		/// </summary>
 		public const string IntensityName = "_Intensity";
+
+		/// <summary>
+		/// Name of _Cutoff shader parameter.
+		/// </summary>
+		public const string AlphaCutoffName = "_Cutoff";
 
 		/// <summary>
 		/// Name of _GaussSamples shader parameter.
@@ -139,6 +156,11 @@ namespace UnityFx.Outline
 		/// Hashed name of _Intensity shader parameter.
 		/// </summary>
 		public readonly int IntensityId = Shader.PropertyToID(IntensityName);
+
+		/// <summary>
+		/// Hashed name of _Cutoff shader parameter.
+		/// </summary>
+		public readonly int AlphaCutoffId = Shader.PropertyToID(AlphaCutoffName);
 
 		/// <summary>
 		/// Hashed name of _GaussSamples shader parameter.

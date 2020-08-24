@@ -357,6 +357,21 @@ namespace UnityFx.Outline
 		}
 
 		/// <inheritdoc/>
+		public float OutlineAlphaCutoff
+		{
+			get
+			{
+				CreateSettingsIfNeeded();
+				return _outlineSettings.OutlineAlphaCutoff;
+			}
+			set
+			{
+				CreateSettingsIfNeeded();
+				_outlineSettings.OutlineAlphaCutoff = value;
+			}
+		}
+
+		/// <inheritdoc/>
 		public OutlineRenderFlags OutlineRenderMode
 		{
 			get

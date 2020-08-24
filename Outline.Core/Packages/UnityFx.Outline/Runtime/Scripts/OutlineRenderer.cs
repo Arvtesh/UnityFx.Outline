@@ -339,6 +339,18 @@ namespace UnityFx.Outline
 				{
 					for (var i = 0; i < _resources.TmpMaterials.Count; ++i)
 					{
+						var mat = _resources.TmpMaterials[i];
+
+						// Use material cutoff value if available.
+						if (mat.HasProperty(_resources.AlphaCutoffId))
+						{
+							_commandBuffer.SetGlobalFloat(_resources.AlphaCutoffId, mat.GetFloat(_resources.AlphaCutoffId));
+						}
+						else
+						{
+							_commandBuffer.SetGlobalFloat(_resources.AlphaCutoffId, settings.OutlineAlphaCutoff);
+						}
+
 						_commandBuffer.SetGlobalTexture(_resources.MainTexId, _resources.TmpMaterials[i].mainTexture);
 						_commandBuffer.DrawRenderer(renderer, _resources.RenderMaterial, i, _alphaTestRenderPassId);
 					}

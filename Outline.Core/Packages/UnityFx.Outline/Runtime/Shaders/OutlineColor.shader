@@ -10,6 +10,7 @@ Shader "Hidden/UnityFx/OutlineColor"
 		#include "UnityCG.cginc"
 
 		UNITY_DECLARE_TEX2D(_MainTex);
+		float _Cutoff;
 
 		half4 frag() : SV_Target
 		{
@@ -19,7 +20,7 @@ Shader "Hidden/UnityFx/OutlineColor"
 		half4 frag_clip(appdata_img i) : SV_Target
 		{
 			half4 c = UNITY_SAMPLE_TEX2D(_MainTex, i.texcoord);
-			clip(c.a - 1);
+			clip(c.a - _Cutoff);
 			return 1;
 		}
 

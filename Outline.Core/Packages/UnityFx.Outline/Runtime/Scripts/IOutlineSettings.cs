@@ -27,12 +27,18 @@ namespace UnityFx.Outline
 
 		/// <summary>
 		/// Gets or sets outline intensity value. Allowed range is [<see cref="OutlineRenderer.MinIntensity"/>, <see cref="OutlineRenderer.MaxIntensity"/>].
-		/// This is used for blurred oulines only (i.e. <see cref="OutlineRenderMode"/> is set to <see cref="OutlineRenderFlags.Blurred"/>).
+		/// This is used for blurred oulines only (i.e. <see cref="OutlineRenderMode"/> has <see cref="OutlineRenderFlags.Blurred"/> flag).
 		/// </summary>
 		/// <seealso cref="OutlineRenderMode"/>
 		/// <seealso cref="OutlineColor"/>
 		/// <seealso cref="OutlineWidth"/>
 		float OutlineIntensity { get; set; }
+
+		/// <summary>
+		/// Gets or sets alpha cutoff value. Allowed range is [0, 1]. This is used only when <see cref="OutlineRenderMode"/> has <see cref="OutlineRenderFlags.EnableAlphaTesting"/> flag.
+		/// </summary>
+		/// <seealso cref="OutlineRenderMode"/>
+		float OutlineAlphaCutoff { get; set; }
 
 		/// <summary>
 		/// Gets or sets outline render mode.
