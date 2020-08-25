@@ -9,17 +9,32 @@ Shader "Hidden/UnityFx/OutlineColor"
 
 		#include "UnityCG.cginc"
 
-		UNITY_DECLARE_TEX2D(_MainTex);
+		UNITY_DECLARE_SCREENSPACE_TEXTURE(_MainTex);
 		float _Cutoff;
+
+		v2f_img vert(appdata_img v)
+		{
+			v2f_img o;
+			UNITY_SETUP_INSTANCE_ID(v);
+			UNITY_TRANSFER_INSTANCE_ID(v, o);
+			UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO(o);
+
+			o.pos = UnityObjectToClipPos(v.vertex);
+			o.uv = v.texcoord;
+			return o;
+		}
 
 		half4 frag() : SV_Target
 		{
 			return 1;
 		}
 
-		half4 frag_clip(appdata_img i) : SV_Target
+		half4 frag_clip(v2f_img i) : SV_Target
 		{
-			half4 c = UNITY_SAMPLE_TEX2D(_MainTex, i.texcoord);
+			UNITY_SETUP_INSTANCE_ID(i);
+			UNITY_SETUP_STEREO_EYE_INDEX_POST_VERTEX(i);
+
+			half4 c = UNITY_SAMPLE_SCREENSPACE_TEXTURE(_MainTex, i.uv);
 			clip(c.a - _Cutoff);
 			return 1;
 		}
@@ -37,7 +52,7 @@ Shader "Hidden/UnityFx/OutlineColor"
 		{
 			HLSLPROGRAM
 
-			#pragma vertex vert_img
+			#pragma vertex vert
 			#pragma fragment frag
 
 			ENDHLSL
@@ -47,7 +62,7 @@ Shader "Hidden/UnityFx/OutlineColor"
 		{
 			HLSLPROGRAM
 
-			#pragma vertex vert_img
+			#pragma vertex vert
 			#pragma fragment frag_clip
 
 			ENDHLSL

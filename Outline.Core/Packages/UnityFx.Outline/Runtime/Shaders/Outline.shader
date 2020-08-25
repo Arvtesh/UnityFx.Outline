@@ -5,13 +5,6 @@
 // Modified version of 'Custom/Post Outline' shader taken from https://willweissman.wordpress.com/tutorials/shaders/unity-shaderlab-object-outlines/.
 Shader "Hidden/UnityFx/Outline"
 {
-	Properties
-	{
-		_Width("Outline thickness (in pixels)", Range(1, 32)) = 5
-		_Intensity("Outline intensity", Range(0.1, 100)) = 2
-		_Color("Outline color", Color) = (1, 0, 0, 1)
-	}
-
 	HLSLINCLUDE
 
 		#include "UnityCG.cginc"
@@ -32,8 +25,8 @@ Shader "Hidden/UnityFx/Outline"
 		v2f_img vert(appdata_img v)
 		{
 			v2f_img o;
-			UNITY_INITIALIZE_OUTPUT(v2f_img, o);
 			UNITY_SETUP_INSTANCE_ID(v);
+			UNITY_TRANSFER_INSTANCE_ID(v, o);
 			UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO(o);
 
 			o.pos = float4(v.vertex.xy, UNITY_NEAR_CLIP_VALUE, 1);
@@ -61,8 +54,8 @@ Shader "Hidden/UnityFx/Outline"
 		v2f_img vert(appdata_vid v)
 		{
 			v2f_img o;
-			UNITY_INITIALIZE_OUTPUT(v2f_img, o);
 			UNITY_SETUP_INSTANCE_ID(v);
+			UNITY_TRANSFER_INSTANCE_ID(v, o);
 			UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO(o);
 
 			o.pos = GetFullScreenTriangleVertexPosition(v.vertexID, UNITY_NEAR_CLIP_VALUE);
