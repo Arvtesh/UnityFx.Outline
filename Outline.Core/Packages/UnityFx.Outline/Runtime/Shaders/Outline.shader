@@ -26,6 +26,7 @@ Shader "Hidden/UnityFx/Outline"
 		{
 			v2f_img o;
 			UNITY_SETUP_INSTANCE_ID(v);
+			UNITY_INITIALIZE_OUTPUT(v2f, o);
 			UNITY_TRANSFER_INSTANCE_ID(v, o);
 			UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO(o);
 
@@ -55,6 +56,7 @@ Shader "Hidden/UnityFx/Outline"
 		{
 			v2f_img o;
 			UNITY_SETUP_INSTANCE_ID(v);
+			UNITY_INITIALIZE_OUTPUT(v2f, o);
 			UNITY_TRANSFER_INSTANCE_ID(v, o);
 			UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO(o);
 
@@ -82,12 +84,16 @@ Shader "Hidden/UnityFx/Outline"
 
 		float4 frag_h(v2f_img i) : SV_Target
 		{
+			UNITY_SETUP_INSTANCE_ID(i);
+
 			float intensity = CalcIntensity(i.uv, float2(_MainTex_TexelSize.x, 0));
 			return float4(intensity, intensity, intensity, 1);
 		}
 
 		float4 frag_v(v2f_img i) : SV_Target
 		{
+			UNITY_SETUP_INSTANCE_ID(i);
+
 			if (UNITY_SAMPLE_SCREENSPACE_TEXTURE(_MaskTex, i.uv).r > 0)
 			{
 				// TODO: Avoid discard/clip to improve performance on mobiles.
