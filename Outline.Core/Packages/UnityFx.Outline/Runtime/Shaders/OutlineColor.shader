@@ -52,6 +52,7 @@ Shader "Hidden/UnityFx/OutlineColor"
 		{
 			HLSLPROGRAM
 
+			#pragma multi_compile_instancing
 			#pragma vertex vert
 			#pragma fragment frag
 
@@ -62,6 +63,7 @@ Shader "Hidden/UnityFx/OutlineColor"
 		{
 			HLSLPROGRAM
 
+			#pragma multi_compile_instancing
 			#pragma vertex vert
 			#pragma fragment frag_clip
 

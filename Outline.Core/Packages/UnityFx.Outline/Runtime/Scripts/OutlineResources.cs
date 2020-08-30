@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using UnityEditor;
 using UnityEngine;
 
 namespace UnityFx.Outline
@@ -15,6 +16,13 @@ namespace UnityFx.Outline
 	public sealed class OutlineResources : ScriptableObject
 	{
 		#region data
+
+		[SerializeField]
+		private Shader _renderShader;
+		[SerializeField]
+		private Shader _outlineShader;
+		[SerializeField]
+		private bool _enableInstancing;
 
 		private Material _renderMaterial;
 		private Material _outlineMaterial;
@@ -175,12 +183,24 @@ namespace UnityFx.Outline
 		/// <summary>
 		/// Gets or sets a <see cref="Shader"/> that renders objects outlined with a solid while color.
 		/// </summary>
-		public Shader RenderShader;
+		public Shader RenderShader
+		{
+			get
+			{
+				return _renderShader;
+			}
+		}
 
 		/// <summary>
 		/// Gets or sets a <see cref="Shader"/> that renders outline around the mask, that was generated with <see cref="RenderShader"/>.
 		/// </summary>
-		public Shader OutlineShader;
+		public Shader OutlineShader
+		{
+			get
+			{
+				return _outlineShader;
+			}
+		}
 
 		/// <summary>
 		/// Gets a <see cref="RenderShader"/>-based material.
@@ -194,7 +214,8 @@ namespace UnityFx.Outline
 					_renderMaterial = new Material(RenderShader)
 					{
 						name = "Outline - RenderColor",
-						hideFlags = HideFlags.HideAndDontSave
+						hideFlags = HideFlags.HideAndDontSave,
+						enableInstancing = _enableInstancing
 					};
 				}
 
@@ -214,7 +235,8 @@ namespace UnityFx.Outline
 					_outlineMaterial = new Material(OutlineShader)
 					{
 						name = "Outline - Main",
-						hideFlags = HideFlags.HideAndDontSave
+						hideFlags = HideFlags.HideAndDontSave,
+						enableInstancing = _enableInstancing
 					};
 
 					if (_useDrawMesh)
@@ -308,6 +330,31 @@ namespace UnityFx.Outline
 		}
 
 		/// <summary>
+		/// Gets or sets a value indicating whether instancing is enabled.
+		/// </summary>
+		public bool EnableInstancing
+		{
+			get
+			{
+				return _enableInstancing;
+			}
+			set
+			{
+				_enableInstancing = value;
+
+				if (_renderMaterial)
+				{
+					_renderMaterial.enableInstancing = value;
+				}
+
+				if (_outlineMaterial)
+				{
+					_outlineMaterial.enableInstancing = value;
+				}
+			}
+		}
+
+		/// <summary>
 		/// Gets a value indicating whether the instance is in valid state.
 		/// </summary>
 		public bool IsValid => RenderShader && OutlineShader;
@@ -362,8 +409,8 @@ namespace UnityFx.Outline
 		/// </summary>
 		public void ResetToDefaults()
 		{
-			RenderShader = Shader.Find("Hidden/UnityFx/OutlineColor");
-			OutlineShader = Shader.Find("Hidden/UnityFx/Outline");
+			_renderShader = Shader.Find("Hidden/UnityFx/OutlineColor");
+			_outlineShader = Shader.Find("Hidden/UnityFx/Outline");
 		}
 
 		/// <summary>
