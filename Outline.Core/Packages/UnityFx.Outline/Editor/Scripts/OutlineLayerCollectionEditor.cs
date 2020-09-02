@@ -38,11 +38,13 @@ namespace UnityFx.Outline
 			EditorGUI.BeginChangeCheck();
 
 			var mask = EditorGUILayout.MaskField("Ignore layers", _layers.IgnoreLayerMask, InternalEditorUtility.layers);
+			var merge = EditorGUILayout.Toggle("Merge Layer Objects", _layers.MergeLayerObjects);
 
 			if (EditorGUI.EndChangeCheck())
 			{
-				Undo.RecordObject(_layers, "Set Layers");
+				Undo.RecordObject(_layers, "Change layer collection");
 				_layers.IgnoreLayerMask = mask;
+				_layers.MergeLayerObjects = merge;
 			}
 
 			EditorGUILayout.Space();

@@ -16,7 +16,7 @@ namespace UnityFx.Outline
 	{
 		#region data
 
-		private readonly GameObject _go;
+		private readonly string _tag;
 		private readonly IReadOnlyList<Renderer> _renderers;
 		private readonly IOutlineSettings _outlineSettings;
 
@@ -25,9 +25,9 @@ namespace UnityFx.Outline
 		#region interface
 
 		/// <summary>
-		/// Gets the <see cref="GameObject"/>.
+		/// Gets the object tag name.
 		/// </summary>
-		public GameObject Go => _go;
+		public string Tag => _tag;
 
 		/// <summary>
 		/// Gets renderers for the object.
@@ -42,19 +42,11 @@ namespace UnityFx.Outline
 		/// <summary>
 		/// Initializes a new instance of the <see cref="OutlineRenderObject"/> struct.
 		/// </summary>
-		public OutlineRenderObject(GameObject go, IReadOnlyList<Renderer> renderers, IOutlineSettings outlineSettings)
+		public OutlineRenderObject(IReadOnlyList<Renderer> renderers, IOutlineSettings outlineSettings, string tag = null)
 		{
-			_go = go;
 			_renderers = renderers;
 			_outlineSettings = outlineSettings;
-		}
-
-		/// <summary>
-		/// Implicit convertino to <see cref="GameObject"/>.
-		/// </summary>
-		public static implicit operator GameObject(OutlineRenderObject o)
-		{
-			return o._go;
+			_tag = tag;
 		}
 
 		#endregion
@@ -64,7 +56,7 @@ namespace UnityFx.Outline
 		/// <inheritdoc/>
 		public bool Equals(OutlineRenderObject other)
 		{
-			return _go == other._go && _renderers == other._renderers && _outlineSettings == other._outlineSettings;
+			return string.CompareOrdinal(_tag, other._tag) == 0 && _renderers == other._renderers && _outlineSettings == other._outlineSettings;
 		}
 
 		#endregion

@@ -203,7 +203,7 @@ namespace UnityFx.Outline
 		/// <seealso cref="Render(Renderer, IOutlineSettings)"/>
 		public void Render(OutlineRenderObject obj)
 		{
-			Render(obj.Renderers, obj.OutlineSettings, obj.Go.name);
+			Render(obj.Renderers, obj.OutlineSettings, obj.Tag);
 		}
 
 		/// <summary>
