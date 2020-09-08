@@ -136,6 +136,21 @@ namespace UnityFx.Outline
 		}
 
 		/// <summary>
+		/// Removes the specified <see cref="GameObject"/> from layers.
+		/// </summary>
+		/// <param name="go">A <see cref="GameObject"/> to remove.</param>
+		public void Remove(GameObject go)
+		{
+			foreach (var layer in _layers)
+			{
+				if (layer.Remove(go))
+				{
+					break;
+				}
+			}
+		}
+
+		/// <summary>
 		/// Removes all game objects registered in layers.
 		/// </summary>
 		public void ClearLayerContent()

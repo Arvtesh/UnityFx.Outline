@@ -137,6 +137,18 @@ namespace UnityFx.Outline
 		}
 
 		/// <summary>
+		/// Removes the specified <see cref="GameObject"/> from <see cref="OutlineLayers"/>.
+		/// </summary>
+		/// <param name="go">A <see cref="GameObject"/> to remove.</param>
+		public void RemoveGameObject(GameObject go)
+		{
+			if (_outlineLayers)
+			{
+				_outlineLayers.Remove(go);
+			}
+		}
+
+		/// <summary>
 		/// Shares <see cref="OutlineLayers"/> with another <see cref="OutlineEffect"/> instance.
 		/// </summary>
 		/// <param name="other">Effect to share <see cref="OutlineLayers"/> with.</param>
