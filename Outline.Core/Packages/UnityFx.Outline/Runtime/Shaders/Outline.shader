@@ -44,7 +44,7 @@ Shader "Hidden/UnityFx/Outline"
 			UNITY_VERTEX_INPUT_INSTANCE_ID
 		};
 
-		float4 GetFullScreenTriangleVertexPosition(uint vertexID, float z)
+		float4 GetFullScreenTriangleVertexPosition(uint vertexID, float z = UNITY_NEAR_CLIP_VALUE)
 		{
 			// Generates a triangle in homogeneous clip space, s.t.
 			// v0 = (-1, -1, 1), v1 = (3, -1, 1), v2 = (-1, 3, 1).
@@ -60,7 +60,7 @@ Shader "Hidden/UnityFx/Outline"
 			UNITY_TRANSFER_INSTANCE_ID(v, o);
 			UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO(o);
 
-			o.pos = GetFullScreenTriangleVertexPosition(v.vertexID, UNITY_NEAR_CLIP_VALUE);
+			o.pos = GetFullScreenTriangleVertexPosition(v.vertexID);
 			o.uv = ComputeScreenPos(o.pos);
 
 			return o;

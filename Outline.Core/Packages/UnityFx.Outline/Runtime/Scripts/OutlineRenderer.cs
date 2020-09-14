@@ -403,13 +403,15 @@ namespace UnityFx.Outline
 			// Set source texture as _MainTex to match Blit behavior.
 			cmdBuffer.SetGlobalTexture(resources.MainTexId, src);
 
-			if (SystemInfo.graphicsShaderLevel < 35 || resources.UseFullscreenTriangleMesh)
+			// NOTE: SystemInfo.graphicsShaderLevel check is not enough sometimes (esp. on mobiles), so there is SystemInfo.supportsInstancing
+			// check and a flag for forcing DrawMesh.
+			if (SystemInfo.graphicsShaderLevel >= 35 && SystemInfo.supportsInstancing && !resources.UseFullscreenTriangleMesh)
 			{
-				cmdBuffer.DrawMesh(resources.FullscreenTriangleMesh, Matrix4x4.identity, mat, 0, shaderPass, props);
+				cmdBuffer.DrawProcedural(Matrix4x4.identity, mat, shaderPass, MeshTopology.Triangles, 3, 1, props);
 			}
 			else
 			{
-				cmdBuffer.DrawProcedural(Matrix4x4.identity, mat, shaderPass, MeshTopology.Triangles, 3, 1, props);
+				cmdBuffer.DrawMesh(resources.FullscreenTriangleMesh, Matrix4x4.identity, mat, 0, shaderPass, props);
 			}
 		}
 
