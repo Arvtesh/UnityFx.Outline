@@ -36,8 +36,10 @@ namespace UnityFx.Outline
 	{
 		#region data
 
-		private const int _hPassId = 0;
-		private const int _vPassId = 1;
+		private const int _defaultRenderPassId = 0;
+		private const int _alphaTestRenderPassId = 1;
+		private const int _outlineHPassId = 0;
+		private const int _outlineVPassId = 1;
 		private const RenderTextureFormat _rtFormat = RenderTextureFormat.R8;
 
 		private static readonly int _maskRtId = Shader.PropertyToID("_MaskTex");
@@ -55,7 +57,7 @@ namespace UnityFx.Outline
 		/// <summary>
 		/// A default <see cref="CameraEvent"/> outline rendering should be assosiated with.
 		/// </summary>
-		public const CameraEvent RenderEvent = CameraEvent.BeforeImageEffects;
+		public const CameraEvent RenderEvent = CameraEvent.AfterSkybox;
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="OutlineRenderer"/> struct.
@@ -201,7 +203,7 @@ namespace UnityFx.Outline
 		/// <seealso cref="Render(Renderer, IOutlineSettings)"/>
 		public void Render(OutlineRenderObject obj)
 		{
-			Render(obj.Renderers, obj.OutlineSettings, obj.Go.name);
+			Render(obj.Renderers, obj.OutlineSettings, obj.Tag);
 		}
 
 		/// <summary>
@@ -233,8 +235,10 @@ namespace UnityFx.Outline
 				}
 
 				_commandBuffer.BeginSample(sampleName);
-				RenderObject(settings, renderers);
-				RenderOutline(settings);
+				{
+					RenderObject(settings, renderers);
+					RenderOutline(settings);
+				}
 				_commandBuffer.EndSample(sampleName);
 			}
 		}
@@ -266,8 +270,10 @@ namespace UnityFx.Outline
 			}
 
 			_commandBuffer.BeginSample(sampleName);
-			RenderObject(settings, renderer);
-			RenderOutline(settings);
+			{
+				RenderObject(settings, renderer);
+				RenderOutline(settings);
+			}
 			_commandBuffer.EndSample(sampleName);
 		}
 
@@ -319,43 +325,60 @@ namespace UnityFx.Outline
 			_commandBuffer.ClearRenderTarget(false, true, Color.clear);
 		}
 
+		private void DrawRenderer(Renderer renderer, IOutlineSettings settings)
+		{
+			if (renderer && renderer.enabled && renderer.isVisible && renderer.gameObject.activeInHierarchy)
+			{
+				var alphaTest = (settings.OutlineRenderMode & OutlineRenderFlags.EnableAlphaTesting) != 0;
+
+				// NOTE: Accessing Renderer.sharedMaterials triggers GC.Alloc. That's why we use a temporary
+				// list of materials, cached with the outline resources.
+				renderer.GetSharedMaterials(_resources.TmpMaterials);
+
+				if (alphaTest)
+				{
+					for (var i = 0; i < _resources.TmpMaterials.Count; ++i)
+					{
+						var mat = _resources.TmpMaterials[i];
+
+						// Use material cutoff value if available.
+						if (mat.HasProperty(_resources.AlphaCutoffId))
+						{
+							_commandBuffer.SetGlobalFloat(_resources.AlphaCutoffId, mat.GetFloat(_resources.AlphaCutoffId));
+						}
+						else
+						{
+							_commandBuffer.SetGlobalFloat(_resources.AlphaCutoffId, settings.OutlineAlphaCutoff);
+						}
+
+						_commandBuffer.SetGlobalTexture(_resources.MainTexId, _resources.TmpMaterials[i].mainTexture);
+						_commandBuffer.DrawRenderer(renderer, _resources.RenderMaterial, i, _alphaTestRenderPassId);
+					}
+				}
+				else
+				{
+					for (var i = 0; i < _resources.TmpMaterials.Count; ++i)
+					{
+						_commandBuffer.DrawRenderer(renderer, _resources.RenderMaterial, i, _defaultRenderPassId);
+					}
+				}
+			}
+		}
+
 		private void RenderObject(IOutlineSettings settings, IReadOnlyList<Renderer> renderers)
 		{
 			RenderObjectClear(settings.OutlineRenderMode);
 
 			for (var i = 0; i < renderers.Count; ++i)
 			{
-				var r = renderers[i];
-
-				if (r && r.enabled && r.isVisible && r.gameObject.activeInHierarchy)
-				{
-					// NOTE: Accessing Renderer.sharedMaterials triggers GC.Alloc. That's why we use a temporary
-					// list of materials, cached with the outline resources.
-					r.GetSharedMaterials(_resources.TmpMaterials);
-
-					for (var j = 0; j < _resources.TmpMaterials.Count; ++j)
-					{
-						_commandBuffer.DrawRenderer(r, _resources.RenderMaterial, j);
-					}
-				}
+				DrawRenderer(renderers[i], settings);
 			}
 		}
 
 		private void RenderObject(IOutlineSettings settings, Renderer renderer)
 		{
 			RenderObjectClear(settings.OutlineRenderMode);
-
-			if (renderer && renderer.enabled && renderer.isVisible && renderer.gameObject.activeInHierarchy)
-			{
-				// NOTE: Accessing Renderer.sharedMaterials triggers GC.Alloc. That's why we use a temporary
-				// list of materials, cached with the outline resources.
-				renderer.GetSharedMaterials(_resources.TmpMaterials);
-
-				for (var i = 0; i < _resources.TmpMaterials.Count; ++i)
-				{
-					_commandBuffer.DrawRenderer(renderer, _resources.RenderMaterial, i);
-				}
-			}
+			DrawRenderer(renderer, settings);
 		}
 
 		private void RenderOutline(IOutlineSettings settings)
@@ -367,11 +390,11 @@ namespace UnityFx.Outline
 
 			// HPass
 			_commandBuffer.SetRenderTarget(_hPassRtId, RenderBufferLoadAction.DontCare, RenderBufferStoreAction.Store);
-			Blit(_commandBuffer, _maskRtId, _resources, _hPassId, mat, props);
+			Blit(_commandBuffer, _maskRtId, _resources, _outlineHPassId, mat, props);
 
 			// VPassBlend
 			_commandBuffer.SetRenderTarget(_rt, RenderBufferLoadAction.Load, RenderBufferStoreAction.Store);
-			Blit(_commandBuffer, _hPassRtId, _resources, _vPassId, mat, props);
+			Blit(_commandBuffer, _hPassRtId, _resources, _outlineVPassId, mat, props);
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -380,13 +403,15 @@ namespace UnityFx.Outline
 			// Set source texture as _MainTex to match Blit behavior.
 			cmdBuffer.SetGlobalTexture(resources.MainTexId, src);
 
-			if (SystemInfo.graphicsShaderLevel < 35 || resources.UseFullscreenTriangleMesh)
+			// NOTE: SystemInfo.graphicsShaderLevel check is not enough sometimes (esp. on mobiles), so there is SystemInfo.supportsInstancing
+			// check and a flag for forcing DrawMesh.
+			if (SystemInfo.graphicsShaderLevel >= 35 && SystemInfo.supportsInstancing && !resources.UseFullscreenTriangleMesh)
 			{
-				cmdBuffer.DrawMesh(resources.FullscreenTriangleMesh, Matrix4x4.identity, mat, 0, shaderPass, props);
+				cmdBuffer.DrawProcedural(Matrix4x4.identity, mat, shaderPass, MeshTopology.Triangles, 3, 1, props);
 			}
 			else
 			{
-				cmdBuffer.DrawProcedural(Matrix4x4.identity, mat, shaderPass, MeshTopology.Triangles, 3, 1, props);
+				cmdBuffer.DrawMesh(resources.FullscreenTriangleMesh, Matrix4x4.identity, mat, 0, shaderPass, props);
 			}
 		}
 

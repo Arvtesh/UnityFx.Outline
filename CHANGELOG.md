@@ -3,6 +3,25 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/); this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [0.8.1] - 2020.09.21
+
+Alpha test support, bugfixes and misc improvements.
+
+### Added
+- Added support for alpha-testing ([#10](https://github.com/Arvtesh/UnityFx.Outline/issues/10)).
+- Added support for merging outline layer objects ([#12](https://github.com/Arvtesh/UnityFx.Outline/issues/12)).
+- Added `RemoveGameObject` helper methof to `OutlineEffect` ([#15](https://github.com/Arvtesh/UnityFx.Outline/issues/15)).
+- Added ability to customize render event in `OutlineBehaviour`.
+- Added ability to render outlines to the specified camera only for `OutlineBehaviour`.
+- Added warning for unsupported render pipelines for `OutlineBehaviour` and `OutlineEffect`.
+
+### Changed
+- Misc inspector improvements.
+- Changed default render event to `AfterSkybox`.
+
+### Fixed
+- Fixed incorrect condition for selection of render method, which sometimes caused problems with outline rendering on mobiles ([#14](https://github.com/Arvtesh/UnityFx.Outline/issues/14)).
+
 ## [0.8.0] - 2020.05.30
 
 [URP](https://docs.unity3d.com/Packages/com.unity.render-pipelines.universal@8.1/manual/index.html) support, core refactoring and bugfixes.

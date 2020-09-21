@@ -54,7 +54,7 @@ namespace UnityFx.Outline.URP
 		{
 			_outlinePass = new OutlinePass(this)
 			{
-				renderPassEvent = RenderPassEvent.BeforeRenderingPostProcessing
+				renderPassEvent = RenderPassEvent.AfterRenderingSkybox
 			};
 		}
 

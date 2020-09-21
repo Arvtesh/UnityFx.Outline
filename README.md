@@ -27,7 +27,8 @@ Supported outline parameters are:
 - Width (in pixels);
 - Type (solid or blurred);
 - Intensity (for blurred outlines);
-- Depth testing.
+- Depth testing;
+- Alpha testing.
 
 Supported platforms:
 - Windows/Mac standalone;
@@ -66,7 +67,7 @@ Npm core package is available at [npmjs.com](https://www.npmjs.com/package/com.u
     }
   ],
   "dependencies": {
-    "com.unityfx.outline": "0.8.0",
+    "com.unityfx.outline": "0.8.1",
     "com.unityfx.outline.urp": "0.1.0",
   }
 }
@@ -145,6 +146,12 @@ var outlineSettings = GetComponent<OutlineBehaviour>();
 outlineSettings.OutlineColor = Color.green;
 outlineSettings.OutlineWidth = 2;
 outlineSettings.OutlineRenderMode = OutlineRenderFlags.Blurred | OutlineRenderFlags.EnableDepthTesting;
+```
+
+### Alpha testing
+By default alpha testing is disabled when rendering outlines. This behaviour can be overriden by setting `EnableAlphaTesting` flag of `Rander Flags` (either via scripting API or with editor).
+```csharp
+outlineSettings.OutlineRenderMode = OutlineRenderFlags.EnableAlphaTesting;
 ```
 
 ### Ignore layers

@@ -38,11 +38,13 @@ namespace UnityFx.Outline
 			EditorGUI.BeginChangeCheck();
 
 			var mask = EditorGUILayout.MaskField("Ignore layers", _layers.IgnoreLayerMask, InternalEditorUtility.layers);
+			var merge = EditorGUILayout.Toggle("Merge Layer Objects", _layers.MergeLayerObjects);
 
 			if (EditorGUI.EndChangeCheck())
 			{
-				Undo.RecordObject(_layers, "Set Layers");
+				Undo.RecordObject(_layers, "Change layer collection");
 				_layers.IgnoreLayerMask = mask;
+				_layers.MergeLayerObjects = merge;
 			}
 
 			EditorGUILayout.Space();
@@ -93,6 +95,7 @@ namespace UnityFx.Outline
 			var width = layer.OutlineWidth;
 			var renderMode = layer.OutlineRenderMode;
 			var blurIntensity = layer.OutlineIntensity;
+			var alphaCutoff = layer.OutlineAlphaCutoff;
 
 			EditorGUI.BeginChangeCheck();
 
@@ -135,6 +138,12 @@ namespace UnityFx.Outline
 				if ((renderMode & OutlineRenderFlags.Blurred) != 0)
 				{
 					blurIntensity = EditorGUI.Slider(new Rect(rect.x, y, rect.width, lineHeight), "Blur Intensity", blurIntensity, OutlineResources.MinIntensity, OutlineResources.MaxIntensity);
+					y += lineOffset;
+				}
+
+				if ((renderMode & OutlineRenderFlags.EnableAlphaTesting) != 0)
+				{
+					alphaCutoff = EditorGUI.Slider(new Rect(rect.x, y, rect.width, lineHeight), "Alpha Cutoff", alphaCutoff, OutlineResources.MinAlphaCutoff, OutlineResources.MaxAlphaCutoff);
 				}
 
 				EditorGUI.EndDisabledGroup();
@@ -152,6 +161,7 @@ namespace UnityFx.Outline
 				layer.OutlineColor = color;
 				layer.OutlineRenderMode = renderMode;
 				layer.OutlineIntensity = blurIntensity;
+				layer.OutlineAlphaCutoff = alphaCutoff;
 			}
 		}
 
@@ -165,6 +175,11 @@ namespace UnityFx.Outline
 			var numberOfLines = 5;
 
 			if ((_layers[index].OutlineRenderMode & OutlineRenderFlags.Blurred) != 0)
+			{
+				++numberOfLines;
+			}
+
+			if ((_layers[index].OutlineRenderMode & OutlineRenderFlags.EnableAlphaTesting) != 0)
 			{
 				++numberOfLines;
 			}

@@ -137,6 +137,18 @@ namespace UnityFx.Outline
 		}
 
 		/// <summary>
+		/// Removes the specified <see cref="GameObject"/> from <see cref="OutlineLayers"/>.
+		/// </summary>
+		/// <param name="go">A <see cref="GameObject"/> to remove.</param>
+		public void RemoveGameObject(GameObject go)
+		{
+			if (_outlineLayers)
+			{
+				_outlineLayers.Remove(go);
+			}
+		}
+
+		/// <summary>
 		/// Shares <see cref="OutlineLayers"/> with another <see cref="OutlineEffect"/> instance.
 		/// </summary>
 		/// <param name="other">Effect to share <see cref="OutlineLayers"/> with.</param>
@@ -156,6 +168,14 @@ namespace UnityFx.Outline
 
 		private void Awake()
 		{
+			if (GraphicsSettings.renderPipelineAsset)
+			{
+				Debug.LogWarningFormat(this, OutlineResources.SrpNotSupported, GetType().Name);
+			}
+
+#if UNITY_POST_PROCESSING_STACK_V2
+			Debug.LogWarningFormat(this, OutlineResources.PpNotSupported, GetType().Name);
+#endif
 		}
 
 		private void OnEnable()

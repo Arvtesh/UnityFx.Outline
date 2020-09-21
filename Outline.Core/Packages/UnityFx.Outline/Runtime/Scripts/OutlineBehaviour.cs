@@ -27,6 +27,10 @@ namespace UnityFx.Outline
 		private OutlineSettingsInstance _outlineSettings;
 		[SerializeField, HideInInspector]
 		private int _layerMask;
+		[SerializeField, HideInInspector]
+		private CameraEvent _cameraEvent = OutlineRenderer.RenderEvent;
+		[SerializeField, HideInInspector]
+		private Camera _targetCamera;
 		[SerializeField, Tooltip("If set, list of object renderers is updated on each frame. Enable if the object has child renderers which are enabled/disabled frequently.")]
 		private bool _updateRenderers;
 
@@ -108,6 +112,33 @@ namespace UnityFx.Outline
 		}
 
 		/// <summary>
+		/// Gets or sets <see cref="CameraEvent"/> used to render the outlines.
+		/// </summary>
+		public CameraEvent RenderEvent
+		{
+			get
+			{
+				return _cameraEvent;
+			}
+			set
+			{
+				if (_cameraEvent != value)
+				{
+					foreach (var kvp in _cameraMap)
+					{
+						if (kvp.Key)
+						{
+							kvp.Key.RemoveCommandBuffer(_cameraEvent, kvp.Value);
+							kvp.Key.AddCommandBuffer(value, kvp.Value);
+						}
+					}
+
+					_cameraEvent = value;
+				}
+			}
+		}
+
+		/// <summary>
 		/// Gets outline renderers. By default all child <see cref="Renderer"/> components are used for outlining.
 		/// </summary>
 		/// <seealso cref="UpdateRenderers"/>
@@ -121,8 +152,49 @@ namespace UnityFx.Outline
 		}
 
 		/// <summary>
+		/// Gets or sets camera to render outlines to. If not set, outlines are rendered to all active cameras.
+		/// </summary>
+		/// <seealso cref="Cameras"/>
+		public Camera Camera
+		{
+			get
+			{
+				return _targetCamera;
+			}
+			set
+			{
+				if (_targetCamera != value)
+				{
+					if (value)
+					{
+						_camerasToRemove.Clear();
+
+						foreach (var kvp in _cameraMap)
+						{
+							if (kvp.Key && kvp.Key != value)
+							{
+								kvp.Key.RemoveCommandBuffer(_cameraEvent, kvp.Value);
+								kvp.Value.Dispose();
+
+								_camerasToRemove.Add(kvp.Key);
+							}
+						}
+
+						foreach (var camera in _camerasToRemove)
+						{
+							_cameraMap.Remove(camera);
+						}
+					}
+
+					_targetCamera = value;
+				}
+			}
+		}
+
+		/// <summary>
 		/// Gets all cameras outline data is rendered to.
 		/// </summary>
+		/// <seealso cref="Camera"/>
 		public ICollection<Camera> Cameras => _cameraMap.Keys;
 
 		/// <summary>
@@ -140,6 +212,15 @@ namespace UnityFx.Outline
 
 		private void Awake()
 		{
+			if (GraphicsSettings.renderPipelineAsset)
+			{
+				Debug.LogWarningFormat(this, OutlineResources.SrpNotSupported, GetType().Name);
+			}
+
+#if UNITY_POST_PROCESSING_STACK_V2
+			Debug.LogWarningFormat(this, OutlineResources.PpNotSupported, GetType().Name);
+#endif
+
 			CreateRenderersIfNeeded();
 			CreateSettingsIfNeeded();
 		}
@@ -157,7 +238,7 @@ namespace UnityFx.Outline
 			{
 				if (kvp.Key)
 				{
-					kvp.Key.RemoveCommandBuffer(OutlineRenderer.RenderEvent, kvp.Value);
+					kvp.Key.RemoveCommandBuffer(_cameraEvent, kvp.Value);
 				}
 
 				kvp.Value.Dispose();
@@ -276,6 +357,21 @@ namespace UnityFx.Outline
 		}
 
 		/// <inheritdoc/>
+		public float OutlineAlphaCutoff
+		{
+			get
+			{
+				CreateSettingsIfNeeded();
+				return _outlineSettings.OutlineAlphaCutoff;
+			}
+			set
+			{
+				CreateSettingsIfNeeded();
+				_outlineSettings.OutlineAlphaCutoff = value;
+			}
+		}
+
+		/// <inheritdoc/>
 		public OutlineRenderFlags OutlineRenderMode
 		{
 			get
@@ -306,7 +402,7 @@ namespace UnityFx.Outline
 
 		private void OnCameraPreRender(Camera camera)
 		{
-			if (camera)
+			if (camera && (!_targetCamera || _targetCamera == camera))
 			{
 				if (_outlineSettings.RequiresCameraDepth)
 				{
@@ -317,7 +413,7 @@ namespace UnityFx.Outline
 				{
 					var cmdBuf = new CommandBuffer();
 					cmdBuf.name = string.Format("{0} - {1}", GetType().Name, name);
-					camera.AddCommandBuffer(OutlineRenderer.RenderEvent, cmdBuf);
+					camera.AddCommandBuffer(_cameraEvent, cmdBuf);
 
 					_cameraMap.Add(camera, cmdBuf);
 				}

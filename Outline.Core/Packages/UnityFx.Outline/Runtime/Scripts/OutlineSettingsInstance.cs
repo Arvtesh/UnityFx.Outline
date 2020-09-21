@@ -18,10 +18,12 @@ namespace UnityFx.Outline
 		private OutlineSettings _outlineSettings;
 		[SerializeField, HideInInspector]
 		private Color _outlineColor = Color.red;
-		[SerializeField, HideInInspector]
+		[SerializeField, HideInInspector, Range(OutlineResources.MinWidth, OutlineResources.MaxWidth)]
 		private int _outlineWidth = 4;
-		[SerializeField, HideInInspector]
+		[SerializeField, HideInInspector, Range(OutlineResources.MinIntensity, OutlineResources.MaxIntensity)]
 		private float _outlineIntensity = 2;
+		[SerializeField, HideInInspector, Range(OutlineResources.MinAlphaCutoff, OutlineResources.MaxAlphaCutoff)]
+		private float _outlineAlphaCutoff = 0.9f;
 		[SerializeField, HideInInspector]
 		private OutlineRenderFlags _outlineMode;
 
@@ -91,6 +93,19 @@ namespace UnityFx.Outline
 			set
 			{
 				_outlineIntensity = Mathf.Clamp(value, OutlineResources.MinIntensity, OutlineResources.MaxIntensity);
+			}
+		}
+
+		/// <inheritdoc/>
+		public float OutlineAlphaCutoff
+		{
+			get
+			{
+				return _outlineSettings is null ? _outlineAlphaCutoff : _outlineSettings.OutlineAlphaCutoff;
+			}
+			set
+			{
+				_outlineAlphaCutoff = Mathf.Clamp(value, 0, 1);
 			}
 		}
 

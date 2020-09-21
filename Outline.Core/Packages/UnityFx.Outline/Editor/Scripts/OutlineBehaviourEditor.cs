@@ -6,6 +6,7 @@ using UnityEditor;
 using UnityEditorInternal;
 using UnityEditor.SceneManagement;
 using UnityEngine;
+using UnityEngine.Rendering;
 
 namespace UnityFx.Outline
 {
@@ -13,6 +14,7 @@ namespace UnityFx.Outline
 	public class OutlineBehaviourEditor : Editor
 	{
 		private OutlineBehaviour _effect;
+		private SerializedProperty _settingsProp;
 		private bool _debugOpened;
 		private bool _renderersOpened;
 		private bool _camerasOpened;
@@ -20,6 +22,7 @@ namespace UnityFx.Outline
 		private void OnEnable()
 		{
 			_effect = (OutlineBehaviour)target;
+			_settingsProp = serializedObject.FindProperty("_outlineSettings");
 		}
 
 		public override void OnInspectorGUI()
@@ -37,33 +40,24 @@ namespace UnityFx.Outline
 				_effect.IgnoreLayerMask = mask;
 			}
 
-			var obj = (OutlineSettings)EditorGUILayout.ObjectField("Outline Settings", _effect.OutlineSettings, typeof(OutlineSettings), true);
+			var e = (CameraEvent)EditorGUILayout.EnumPopup("Render Event", _effect.RenderEvent);
 
-			if (_effect.OutlineSettings != obj)
+			if (e != _effect.RenderEvent)
 			{
-				Undo.RecordObject(_effect, "Set Settings");
-				_effect.OutlineSettings = obj;
+				Undo.RecordObject(_effect, "Set Render Event");
+				_effect.RenderEvent = e;
 			}
 
-			if (obj)
+			var c = (Camera)EditorGUILayout.ObjectField("Target Camera", _effect.Camera, typeof(Camera), true);
+
+			if (c != _effect.Camera)
 			{
-				EditorGUI.BeginDisabledGroup(true);
-				EditorGUI.indentLevel += 1;
-
-				OutlineEditorUtility.Render(_effect, _effect);
-
-				EditorGUILayout.HelpBox(string.Format("Outline settings are overriden with values from {0}.", obj.name), MessageType.Info, true);
-				EditorGUI.indentLevel -= 1;
-				EditorGUI.EndDisabledGroup();
+				Undo.RecordObject(_effect, "Set Target Camera");
+				_effect.Camera = c;
 			}
-			else
-			{
-				EditorGUI.indentLevel += 1;
 
-				OutlineEditorUtility.Render(_effect, _effect);
-
-				EditorGUI.indentLevel -= 1;
-			}
+			EditorGUILayout.PropertyField(_settingsProp);
+			serializedObject.ApplyModifiedProperties();
 
 			if (EditorGUI.EndChangeCheck())
 			{

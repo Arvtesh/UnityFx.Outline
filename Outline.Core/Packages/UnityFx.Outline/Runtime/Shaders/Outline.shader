@@ -5,13 +5,6 @@
 // Modified version of 'Custom/Post Outline' shader taken from https://willweissman.wordpress.com/tutorials/shaders/unity-shaderlab-object-outlines/.
 Shader "Hidden/UnityFx/Outline"
 {
-	Properties
-	{
-		_Width("Outline thickness (in pixels)", Range(1, 32)) = 5
-		_Intensity("Outline intensity", Range(0.1, 100)) = 2
-		_Color("Outline color", Color) = (1, 0, 0, 1)
-	}
-
 	HLSLINCLUDE
 
 		#include "UnityCG.cginc"
@@ -32,8 +25,9 @@ Shader "Hidden/UnityFx/Outline"
 		v2f_img vert(appdata_img v)
 		{
 			v2f_img o;
-			UNITY_INITIALIZE_OUTPUT(v2f_img, o);
 			UNITY_SETUP_INSTANCE_ID(v);
+			UNITY_INITIALIZE_OUTPUT(v2f_img, o);
+			UNITY_TRANSFER_INSTANCE_ID(v, o);
 			UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO(o);
 
 			o.pos = float4(v.vertex.xy, UNITY_NEAR_CLIP_VALUE, 1);
@@ -50,7 +44,7 @@ Shader "Hidden/UnityFx/Outline"
 			UNITY_VERTEX_INPUT_INSTANCE_ID
 		};
 
-		float4 GetFullScreenTriangleVertexPosition(uint vertexID, float z)
+		float4 GetFullScreenTriangleVertexPosition(uint vertexID, float z = UNITY_NEAR_CLIP_VALUE)
 		{
 			// Generates a triangle in homogeneous clip space, s.t.
 			// v0 = (-1, -1, 1), v1 = (3, -1, 1), v2 = (-1, 3, 1).
@@ -61,11 +55,12 @@ Shader "Hidden/UnityFx/Outline"
 		v2f_img vert(appdata_vid v)
 		{
 			v2f_img o;
-			UNITY_INITIALIZE_OUTPUT(v2f_img, o);
 			UNITY_SETUP_INSTANCE_ID(v);
+			UNITY_INITIALIZE_OUTPUT(v2f_img, o);
+			UNITY_TRANSFER_INSTANCE_ID(v, o);
 			UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO(o);
 
-			o.pos = GetFullScreenTriangleVertexPosition(v.vertexID, UNITY_NEAR_CLIP_VALUE);
+			o.pos = GetFullScreenTriangleVertexPosition(v.vertexID);
 			o.uv = ComputeScreenPos(o.pos);
 
 			return o;
@@ -89,12 +84,16 @@ Shader "Hidden/UnityFx/Outline"
 
 		float4 frag_h(v2f_img i) : SV_Target
 		{
+			UNITY_SETUP_INSTANCE_ID(i);
+
 			float intensity = CalcIntensity(i.uv, float2(_MainTex_TexelSize.x, 0));
 			return float4(intensity, intensity, intensity, 1);
 		}
 
 		float4 frag_v(v2f_img i) : SV_Target
 		{
+			UNITY_SETUP_INSTANCE_ID(i);
+
 			if (UNITY_SAMPLE_SCREENSPACE_TEXTURE(_MaskTex, i.uv).r > 0)
 			{
 				// TODO: Avoid discard/clip to improve performance on mobiles.
@@ -124,6 +123,7 @@ Shader "Hidden/UnityFx/Outline"
 			HLSLPROGRAM
 
 			#pragma target 3.5
+			#pragma multi_compile_instancing
 			#pragma shader_feature_local _USE_DRAWMESH
 			#pragma vertex vert
 			#pragma fragment frag_h
@@ -140,6 +140,7 @@ Shader "Hidden/UnityFx/Outline"
 			HLSLPROGRAM
 
 			#pragma target 3.5
+			#pragma multi_compile_instancing
 			#pragma shader_feature_local _USE_DRAWMESH
 			#pragma vertex vert
 			#pragma fragment frag_v

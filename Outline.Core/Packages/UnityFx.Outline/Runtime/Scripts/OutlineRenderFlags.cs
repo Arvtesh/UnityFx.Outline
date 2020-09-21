@@ -22,8 +22,13 @@ namespace UnityFx.Outline
 		Blurred = 1,
 
 		/// <summary>
-		/// Enabled depth testing when rendering object outlines. Only visible parts of objects are outlined.
+		/// Enables depth testing when rendering object outlines. Only visible parts of objects are outlined.
 		/// </summary>
-		EnableDepthTesting = 2
+		EnableDepthTesting = 2,
+
+		/// <summary>
+		/// Enabled alpha testing when rendering outlines.
+		/// </summary>
+		EnableAlphaTesting = 4
 	}
 }
