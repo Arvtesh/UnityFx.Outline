@@ -208,7 +208,7 @@ Install the package, add `OutlineFeature` to `ScriptableRendererData`'s list of 
 
 ![URP outline settings](Docs/UrpOutlineSettings.png "URP outline settings")
 
-Enable depth texture rendering in `UniversalRenderPipelineAsset` and that's it!
+Enable depth texture and opaque texture rendering in `UniversalRenderPipelineAsset` and that's it!
 
 ### Integration with High Definition Render Pipeline (HDRP).
 [![NPM](https://nodei.co/npm/com.unityfx.outline.hdrp.png)](https://www.npmjs.com/package/com.unityfx.outline.hdrp)
