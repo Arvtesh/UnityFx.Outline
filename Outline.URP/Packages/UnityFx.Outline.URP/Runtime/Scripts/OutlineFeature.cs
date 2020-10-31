@@ -63,7 +63,7 @@ namespace UnityFx.Outline.URP
 		{
 			if (_outlineResources && _outlineResources.IsValid && _outlineLayers)
 			{
-				_outlinePass.Setup(renderer.cameraColorTarget, renderer.cameraDepth);
+				_outlinePass.Setup(renderer);
 				renderer.EnqueuePass(_outlinePass);
 			}
 		}
