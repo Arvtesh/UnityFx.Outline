@@ -300,13 +300,15 @@ namespace UnityFx.Outline
 			// Set source texture as _MainTex to match Blit behavior.
 			cmdBuffer.SetGlobalTexture(resources.MainTexId, src);
 
-			if (SystemInfo.graphicsShaderLevel < 35 || resources.UseFullscreenTriangleMesh)
+			// NOTE: SystemInfo.graphicsShaderLevel check is not enough sometimes (esp. on mobiles), so there is SystemInfo.supportsInstancing
+			// check and a flag for forcing DrawMesh.
+			if (SystemInfo.graphicsShaderLevel >= 35 && SystemInfo.supportsInstancing && !resources.UseFullscreenTriangleMesh)
 			{
-				cmdBuffer.DrawMesh(resources.FullscreenTriangleMesh, Matrix4x4.identity, mat, 0, shaderPass, props);
+				cmdBuffer.DrawProcedural(Matrix4x4.identity, mat, shaderPass, MeshTopology.Triangles, 3, 1, props);
 			}
 			else
 			{
-				cmdBuffer.DrawProcedural(Matrix4x4.identity, mat, shaderPass, MeshTopology.Triangles, 3, 1, props);
+				cmdBuffer.DrawMesh(resources.FullscreenTriangleMesh, Matrix4x4.identity, mat, 0, shaderPass, props);
 			}
 		}
 
@@ -411,29 +413,7 @@ namespace UnityFx.Outline
 
 			// VPassBlend
 			_commandBuffer.SetRenderTarget(_rt, RenderBufferLoadAction.Load, RenderBufferStoreAction.Store);
-<<<<<<< HEAD
 			Blit(_commandBuffer, _hPassRtId, _resources, OutlineResources.OutlineShaderVPassId, mat, props);
-=======
-			Blit(_commandBuffer, _hPassRtId, _resources, _outlineVPassId, mat, props);
-		}
-
-		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		private static void Blit(CommandBuffer cmdBuffer, RenderTargetIdentifier src, OutlineResources resources, int shaderPass, Material mat, MaterialPropertyBlock props)
-		{
-			// Set source texture as _MainTex to match Blit behavior.
-			cmdBuffer.SetGlobalTexture(resources.MainTexId, src);
-
-			// NOTE: SystemInfo.graphicsShaderLevel check is not enough sometimes (esp. on mobiles), so there is SystemInfo.supportsInstancing
-			// check and a flag for forcing DrawMesh.
-			if (SystemInfo.graphicsShaderLevel >= 35 && SystemInfo.supportsInstancing && !resources.UseFullscreenTriangleMesh)
-			{
-				cmdBuffer.DrawProcedural(Matrix4x4.identity, mat, shaderPass, MeshTopology.Triangles, 3, 1, props);
-			}
-			else
-			{
-				cmdBuffer.DrawMesh(resources.FullscreenTriangleMesh, Matrix4x4.identity, mat, 0, shaderPass, props);
-			}
->>>>>>> a832c8aba1d0ea6bfd4536f731ac762981b3c3e9
 		}
 
 		#endregion

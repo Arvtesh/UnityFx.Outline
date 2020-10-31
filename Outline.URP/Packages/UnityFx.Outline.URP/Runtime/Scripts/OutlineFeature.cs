@@ -63,7 +63,6 @@ namespace UnityFx.Outline.URP
 
 			_outlinePass = new OutlinePass(this)
 			{
-<<<<<<< HEAD
 				renderPassEvent = _renderPassEvent
 			};
 
@@ -80,9 +79,6 @@ namespace UnityFx.Outline.URP
 			_outlineVBlurBlendPass = new OutlineVBlurBlendPass(this, _hpassTexture)
 			{
 				renderPassEvent = _renderPassEvent
-=======
-				renderPassEvent = RenderPassEvent.AfterRenderingSkybox
->>>>>>> a832c8aba1d0ea6bfd4536f731ac762981b3c3e9
 			};
 		}
 
@@ -91,7 +87,6 @@ namespace UnityFx.Outline.URP
 		{
 			if (_outlineResources && _outlineResources.IsValid)
 			{
-<<<<<<< HEAD
 				if (_outlineSettings.OutlineLayerMask != 0)
 				{
 					_outlineRenderPass.Setup(renderer.cameraDepth);
@@ -102,13 +97,9 @@ namespace UnityFx.Outline.URP
 
 				if (_outlineLayers)
 				{
-					_outlinePass.Setup(renderer.cameraColorTarget, renderer.cameraDepth);
+					_outlinePass.Setup(renderer);
 					renderer.EnqueuePass(_outlinePass);
 				}
-=======
-				_outlinePass.Setup(renderer);
-				renderer.EnqueuePass(_outlinePass);
->>>>>>> a832c8aba1d0ea6bfd4536f731ac762981b3c3e9
 			}
 		}
 

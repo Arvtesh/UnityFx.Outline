@@ -1,6 +1,6 @@
 {
   "dependencies": {
-    "com.unity.render-pipelines.universal": "7.1.8",
+    "com.unity.render-pipelines.universal": "7.3.1",
     "com.unityfx.outline": "file:../../Outline.Core/Packages/UnityFx.Outline",
     "com.unity.modules.ai": "1.0.0",
     "com.unity.modules.androidjni": "1.0.0",
