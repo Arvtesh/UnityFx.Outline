@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using UnityEditor;
 using UnityEngine;
 
 namespace UnityFx.Outline
@@ -15,6 +16,13 @@ namespace UnityFx.Outline
 	public sealed class OutlineResources : ScriptableObject
 	{
 		#region data
+
+		[SerializeField]
+		private Shader _renderShader;
+		[SerializeField]
+		private Shader _outlineShader;
+		[SerializeField]
+		private bool _enableInstancing;
 
 		private Material _renderMaterial;
 		private Material _outlineMaterial;
@@ -61,6 +69,18 @@ namespace UnityFx.Outline
 		public const int SolidIntensity = 100;
 
 		/// <summary>
+		/// Minimum value of outline alpha cutoff parameter.
+		/// </summary>
+		/// <seealso cref="MaxAlphaCutoff"/>
+		public const float MinAlphaCutoff = 0;
+
+		/// <summary>
+		/// Maximum value of outline alpha cutoff parameter.
+		/// </summary>
+		/// <seealso cref="MinAlphaCutoff"/>
+		public const float MaxAlphaCutoff = 1;
+
+		/// <summary>
 		/// Name of _MainTex shader parameter.
 		/// </summary>
 		public const string MainTexName = "_MainTex";
@@ -79,6 +99,11 @@ namespace UnityFx.Outline
 		/// Name of _Intensity shader parameter.
 		/// </summary>
 		public const string IntensityName = "_Intensity";
+
+		/// <summary>
+		/// Name of _Cutoff shader parameter.
+		/// </summary>
+		public const string AlphaCutoffName = "_Cutoff";
 
 		/// <summary>
 		/// Name of _GaussSamples shader parameter.
@@ -121,6 +146,16 @@ namespace UnityFx.Outline
 		public const int OutlineShaderVPassId = 1;
 
 		/// <summary>
+		/// SRP not supported message.
+		/// </summary>
+		internal const string SrpNotSupported = "{0} works with built-in render pipeline only. It does not support SRP (including URP and HDRP).";
+
+		/// <summary>
+		/// Post-processing not supported message.
+		/// </summary>
+		internal const string PpNotSupported = "{0} does not support Unity Post-processing stack v2. It might not work as expected.";
+
+		/// <summary>
 		/// Hashed name of _MainTex shader parameter.
 		/// </summary>
 		public readonly int MainTexId = Shader.PropertyToID(MainTexName);
@@ -141,6 +176,11 @@ namespace UnityFx.Outline
 		public readonly int IntensityId = Shader.PropertyToID(IntensityName);
 
 		/// <summary>
+		/// Hashed name of _Cutoff shader parameter.
+		/// </summary>
+		public readonly int AlphaCutoffId = Shader.PropertyToID(AlphaCutoffName);
+
+		/// <summary>
 		/// Hashed name of _GaussSamples shader parameter.
 		/// </summary>
 		public readonly int GaussSamplesId = Shader.PropertyToID(GaussSamplesName);
@@ -153,12 +193,24 @@ namespace UnityFx.Outline
 		/// <summary>
 		/// Gets or sets a <see cref="Shader"/> that renders objects outlined with a solid while color.
 		/// </summary>
-		public Shader RenderShader;
+		public Shader RenderShader
+		{
+			get
+			{
+				return _renderShader;
+			}
+		}
 
 		/// <summary>
 		/// Gets or sets a <see cref="Shader"/> that renders outline around the mask, that was generated with <see cref="RenderShader"/>.
 		/// </summary>
-		public Shader OutlineShader;
+		public Shader OutlineShader
+		{
+			get
+			{
+				return _outlineShader;
+			}
+		}
 
 		/// <summary>
 		/// Gets a <see cref="RenderShader"/>-based material.
@@ -172,7 +224,8 @@ namespace UnityFx.Outline
 					_renderMaterial = new Material(RenderShader)
 					{
 						name = "Outline - RenderColor",
-						hideFlags = HideFlags.HideAndDontSave
+						hideFlags = HideFlags.HideAndDontSave,
+						enableInstancing = _enableInstancing
 					};
 				}
 
@@ -192,7 +245,8 @@ namespace UnityFx.Outline
 					_outlineMaterial = new Material(OutlineShader)
 					{
 						name = "Outline - Main",
-						hideFlags = HideFlags.HideAndDontSave
+						hideFlags = HideFlags.HideAndDontSave,
+						enableInstancing = _enableInstancing
 					};
 
 					if (_useDrawMesh)
@@ -286,6 +340,31 @@ namespace UnityFx.Outline
 		}
 
 		/// <summary>
+		/// Gets or sets a value indicating whether instancing is enabled.
+		/// </summary>
+		public bool EnableInstancing
+		{
+			get
+			{
+				return _enableInstancing;
+			}
+			set
+			{
+				_enableInstancing = value;
+
+				if (_renderMaterial)
+				{
+					_renderMaterial.enableInstancing = value;
+				}
+
+				if (_outlineMaterial)
+				{
+					_outlineMaterial.enableInstancing = value;
+				}
+			}
+		}
+
+		/// <summary>
 		/// Gets a value indicating whether the instance is in valid state.
 		/// </summary>
 		public bool IsValid => RenderShader && OutlineShader;
@@ -340,8 +419,8 @@ namespace UnityFx.Outline
 		/// </summary>
 		public void ResetToDefaults()
 		{
-			RenderShader = Shader.Find("Hidden/UnityFx/OutlineColor");
-			OutlineShader = Shader.Find("Hidden/UnityFx/Outline");
+			_renderShader = Shader.Find("Hidden/UnityFx/OutlineColor");
+			_outlineShader = Shader.Find("Hidden/UnityFx/Outline");
 		}
 
 		/// <summary>

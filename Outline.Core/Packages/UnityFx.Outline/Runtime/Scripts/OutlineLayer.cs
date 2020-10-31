@@ -29,6 +29,7 @@ namespace UnityFx.Outline
 
 		private OutlineLayerCollection _parentCollection;
 		private Dictionary<GameObject, OutlineRendererCollection> _outlineObjects = new Dictionary<GameObject, OutlineRendererCollection>();
+		private List<Renderer> _mergedRenderers;
 
 		#endregion
 
@@ -183,10 +184,47 @@ namespace UnityFx.Outline
 
 					if (go && go.activeInHierarchy)
 					{
-						renderObjects.Add(new OutlineRenderObject(go, kvp.Value.GetList(), _settings));
+						renderObjects.Add(new OutlineRenderObject(kvp.Value.GetList(), _settings, go.name));
 					}
 				}
 			}
+		}
+
+		/// <summary>
+		/// Gets all layer renderers.
+		/// </summary>
+		public IReadOnlyList<Renderer> GetRenderers()
+		{
+			if (_enabled)
+			{
+				if (_mergedRenderers != null)
+				{
+					_mergedRenderers.Clear();
+				}
+				else
+				{
+					_mergedRenderers = new List<Renderer>();
+				}
+
+				foreach (var kvp in _outlineObjects)
+				{
+					var go = kvp.Key;
+
+					if (go && go.activeInHierarchy)
+					{
+						var rl = kvp.Value.GetList();
+
+						for (var i = 0; i < rl.Count; i++)
+						{
+							_mergedRenderers.Add(rl[i]);
+						}
+					}
+				}
+
+				return _mergedRenderers;
+			}
+
+			return Array.Empty<Renderer>();
 		}
 
 		#endregion
@@ -272,6 +310,19 @@ namespace UnityFx.Outline
 			set
 			{
 				_settings.OutlineIntensity = value;
+			}
+		}
+
+		/// <inheritdoc/>
+		public float OutlineAlphaCutoff
+		{
+			get
+			{
+				return _settings.OutlineAlphaCutoff;
+			}
+			set
+			{
+				_settings.OutlineAlphaCutoff = value;
 			}
 		}
 

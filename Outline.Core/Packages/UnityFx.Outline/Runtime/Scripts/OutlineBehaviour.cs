@@ -212,6 +212,15 @@ namespace UnityFx.Outline
 
 		private void Awake()
 		{
+			if (GraphicsSettings.renderPipelineAsset)
+			{
+				Debug.LogWarningFormat(this, OutlineResources.SrpNotSupported, GetType().Name);
+			}
+
+#if UNITY_POST_PROCESSING_STACK_V2
+			Debug.LogWarningFormat(this, OutlineResources.PpNotSupported, GetType().Name);
+#endif
+
 			CreateRenderersIfNeeded();
 			CreateSettingsIfNeeded();
 		}
@@ -344,6 +353,21 @@ namespace UnityFx.Outline
 			{
 				CreateSettingsIfNeeded();
 				_outlineSettings.OutlineIntensity = value;
+			}
+		}
+
+		/// <inheritdoc/>
+		public float OutlineAlphaCutoff
+		{
+			get
+			{
+				CreateSettingsIfNeeded();
+				return _outlineSettings.OutlineAlphaCutoff;
+			}
+			set
+			{
+				CreateSettingsIfNeeded();
+				_outlineSettings.OutlineAlphaCutoff = value;
 			}
 		}
 

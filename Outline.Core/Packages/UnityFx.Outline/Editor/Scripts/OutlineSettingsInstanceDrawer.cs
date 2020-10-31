@@ -9,9 +9,9 @@ using UnityEngine;
 
 namespace UnityFx.Outline
 {
-    [CustomPropertyDrawer(typeof(OutlineSettingsInstance))]
-    public class OutlineSettingsInstanceDrawer : PropertyDrawer
-    {
+	[CustomPropertyDrawer(typeof(OutlineSettingsInstance))]
+	public class OutlineSettingsInstanceDrawer : PropertyDrawer
+	{
 		public override void OnGUI(Rect rc, SerializedProperty property, GUIContent label)
 		{
 			EditorGUI.BeginProperty(rc, label, property);

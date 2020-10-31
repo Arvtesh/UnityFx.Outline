@@ -25,7 +25,7 @@ namespace UnityFx.Outline.PostProcessing
 
 			protected override void OnEnable()
 			{
-				if (value == null)
+				if (value is null)
 				{
 					value = Settings._defaultResources;
 				}

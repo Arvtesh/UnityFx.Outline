@@ -14,8 +14,7 @@ namespace UnityFx.Outline.URP
 		private readonly OutlineFeature _feature;
 		private readonly List<OutlineRenderObject> _renderObjects = new List<OutlineRenderObject>();
 
-		private RenderTargetIdentifier _rt;
-		private RenderTargetIdentifier _depth;
+		private ScriptableRenderer _renderer;
 		private RenderTextureDescriptor _rtDesc;
 
 		public OutlinePass(OutlineFeature feature)
@@ -23,10 +22,9 @@ namespace UnityFx.Outline.URP
 			_feature = feature;
 		}
 
-		public void Setup(RenderTargetIdentifier rt, RenderTargetIdentifier depth)
+		public void Setup(ScriptableRenderer renderer)
 		{
-			_rt = rt;
-			_depth = depth;
+			_renderer = renderer;
 		}
 
 		public override void Configure(CommandBuffer cmd, RenderTextureDescriptor cameraTextureDescriptor)
@@ -38,7 +36,7 @@ namespace UnityFx.Outline.URP
 		{
 			var cmd = CommandBufferPool.Get(OutlineResources.EffectName);
 
-			using (var renderer = new OutlineRenderer(cmd, _feature.OutlineResources, _rt, _depth, _rtDesc))
+			using (var renderer = new OutlineRenderer(cmd, _feature.OutlineResources, _renderer.cameraColorTarget, _renderer.cameraDepth, _rtDesc))
 			{
 				_renderObjects.Clear();
 				_feature.OutlineLayers.GetRenderObjects(_renderObjects);

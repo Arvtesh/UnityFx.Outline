@@ -4,8 +4,8 @@ MonoImporter:
   externalObjects: {}
   serializedVersion: 2
   defaultReferences:
-  - RenderShader: {fileID: 4800000, guid: ac20fbf75bafe454aba5ef3c098349df, type: 3}
-  - OutlineShader: {fileID: 4800000, guid: 41c9acbf41c8245498ac9beab378de12, type: 3}
+  - _renderShader: {fileID: 4800000, guid: ac20fbf75bafe454aba5ef3c098349df, type: 3}
+  - _outlineShader: {fileID: 4800000, guid: 41c9acbf41c8245498ac9beab378de12, type: 3}
   executionOrder: 0
   icon: {instanceID: 0}
   userData: 
