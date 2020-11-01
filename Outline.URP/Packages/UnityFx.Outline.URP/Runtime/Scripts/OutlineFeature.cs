@@ -37,7 +37,7 @@ namespace UnityFx.Outline.URP
 		private RenderTargetHandle _hpassTexture;
 
 		private OutlinePass _outlinePass;
-		private OutlineRenderObjectsPass _outlineRenderPass;
+		private OutlineRenderLayerPass _outlineRenderPass;
 		private OutlineHBlurPass _outlineHBlurPass;
 		private OutlineVBlurBlendPass _outlineVBlurBlendPass;
 
@@ -58,15 +58,15 @@ namespace UnityFx.Outline.URP
 		/// <inheritdoc/>
 		public override void Create()
 		{
-			_renderTexture.Init("_TmpRt");
-			_hpassTexture.Init("_HPassRt");
+			_renderTexture.Init(OutlineResources.MaskTexName);
+			_hpassTexture.Init(OutlineResources.TempTexName);
 
 			_outlinePass = new OutlinePass(this)
 			{
 				renderPassEvent = _renderPassEvent
 			};
 
-			_outlineRenderPass = new OutlineRenderObjectsPass(this, _outlineSettings.OutlineLayerMask, _renderTexture)
+			_outlineRenderPass = new OutlineRenderLayerPass(this, _outlineSettings.OutlineLayerMask, _renderTexture)
 			{
 				renderPassEvent = _renderPassEvent
 			};
@@ -89,7 +89,7 @@ namespace UnityFx.Outline.URP
 			{
 				if (_outlineSettings.OutlineLayerMask != 0)
 				{
-					_outlineRenderPass.Setup(renderer.cameraDepth);
+					_outlineRenderPass.Setup(renderer);
 					renderer.EnqueuePass(_outlineRenderPass);
 					renderer.EnqueuePass(_outlineHBlurPass);
 					renderer.EnqueuePass(_outlineVBlurBlendPass);

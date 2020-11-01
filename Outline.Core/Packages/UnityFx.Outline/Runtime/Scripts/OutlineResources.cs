@@ -86,6 +86,16 @@ namespace UnityFx.Outline
 		public const string MainTexName = "_MainTex";
 
 		/// <summary>
+		/// Name of _MaskTex shader parameter.
+		/// </summary>
+		public const string MaskTexName = "_MaskTex";
+
+		/// <summary>
+		/// Name of _TempTex shader parameter.
+		/// </summary>
+		public const string TempTexName = "_TempTex";
+
+		/// <summary>
 		/// Name of _Color shader parameter.
 		/// </summary>
 		public const string ColorName = "_Color";
@@ -159,6 +169,16 @@ namespace UnityFx.Outline
 		/// Hashed name of _MainTex shader parameter.
 		/// </summary>
 		public readonly int MainTexId = Shader.PropertyToID(MainTexName);
+
+		/// <summary>
+		/// Hashed name of _MaskTex shader parameter.
+		/// </summary>
+		public readonly int MaskTexId = Shader.PropertyToID(MaskTexName);
+
+		/// <summary>
+		/// Hashed name of _TempTex shader parameter.
+		/// </summary>
+		public readonly int TempTexId = Shader.PropertyToID(TempTexName);
 
 		/// <summary>
 		/// Hashed name of _Color shader parameter.
