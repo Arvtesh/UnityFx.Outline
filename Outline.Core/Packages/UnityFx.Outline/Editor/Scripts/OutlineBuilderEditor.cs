@@ -84,9 +84,16 @@ namespace UnityFx.Outline
 
 				_content.drawElementCallback += (rect, index, isActive, isFocused) =>
 				{
-					var item = _builder.Content[index];
-					item.Go = (GameObject)EditorGUI.ObjectField(new Rect(rect.x + rect.width * 0.3f + 1, rect.y, rect.width * 0.7f, EditorGUIUtility.singleLineHeight), item.Go, typeof(GameObject), true);
-					item.LayerIndex = EditorGUI.IntField(new Rect(rect.x, rect.y, rect.width * 0.3f - 1, EditorGUIUtility.singleLineHeight), item.LayerIndex);
+					if (_builder && _builder.Content != null && index < _builder.Content.Count)
+					{
+						var item = _builder.Content[index];
+
+						if (item != null)
+						{
+							item.Go = (GameObject)EditorGUI.ObjectField(new Rect(rect.x + rect.width * 0.3f + 1, rect.y, rect.width * 0.7f, EditorGUIUtility.singleLineHeight), item.Go, typeof(GameObject), true);
+							item.LayerIndex = EditorGUI.IntField(new Rect(rect.x, rect.y, rect.width * 0.3f - 1, EditorGUIUtility.singleLineHeight), item.LayerIndex);
+						}
+					}
 				};
 
 				_content.drawHeaderCallback += (rect) =>
