@@ -13,17 +13,15 @@ namespace UnityFx.Outline.URP
 	{
 		private readonly OutlineFeature _feature;
 
-		private RenderTargetHandle _rt;
-		private ScriptableRenderer _renderer;
-
 		private List<ShaderTagId> _shaderTagIdList = new List<ShaderTagId>() { new ShaderTagId("UniversalForward") };
 		private FilteringSettings _filteringSettings;
 		private RenderStateBlock _renderStateBlock;
 
-		public OutlineRenderLayerPass(OutlineFeature feature, int layerMask, RenderTargetHandle rt)
+		private ScriptableRenderer _renderer;
+
+		public OutlineRenderLayerPass(OutlineFeature feature, int layerMask)
 		{
 			_feature = feature;
-			_rt = rt;
 			_filteringSettings = new FilteringSettings(RenderQueueRange.opaque, layerMask);
 			_renderStateBlock = new RenderStateBlock(RenderStateMask.Nothing);
 
@@ -36,8 +34,9 @@ namespace UnityFx.Outline.URP
 
 		public override void Configure(CommandBuffer cmd, RenderTextureDescriptor cameraTextureDescriptor)
 		{
-			cmd.GetTemporaryRT(_rt.id, cameraTextureDescriptor);
-			ConfigureTarget(_rt.Identifier(), _renderer.cameraDepth);
+			cameraTextureDescriptor.colorFormat = OutlineRenderer.RtFormat;
+			cmd.GetTemporaryRT(_feature.MaskTexId, cameraTextureDescriptor);
+			ConfigureTarget(_feature.MaskTex, _renderer.cameraDepth);
 			ConfigureClear(ClearFlag.Color, Color.clear);
 		}
 

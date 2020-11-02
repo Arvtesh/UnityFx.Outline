@@ -51,6 +51,14 @@ namespace UnityFx.Outline.URP
 
 		internal IOutlineSettings OutlineSettings => _outlineSettings;
 
+		internal RenderTargetIdentifier MaskTex => _renderTexture.Identifier();
+
+		internal int MaskTexId => _outlineResources.MaskTexId;
+
+		internal RenderTargetIdentifier TempTex => _hpassTexture.Identifier();
+
+		internal int TempTexId => _outlineResources.TempTexId;
+
 		#endregion
 
 		#region ScriptableRendererFeature
@@ -66,17 +74,17 @@ namespace UnityFx.Outline.URP
 				renderPassEvent = _renderPassEvent
 			};
 
-			_outlineRenderPass = new OutlineRenderLayerPass(this, _outlineSettings.OutlineLayerMask, _renderTexture)
+			_outlineRenderPass = new OutlineRenderLayerPass(this, _outlineSettings.OutlineLayerMask)
 			{
 				renderPassEvent = _renderPassEvent
 			};
 
-			_outlineHBlurPass = new OutlineHBlurPass(this, _renderTexture, _hpassTexture)
+			_outlineHBlurPass = new OutlineHBlurPass(this)
 			{
 				renderPassEvent = _renderPassEvent
 			};
 
-			_outlineVBlurBlendPass = new OutlineVBlurBlendPass(this, _hpassTexture)
+			_outlineVBlurBlendPass = new OutlineVBlurBlendPass(this)
 			{
 				renderPassEvent = _renderPassEvent
 			};

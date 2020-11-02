@@ -38,7 +38,6 @@ namespace UnityFx.Outline
 
 		private const int _defaultRenderPassId = 0;
 		private const int _alphaTestRenderPassId = 1;
-		private const RenderTextureFormat _rtFormat = RenderTextureFormat.R8;
 
 		private readonly RenderTargetIdentifier _rt;
 		private readonly RenderTargetIdentifier _depth;
@@ -53,6 +52,11 @@ namespace UnityFx.Outline
 		/// A default <see cref="CameraEvent"/> outline rendering should be assosiated with.
 		/// </summary>
 		public const CameraEvent RenderEvent = CameraEvent.AfterSkybox;
+
+		/// <summary>
+		/// A default render texture format for the outline effect.
+		/// </summary>
+		public const RenderTextureFormat RtFormat = RenderTextureFormat.R8;
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="OutlineRenderer"/> struct.
@@ -131,8 +135,8 @@ namespace UnityFx.Outline
 				rtSize.y = -1;
 			}
 
-			cmd.GetTemporaryRT(resources.MaskTexId, rtSize.x, rtSize.y, 0, FilterMode.Bilinear, _rtFormat);
-			cmd.GetTemporaryRT(resources.TempTexId, rtSize.x, rtSize.y, 0, FilterMode.Bilinear, _rtFormat);
+			cmd.GetTemporaryRT(resources.MaskTexId, rtSize.x, rtSize.y, 0, FilterMode.Bilinear, RtFormat);
+			cmd.GetTemporaryRT(resources.TempTexId, rtSize.x, rtSize.y, 0, FilterMode.Bilinear, RtFormat);
 
 			_rt = dst;
 			_depth = depth;
@@ -178,7 +182,7 @@ namespace UnityFx.Outline
 
 			rtDesc.shadowSamplingMode = ShadowSamplingMode.None;
 			rtDesc.depthBufferBits = 0;
-			rtDesc.colorFormat = _rtFormat;
+			rtDesc.colorFormat = RtFormat;
 			rtDesc.volumeDepth = 1;
 
 			cmd.GetTemporaryRT(resources.MaskTexId, rtDesc, FilterMode.Bilinear);
