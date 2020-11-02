@@ -41,6 +41,8 @@ namespace UnityFx.Outline.URP
 		private OutlineHBlurPass _outlineHBlurPass;
 		private OutlineVBlurBlendPass _outlineVBlurBlendPass;
 
+		private string _featureName;
+
 		#endregion
 
 		#region interface
@@ -53,11 +55,13 @@ namespace UnityFx.Outline.URP
 
 		internal RenderTargetIdentifier MaskTex => _renderTexture.Identifier();
 
-		internal int MaskTexId => _outlineResources.MaskTexId;
+		internal int MaskTexId => _renderTexture.id;
 
 		internal RenderTargetIdentifier TempTex => _hpassTexture.Identifier();
 
-		internal int TempTexId => _outlineResources.TempTexId;
+		internal int TempTexId => _hpassTexture.id;
+
+		internal string FeatureName => _featureName;
 
 		#endregion
 
@@ -88,6 +92,8 @@ namespace UnityFx.Outline.URP
 			{
 				renderPassEvent = _renderPassEvent
 			};
+
+			_featureName = OutlineResources.EffectName + '-' + _outlineSettings.OutlineLayerMask;
 		}
 
 		/// <inheritdoc/>

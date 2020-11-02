@@ -11,8 +11,6 @@ namespace UnityFx.Outline.URP
 {
 	internal class OutlineHBlurPass : ScriptableRenderPass
 	{
-		private const string _passTag = OutlineResources.EffectName + ".HPass";
-
 		private readonly OutlineFeature _feature;
 
 		public OutlineHBlurPass(OutlineFeature feature)
@@ -29,7 +27,7 @@ namespace UnityFx.Outline.URP
 
 		public override void Execute(ScriptableRenderContext context, ref RenderingData renderingData)
 		{
-			var cmd = CommandBufferPool.Get(_passTag);
+			var cmd = CommandBufferPool.Get(_feature.FeatureName);
 			var resources = _feature.OutlineResources;
 			var settings = _feature.OutlineSettings;
 			var mat = resources.OutlineMaterial;

@@ -14,14 +14,14 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_Active: 1
   _outlineResources: {fileID: 11400000, guid: 231d88937a104094b8e4e0fdb8d2e77b, type: 2}
-  _outlineLayers: {fileID: 0}
+  _outlineLayers: {fileID: 11400000, guid: 059d229f23209a74687769672d1084b8, type: 2}
   _outlineSettings:
     _outlineSettings: {fileID: 0}
     _outlineColor: {r: 1, g: 0, b: 0, a: 1}
-    _outlineWidth: 4
+    _outlineWidth: 11
     _outlineIntensity: 2
     _outlineAlphaCutoff: 0.9
-    _outlineMode: 0
+    _outlineMode: 1
     _outlineLayerMask:
       serializedVersion: 2
       m_Bits: 256

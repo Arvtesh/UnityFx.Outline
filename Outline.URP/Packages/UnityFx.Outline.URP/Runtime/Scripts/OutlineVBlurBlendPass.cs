@@ -11,8 +11,6 @@ namespace UnityFx.Outline.URP
 {
 	internal class OutlineVBlurBlendPass : ScriptableRenderPass
 	{
-		private const string _passTag = OutlineResources.EffectName + ".VPassBlend";
-
 		private readonly OutlineFeature _feature;
 
 		public OutlineVBlurBlendPass(OutlineFeature feature)
@@ -22,7 +20,7 @@ namespace UnityFx.Outline.URP
 
 		public override void Execute(ScriptableRenderContext context, ref RenderingData renderingData)
 		{
-			var cmd = CommandBufferPool.Get(_passTag);
+			var cmd = CommandBufferPool.Get(_feature.FeatureName);
 			var resources = _feature.OutlineResources;
 			var settings = _feature.OutlineSettings;
 			var mat = resources.OutlineMaterial;
