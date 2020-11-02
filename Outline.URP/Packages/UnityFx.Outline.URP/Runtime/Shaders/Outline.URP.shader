@@ -9,18 +9,16 @@ Shader "Hidden/UnityFx/Outline.URP"
 
 		#include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
 
-		CBUFFER_START(UnityPerMaterial)
-			float4 _Color;
-			float _Intensity;
-			int _Width;
-		CBUFFER_END
-
 		TEXTURE2D_X(_MaskTex);
 		SAMPLER(sampler_MaskTex);
+
 		TEXTURE2D_X(_MainTex);
 		SAMPLER(sampler_MainTex);
-
 		float2 _MainTex_TexelSize;
+
+		float4 _Color;
+		float _Intensity;
+		int _Width;
 		float _GaussSamples[32];
 
 		struct Varyings
@@ -57,13 +55,13 @@ Shader "Hidden/UnityFx/Outline.URP"
 
 #else
 
-		struct AttributesVid
+		struct Attributes
 		{
 			uint vertexID : SV_VertexID;
 			UNITY_VERTEX_INPUT_INSTANCE_ID
 		};
 
-		Varyings VertexSimple(AttributesVid input)
+		Varyings VertexSimple(Attributes input)
 		{
 			Varyings output = (Varyings)0;
 

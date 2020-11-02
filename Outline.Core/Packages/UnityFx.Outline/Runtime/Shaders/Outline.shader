@@ -9,15 +9,13 @@ Shader "Hidden/UnityFx/Outline"
 
 		#include "UnityCG.cginc"
 
-		CBUFFER_START(UnityPerMaterial)
-			float _Intensity;
-			int _Width;
-			float4 _Color;
-		CBUFFER_END
-
 		UNITY_DECLARE_SCREENSPACE_TEXTURE(_MaskTex);
 		UNITY_DECLARE_SCREENSPACE_TEXTURE(_MainTex);
 		float2 _MainTex_TexelSize;
+
+		float4 _Color;
+		float _Intensity;
+		int _Width;
 		float _GaussSamples[32];
 
 #if SHADER_TARGET < 35 || _USE_DRAWMESH
