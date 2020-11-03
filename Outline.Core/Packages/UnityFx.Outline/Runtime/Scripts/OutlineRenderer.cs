@@ -235,7 +235,13 @@ namespace UnityFx.Outline
 
 				_commandBuffer.BeginSample(sampleName);
 				{
-					RenderObject(settings, renderers);
+					RenderObjectClear(settings.OutlineRenderMode);
+
+					for (var i = 0; i < renderers.Count; ++i)
+					{
+						DrawRenderer(renderers[i], settings);
+					}
+
 					RenderOutline(settings);
 				}
 				_commandBuffer.EndSample(sampleName);
@@ -270,7 +276,8 @@ namespace UnityFx.Outline
 
 			_commandBuffer.BeginSample(sampleName);
 			{
-				RenderObject(settings, renderer);
+				RenderObjectClear(settings.OutlineRenderMode);
+				DrawRenderer(renderer, settings);
 				RenderOutline(settings);
 			}
 			_commandBuffer.EndSample(sampleName);
@@ -293,24 +300,41 @@ namespace UnityFx.Outline
 		}
 
 		/// <summary>
-		/// Specialized blit. Do not use if not sure.
+		/// Specialized render target setup. Do not use if not sure.
 		/// </summary>
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public static void Blit(CommandBuffer cmdBuffer, RenderTargetIdentifier src, OutlineResources resources, int shaderPass, Material mat, MaterialPropertyBlock props)
+		public void RenderObjectClear(OutlineRenderFlags flags)
 		{
-			// Set source texture as _MainTex to match Blit behavior.
-			cmdBuffer.SetGlobalTexture(resources.MainTexId, src);
-
-			// NOTE: SystemInfo.graphicsShaderLevel check is not enough sometimes (esp. on mobiles), so there is SystemInfo.supportsInstancing
-			// check and a flag for forcing DrawMesh.
-			if (SystemInfo.graphicsShaderLevel >= 35 && SystemInfo.supportsInstancing && !resources.UseFullscreenTriangleMesh)
+			if ((flags & OutlineRenderFlags.EnableDepthTesting) != 0)
 			{
-				cmdBuffer.DrawProcedural(Matrix4x4.identity, mat, shaderPass, MeshTopology.Triangles, 3, 1, props);
+				// NOTE: Use the camera depth buffer when rendering the mask. Shader only reads from the depth buffer (ZWrite Off).
+				_commandBuffer.SetRenderTarget(_resources.MaskTex, RenderBufferLoadAction.DontCare, RenderBufferStoreAction.Store, _depth, RenderBufferLoadAction.Load, RenderBufferStoreAction.DontCare);
 			}
 			else
 			{
-				cmdBuffer.DrawMesh(resources.FullscreenTriangleMesh, Matrix4x4.identity, mat, 0, shaderPass, props);
+				_commandBuffer.SetRenderTarget(_resources.MaskTex, RenderBufferLoadAction.DontCare, RenderBufferStoreAction.Store);
 			}
+
+			_commandBuffer.ClearRenderTarget(false, true, Color.clear);
+		}
+
+		/// <summary>
+		/// Renders outline. Do not use if not sure.
+		/// </summary>
+		public void RenderOutline(IOutlineSettings settings)
+		{
+			var mat = _resources.OutlineMaterial;
+			var props = _resources.GetProperties(settings);
+
+			_commandBuffer.SetGlobalFloatArray(_resources.GaussSamplesId, _resources.GetGaussSamples(settings.OutlineWidth));
+
+			// HPass
+			_commandBuffer.SetRenderTarget(_resources.TempTex, RenderBufferLoadAction.DontCare, RenderBufferStoreAction.Store);
+			Blit(_resources.MaskTex, OutlineResources.OutlineShaderHPassId, mat, props);
+
+			// VPassBlend
+			_commandBuffer.SetRenderTarget(_rt, RenderBufferLoadAction.Load, RenderBufferStoreAction.Store);
+			Blit(_resources.TempTex, OutlineResources.OutlineShaderVPassId, mat, props);
 		}
 
 		#endregion
@@ -329,21 +353,6 @@ namespace UnityFx.Outline
 		#endregion
 
 		#region implementation
-
-		private void RenderObjectClear(OutlineRenderFlags flags)
-		{
-			if ((flags & OutlineRenderFlags.EnableDepthTesting) != 0)
-			{
-				// NOTE: Use the camera depth buffer when rendering the mask. Shader only reads from the depth buffer (ZWrite Off).
-				_commandBuffer.SetRenderTarget(_resources.MaskTexId, RenderBufferLoadAction.DontCare, RenderBufferStoreAction.Store, _depth, RenderBufferLoadAction.Load, RenderBufferStoreAction.DontCare);
-			}
-			else
-			{
-				_commandBuffer.SetRenderTarget(_resources.MaskTexId, RenderBufferLoadAction.DontCare, RenderBufferStoreAction.Store);
-			}
-
-			_commandBuffer.ClearRenderTarget(false, true, Color.clear);
-		}
 
 		private void DrawRenderer(Renderer renderer, IOutlineSettings settings)
 		{
@@ -385,36 +394,22 @@ namespace UnityFx.Outline
 			}
 		}
 
-		private void RenderObject(IOutlineSettings settings, IReadOnlyList<Renderer> renderers)
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		private void Blit(RenderTargetIdentifier src, int shaderPass, Material mat, MaterialPropertyBlock props)
 		{
-			RenderObjectClear(settings.OutlineRenderMode);
+			// Set source texture as _MainTex to match Blit behavior.
+			_commandBuffer.SetGlobalTexture(_resources.MainTexId, src);
 
-			for (var i = 0; i < renderers.Count; ++i)
+			// NOTE: SystemInfo.graphicsShaderLevel check is not enough sometimes (esp. on mobiles), so there is SystemInfo.supportsInstancing
+			// check and a flag for forcing DrawMesh.
+			if (SystemInfo.graphicsShaderLevel >= 35 && SystemInfo.supportsInstancing && !_resources.UseFullscreenTriangleMesh)
 			{
-				DrawRenderer(renderers[i], settings);
+				_commandBuffer.DrawProcedural(Matrix4x4.identity, mat, shaderPass, MeshTopology.Triangles, 3, 1, props);
 			}
-		}
-
-		private void RenderObject(IOutlineSettings settings, Renderer renderer)
-		{
-			RenderObjectClear(settings.OutlineRenderMode);
-			DrawRenderer(renderer, settings);
-		}
-
-		private void RenderOutline(IOutlineSettings settings)
-		{
-			var mat = _resources.OutlineMaterial;
-			var props = _resources.GetProperties(settings);
-
-			_commandBuffer.SetGlobalFloatArray(_resources.GaussSamplesId, _resources.GetGaussSamples(settings.OutlineWidth));
-
-			// HPass
-			_commandBuffer.SetRenderTarget(_resources.TempTexId, RenderBufferLoadAction.DontCare, RenderBufferStoreAction.Store);
-			Blit(_commandBuffer, _resources.MaskTexId, _resources, OutlineResources.OutlineShaderHPassId, mat, props);
-
-			// VPassBlend
-			_commandBuffer.SetRenderTarget(_rt, RenderBufferLoadAction.Load, RenderBufferStoreAction.Store);
-			Blit(_commandBuffer, _resources.TempTexId, _resources, OutlineResources.OutlineShaderVPassId, mat, props);
+			else
+			{
+				_commandBuffer.DrawMesh(_resources.FullscreenTriangleMesh, Matrix4x4.identity, mat, 0, shaderPass, props);
+			}
 		}
 
 		#endregion

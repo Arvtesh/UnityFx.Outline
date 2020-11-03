@@ -33,13 +33,7 @@ namespace UnityFx.Outline.URP
 
 #pragma warning restore 0649
 
-		private RenderTargetHandle _renderTexture;
-		private RenderTargetHandle _hpassTexture;
-
 		private OutlinePass _outlinePass;
-		private OutlineRenderLayerPass _outlineRenderPass;
-		private OutlineHBlurPass _outlineHBlurPass;
-		private OutlineVBlurBlendPass _outlineVBlurBlendPass;
 
 		private string _featureName;
 
@@ -53,13 +47,7 @@ namespace UnityFx.Outline.URP
 
 		internal IOutlineSettings OutlineSettings => _outlineSettings;
 
-		internal RenderTargetIdentifier MaskTex => _renderTexture.Identifier();
-
-		internal int MaskTexId => _renderTexture.id;
-
-		internal RenderTargetIdentifier TempTex => _hpassTexture.Identifier();
-
-		internal int TempTexId => _hpassTexture.id;
+		internal int OutlineLayerMask => _outlineSettings.OutlineLayerMask;
 
 		internal string FeatureName => _featureName;
 
@@ -70,30 +58,19 @@ namespace UnityFx.Outline.URP
 		/// <inheritdoc/>
 		public override void Create()
 		{
-			_renderTexture.Init(OutlineResources.MaskTexName);
-			_hpassTexture.Init(OutlineResources.TempTexName);
+			if (_outlineSettings != null)
+			{
+				_featureName = OutlineResources.EffectName + '-' + _outlineSettings.OutlineLayerMask;
+			}
+			else
+			{
+				_featureName = OutlineResources.EffectName;
+			}
 
 			_outlinePass = new OutlinePass(this)
 			{
 				renderPassEvent = _renderPassEvent
 			};
-
-			_outlineRenderPass = new OutlineRenderLayerPass(this, _outlineSettings.OutlineLayerMask)
-			{
-				renderPassEvent = _renderPassEvent
-			};
-
-			_outlineHBlurPass = new OutlineHBlurPass(this)
-			{
-				renderPassEvent = _renderPassEvent
-			};
-
-			_outlineVBlurBlendPass = new OutlineVBlurBlendPass(this)
-			{
-				renderPassEvent = _renderPassEvent
-			};
-
-			_featureName = OutlineResources.EffectName + '-' + _outlineSettings.OutlineLayerMask;
 		}
 
 		/// <inheritdoc/>
@@ -101,19 +78,8 @@ namespace UnityFx.Outline.URP
 		{
 			if (_outlineResources && _outlineResources.IsValid)
 			{
-				if (_outlineSettings.OutlineLayerMask != 0)
-				{
-					_outlineRenderPass.Setup(renderer);
-					renderer.EnqueuePass(_outlineRenderPass);
-					renderer.EnqueuePass(_outlineHBlurPass);
-					renderer.EnqueuePass(_outlineVBlurBlendPass);
-				}
-
-				if (_outlineLayers)
-				{
-					_outlinePass.Setup(renderer);
-					renderer.EnqueuePass(_outlinePass);
-				}
+				_outlinePass.Setup(renderer);
+				renderer.EnqueuePass(_outlinePass);
 			}
 		}
 

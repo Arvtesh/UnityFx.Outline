@@ -18,15 +18,18 @@ MonoBehaviour:
       _outlineColor: {r: 1, g: 0, b: 0, a: 1}
       _outlineWidth: 25
       _outlineIntensity: 2
+      _outlineAlphaCutoff: 0.9
       _outlineMode: 1
     _name: 
     _enabled: 1
   - _settings:
       _outlineSettings: {fileID: 0}
       _outlineColor: {r: 0, g: 1, b: 0.060156345, a: 1}
-      _outlineWidth: 7
+      _outlineWidth: 16
       _outlineIntensity: 2
+      _outlineAlphaCutoff: 0.9
       _outlineMode: 1
     _name: 
     _enabled: 1
-  _layerMask: 0
+  _layerMask: 2
+  _mergeLayerObjects: 0

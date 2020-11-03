@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.Rendering;
 
 namespace UnityFx.Outline
 {
@@ -171,14 +172,29 @@ namespace UnityFx.Outline
 		public readonly int MainTexId = Shader.PropertyToID(MainTexName);
 
 		/// <summary>
+		/// Texture identifier for _MainTex shader parameter.
+		/// </summary>
+		public readonly RenderTargetIdentifier MainTex = new RenderTargetIdentifier(MainTexName);
+
+		/// <summary>
 		/// Hashed name of _MaskTex shader parameter.
 		/// </summary>
 		public readonly int MaskTexId = Shader.PropertyToID(MaskTexName);
 
 		/// <summary>
+		/// Texture identifier for _MaskTex shader parameter.
+		/// </summary>
+		public readonly RenderTargetIdentifier MaskTex = new RenderTargetIdentifier(MaskTexName);
+
+		/// <summary>
 		/// Hashed name of _TempTex shader parameter.
 		/// </summary>
 		public readonly int TempTexId = Shader.PropertyToID(TempTexName);
+
+		/// <summary>
+		/// Texture identifier for _TempTex shader parameter.
+		/// </summary>
+		public readonly RenderTargetIdentifier TempTex = new RenderTargetIdentifier(TempTexName);
 
 		/// <summary>
 		/// Hashed name of _Color shader parameter.
