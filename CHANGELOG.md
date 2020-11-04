@@ -3,6 +3,17 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/); this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [0.8.2] - unreleased
+
+[URP](https://docs.unity3d.com/Packages/com.unity.render-pipelines.universal@8.1/manual/index.html) per-layer outlines and misc improvements.
+
+### Added
+- Added URP-specific shader versions.
+- Added URP layer-based outline rendering ([#9](https://github.com/Arvtesh/UnityFx.Outline/issues/9)).
+
+### Fixed
+- Fixed URP outlines rendering issue in Unity 2020.2 ([#21](https://github.com/Arvtesh/UnityFx.Outline/issues/21)).
+
 ## [0.8.1] - 2020.09.21
 
 Alpha test support, bugfixes and misc improvements.
