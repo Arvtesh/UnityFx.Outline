@@ -22,8 +22,6 @@ namespace UnityFx.Outline
 		private Shader _renderShader;
 		[SerializeField]
 		private Shader _outlineShader;
-		[SerializeField]
-		private bool _enableInstancing;
 
 		private Material _renderMaterial;
 		private Material _outlineMaterial;
@@ -260,8 +258,7 @@ namespace UnityFx.Outline
 					_renderMaterial = new Material(RenderShader)
 					{
 						name = "Outline - RenderColor",
-						hideFlags = HideFlags.HideAndDontSave,
-						enableInstancing = _enableInstancing
+						hideFlags = HideFlags.HideAndDontSave
 					};
 				}
 
@@ -281,8 +278,7 @@ namespace UnityFx.Outline
 					_outlineMaterial = new Material(OutlineShader)
 					{
 						name = "Outline - Main",
-						hideFlags = HideFlags.HideAndDontSave,
-						enableInstancing = _enableInstancing
+						hideFlags = HideFlags.HideAndDontSave
 					};
 
 					if (_useDrawMesh)
@@ -371,31 +367,6 @@ namespace UnityFx.Outline
 							_outlineMaterial.DisableKeyword(UseDrawMeshFeatureName);
 						}
 					}
-				}
-			}
-		}
-
-		/// <summary>
-		/// Gets or sets a value indicating whether instancing is enabled.
-		/// </summary>
-		public bool EnableInstancing
-		{
-			get
-			{
-				return _enableInstancing;
-			}
-			set
-			{
-				_enableInstancing = value;
-
-				if (_renderMaterial)
-				{
-					_renderMaterial.enableInstancing = value;
-				}
-
-				if (_outlineMaterial)
-				{
-					_outlineMaterial.enableInstancing = value;
 				}
 			}
 		}
@@ -494,6 +465,23 @@ namespace UnityFx.Outline
 			}
 
 			return samples;
+		}
+
+		#endregion
+
+		#region ScriptableObject
+
+		private void OnValidate()
+		{
+			if (_renderMaterial)
+			{
+				_renderMaterial.shader = _renderShader;
+			}
+
+			if (_outlineMaterial)
+			{
+				_outlineMaterial.shader = _outlineShader;
+			}
 		}
 
 		#endregion

@@ -8,38 +8,10 @@ Shader "Hidden/UnityFx/OutlineColor.URP"
 	HLSLINCLUDE
 
 		#include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
+		#include "Packages/com.unity.render-pipelines.universal/Shaders/PostProcessing/Common.hlsl"
 
-		struct Attributes
-		{
-			float4 positionOS : POSITION;
-			float2 uv : TEXCOORD0;
-			UNITY_VERTEX_INPUT_INSTANCE_ID
-		};
-
-		struct Varyings
-		{
-			float4 positionCS : SV_POSITION;
-			float2 uv : TEXCOORD0;
-		};
-
-		TEXTURE2D_X(_MainTex);
+		TEXTURE2D(_MainTex);
 		SAMPLER(sampler_MainTex);
-
-		Varyings VertexSimple(Attributes input)
-		{
-			Varyings output = (Varyings)0;
-
-			UNITY_SETUP_INSTANCE_ID(input);
-			UNITY_TRANSFER_INSTANCE_ID(input, output);
-			UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO(output);
-
-			VertexPositionInputs vertexInput = GetVertexPositionInputs(input.positionOS.xyz);
-
-			output.uv = input.uv;
-			output.positionCS = vertexInput.positionCS;
-
-			return output;
-		}
 
 		half4 FragmentSimple(Varyings input) : SV_Target
 		{
@@ -48,10 +20,7 @@ Shader "Hidden/UnityFx/OutlineColor.URP"
 
 		half4 FragmentAlphaTest(Varyings input) : SV_Target
 		{
-			UNITY_SETUP_INSTANCE_ID(input);
-			UNITY_SETUP_STEREO_EYE_INDEX_POST_VERTEX(input);
-
-			half4 c = SAMPLE_TEXTURE2D_X(_MainTex, sampler_MainTex, input.uv);
+			half4 c = SAMPLE_TEXTURE2D(_MainTex, sampler_MainTex, input.uv);
 			AlphaDiscard(c.a, 1);
 			return 1;
 		}
@@ -74,7 +43,7 @@ Shader "Hidden/UnityFx/OutlineColor.URP"
 			HLSLPROGRAM
 
 			#pragma multi_compile_instancing
-			#pragma vertex VertexSimple
+			#pragma vertex Vert
 			#pragma fragment FragmentSimple
 
 			ENDHLSL
@@ -88,7 +57,7 @@ Shader "Hidden/UnityFx/OutlineColor.URP"
 
 			#pragma shader_feature _ALPHATEST_ON
 			#pragma multi_compile_instancing
-			#pragma vertex VertexSimple
+			#pragma vertex Vert
 			#pragma fragment FragmentAlphaTest
 
 			ENDHLSL

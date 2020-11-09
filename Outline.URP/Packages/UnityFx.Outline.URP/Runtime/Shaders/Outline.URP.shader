@@ -42,12 +42,11 @@ Shader "Hidden/UnityFx/Outline.URP"
 			Varyings output = (Varyings)0;
 
 			UNITY_SETUP_INSTANCE_ID(input);
-			UNITY_TRANSFER_INSTANCE_ID(input, output);
 			UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO(output);
 
-			VertexPositionInputs vertexInput = GetVertexPositionInputs(input.positionOS.xyz);
+			float4 pos = TransformObjectToHClip(input.positionOS.xyz);
 
-			output.positionCS = float4(vertexInput.positionCS.xy, UNITY_NEAR_CLIP_VALUE, 1);
+			output.positionCS = float4(pos.xy, UNITY_NEAR_CLIP_VALUE, 1);
 			output.uv = ComputeScreenPos(output.positionCS).xy;
 
 			return output;
@@ -66,7 +65,6 @@ Shader "Hidden/UnityFx/Outline.URP"
 			Varyings output = (Varyings)0;
 
 			UNITY_SETUP_INSTANCE_ID(input);
-			UNITY_TRANSFER_INSTANCE_ID(input, output);
 			UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO(output);
 
 			output.positionCS = GetFullScreenTriangleVertexPosition(input.vertexID);
@@ -93,23 +91,26 @@ Shader "Hidden/UnityFx/Outline.URP"
 
 		float4 FragmentH(Varyings i) : SV_Target
 		{
-			UNITY_SETUP_INSTANCE_ID(i);
+			UNITY_SETUP_STEREO_EYE_INDEX_POST_VERTEX(i);
 
-			float intensity = CalcIntensity(i.uv, float2(_MainTex_TexelSize.x, 0));
+			float2 uv = UnityStereoTransformScreenSpaceTex(i.uv);
+			float intensity = CalcIntensity(uv, float2(_MainTex_TexelSize.x, 0));
 			return float4(intensity, intensity, intensity, 1);
 		}
 
 		float4 FragmentV(Varyings i) : SV_Target
 		{
-			UNITY_SETUP_INSTANCE_ID(i);
+			UNITY_SETUP_STEREO_EYE_INDEX_POST_VERTEX(i);
 
-			if (SAMPLE_TEXTURE2D_X(_MaskTex, sampler_MaskTex, i.uv).r > 0)
+			float2 uv = UnityStereoTransformScreenSpaceTex(i.uv);
+
+			if (SAMPLE_TEXTURE2D_X(_MaskTex, sampler_MaskTex, uv).r > 0)
 			{
 				// TODO: Avoid discard/clip to improve performance on mobiles.
 				discard;
 			}
 
-			float intensity = CalcIntensity(i.uv, float2(0, _MainTex_TexelSize.y));
+			float intensity = CalcIntensity(uv, float2(0, _MainTex_TexelSize.y));
 			intensity = _Intensity > 99 ? step(0.01, intensity) : intensity * _Intensity;
 			return float4(_Color.rgb, saturate(_Color.a * intensity));
 		}

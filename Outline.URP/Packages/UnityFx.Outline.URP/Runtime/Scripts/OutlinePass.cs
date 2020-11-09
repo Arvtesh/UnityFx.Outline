@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.Universal;
+using UnityEngine.XR;
 
 namespace UnityFx.Outline.URP
 {
@@ -15,7 +16,6 @@ namespace UnityFx.Outline.URP
 		private readonly List<OutlineRenderObject> _renderObjects = new List<OutlineRenderObject>();
 		private readonly List<ShaderTagId> _shaderTagIdList = new List<ShaderTagId>() { new ShaderTagId("UniversalForward") };
 
-		private RenderTextureDescriptor _cameraTextureDescriptor;
 		private ScriptableRenderer _renderer;
 
 		public OutlinePass(OutlineFeature feature)
@@ -28,11 +28,6 @@ namespace UnityFx.Outline.URP
 			_renderer = renderer;
 		}
 
-		public override void Configure(CommandBuffer cmd, RenderTextureDescriptor cameraTextureDescriptor)
-		{
-			_cameraTextureDescriptor = cameraTextureDescriptor;
-		}
-
 		public override void Execute(ScriptableRenderContext context, ref RenderingData renderingData)
 		{
 			var outlineResources = _feature.OutlineResources;
@@ -41,20 +36,19 @@ namespace UnityFx.Outline.URP
 			if (_feature.OutlineLayerMask != 0)
 			{
 				var cmd = CommandBufferPool.Get(_feature.FeatureName);
+				var filteringSettings = new FilteringSettings(RenderQueueRange.all, _feature.OutlineLayerMask);
+				var renderStateBlock = new RenderStateBlock(RenderStateMask.Nothing);
+				var sortingCriteria = renderingData.cameraData.defaultOpaqueSortFlags;
+				var drawingSettings = CreateDrawingSettings(_shaderTagIdList, ref renderingData, sortingCriteria);
 
-				using (var renderer = new OutlineRenderer(cmd, outlineResources, _renderer.cameraColorTarget, _renderer.cameraDepth, _cameraTextureDescriptor))
+				drawingSettings.enableDynamicBatching = false;
+				drawingSettings.overrideMaterial = outlineResources.RenderMaterial;
+
+				using (var renderer = new OutlineRenderer(cmd, outlineResources, _renderer.cameraColorTarget, _renderer.cameraDepth, renderingData.cameraData.cameraTargetDescriptor))
 				{
 					renderer.RenderObjectClear(outlineSettings.OutlineRenderMode);
 					context.ExecuteCommandBuffer(cmd);
 					cmd.Clear();
-
-					var filteringSettings = new FilteringSettings(RenderQueueRange.all, _feature.OutlineLayerMask);
-					var renderStateBlock = new RenderStateBlock(RenderStateMask.Nothing);
-					var sortingCriteria = renderingData.cameraData.defaultOpaqueSortFlags;
-					var drawingSettings = CreateDrawingSettings(_shaderTagIdList, ref renderingData, sortingCriteria);
-
-					drawingSettings.enableDynamicBatching = false;
-					drawingSettings.overrideMaterial = outlineResources.RenderMaterial;
 
 					context.DrawRenderers(renderingData.cullResults, ref drawingSettings, ref filteringSettings, ref renderStateBlock);
 					renderer.RenderOutline(outlineSettings);
@@ -68,7 +62,7 @@ namespace UnityFx.Outline.URP
 			{
 				var cmd = CommandBufferPool.Get(OutlineResources.EffectName);
 
-				using (var renderer = new OutlineRenderer(cmd, outlineResources, _renderer.cameraColorTarget, _renderer.cameraDepth, _cameraTextureDescriptor))
+				using (var renderer = new OutlineRenderer(cmd, outlineResources, _renderer.cameraColorTarget, _renderer.cameraDepth, renderingData.cameraData.cameraTargetDescriptor))
 				{
 					_renderObjects.Clear();
 					_feature.OutlineLayers.GetRenderObjects(_renderObjects);
