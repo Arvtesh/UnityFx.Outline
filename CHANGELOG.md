@@ -10,6 +10,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/); this proj
 ### Added
 - Added URP-specific shader versions.
 - Added URP layer-based outline rendering ([#9](https://github.com/Arvtesh/UnityFx.Outline/issues/9)).
+- Added support for Single Pass Instanced XR rendering for built-in and URP ([#13](https://github.com/Arvtesh/UnityFx.Outline/issues/13)).
 
 ### Fixed
 - Fixed URP outlines rendering issue in Unity 2020.2 ([#21](https://github.com/Arvtesh/UnityFx.Outline/issues/21)).
