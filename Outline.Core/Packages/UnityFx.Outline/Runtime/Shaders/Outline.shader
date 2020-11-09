@@ -25,7 +25,6 @@ Shader "Hidden/UnityFx/Outline"
 			v2f_img o;
 			UNITY_SETUP_INSTANCE_ID(v);
 			UNITY_INITIALIZE_OUTPUT(v2f_img, o);
-			UNITY_TRANSFER_INSTANCE_ID(v, o);
 			UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO(o);
 
 			o.pos = float4(v.vertex.xy, UNITY_NEAR_CLIP_VALUE, 1);
@@ -55,7 +54,6 @@ Shader "Hidden/UnityFx/Outline"
 			v2f_img o;
 			UNITY_SETUP_INSTANCE_ID(v);
 			UNITY_INITIALIZE_OUTPUT(v2f_img, o);
-			UNITY_TRANSFER_INSTANCE_ID(v, o);
 			UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO(o);
 
 			o.pos = GetFullScreenTriangleVertexPosition(v.vertexID);
@@ -82,7 +80,7 @@ Shader "Hidden/UnityFx/Outline"
 
 		float4 frag_h(v2f_img i) : SV_Target
 		{
-			UNITY_SETUP_INSTANCE_ID(i);
+			UNITY_SETUP_STEREO_EYE_INDEX_POST_VERTEX(i);
 
 			float intensity = CalcIntensity(i.uv, float2(_MainTex_TexelSize.x, 0));
 			return float4(intensity, intensity, intensity, 1);
@@ -90,7 +88,7 @@ Shader "Hidden/UnityFx/Outline"
 
 		float4 frag_v(v2f_img i) : SV_Target
 		{
-			UNITY_SETUP_INSTANCE_ID(i);
+			UNITY_SETUP_STEREO_EYE_INDEX_POST_VERTEX(i);
 
 			if (UNITY_SAMPLE_SCREENSPACE_TEXTURE(_MaskTex, i.uv).r > 0)
 			{
