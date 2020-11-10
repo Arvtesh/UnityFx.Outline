@@ -3,6 +3,16 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/); this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [0.8.2] - 2020.11.10
+
+Misc improvements.
+
+### Added
+- Added support for Single Pass Instanced XR rendering for built-in render pipeline ([#13](https://github.com/Arvtesh/UnityFx.Outline/issues/13)).
+
+### Changed
+- Misc inspector improvements.
+
 ## [0.8.1] - 2020.09.21
 
 Alpha test support, bugfixes and misc improvements.

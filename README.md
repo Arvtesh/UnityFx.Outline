@@ -10,7 +10,8 @@ Npm (HDRP) | TODO
 
 **Requires Unity 2018.4 or higher.**<br/>
 **Compatible with [Unity Post-processing Stack v2](https://github.com/Unity-Technologies/PostProcessing/tree/v2).**<br/>
-**Compatible with [Universal Render Pipeline](https://docs.unity3d.com/Packages/com.unity.render-pipelines.universal@8.1/manual/index.html).**
+**Compatible with [Universal Render Pipeline](https://docs.unity3d.com/Packages/com.unity.render-pipelines.universal@8.1/manual/index.html).**</br>
+**Compatible with [XR](https://docs.unity3d.com/Manual/XR.html) (Multi Pass, Single Pass Instanced).**
 
 **Please ask any questions and leave feedback at the [Unity forums](https://forum.unity.com/threads/screen-space-outline-effect-for-unity-free.836908/).**
 
@@ -67,8 +68,8 @@ Npm core package is available at [npmjs.com](https://www.npmjs.com/package/com.u
     }
   ],
   "dependencies": {
-    "com.unityfx.outline": "0.8.1",
-    "com.unityfx.outline.urp": "0.1.0",
+    "com.unityfx.outline": "0.8.2",
+    "com.unityfx.outline.urp": "0.2.0",
   }
 }
 ```
@@ -204,7 +205,7 @@ More info on writing custom post processing effects can be found [here](https://
 ## Integration with Universal Render Pipeline (URP).
 [![NPM](https://nodei.co/npm/com.unityfx.outline.urp.png)](https://www.npmjs.com/package/com.unityfx.outline.urp)
 
-Install the package, add `OutlineFeature` to `ScriptableRendererData`'s list of features. Configure the feature parameters (make sure outline resources and layer collection are set):
+Install the package, add `OutlineFeature` to `ScriptableRendererData`'s list of features. Configure the feature parameters (make sure outline resources reference is set). Outline objects can be selected by layer or explixitly using `OutlineLayerCollection`:
 
 ![URP outline settings](Docs/UrpOutlineSettings.png "URP outline settings")
 

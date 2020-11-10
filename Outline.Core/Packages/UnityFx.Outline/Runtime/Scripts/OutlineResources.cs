@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.Rendering;
 
 namespace UnityFx.Outline
 {
@@ -21,8 +22,6 @@ namespace UnityFx.Outline
 		private Shader _renderShader;
 		[SerializeField]
 		private Shader _outlineShader;
-		[SerializeField]
-		private bool _enableInstancing;
 
 		private Material _renderMaterial;
 		private Material _outlineMaterial;
@@ -86,6 +85,16 @@ namespace UnityFx.Outline
 		public const string MainTexName = "_MainTex";
 
 		/// <summary>
+		/// Name of _MaskTex shader parameter.
+		/// </summary>
+		public const string MaskTexName = "_MaskTex";
+
+		/// <summary>
+		/// Name of _TempTex shader parameter.
+		/// </summary>
+		public const string TempTexName = "_TempTex";
+
+		/// <summary>
 		/// Name of _Color shader parameter.
 		/// </summary>
 		public const string ColorName = "_Color";
@@ -136,6 +145,16 @@ namespace UnityFx.Outline
 		public const string OutlineLayerMaskTooltip = "Layer mask for outined objects.";
 
 		/// <summary>
+		/// Index of the HPass in <see cref="OutlineShader"/>.
+		/// </summary>
+		public const int OutlineShaderHPassId = 0;
+
+		/// <summary>
+		/// Index of the VPass in <see cref="OutlineShader"/>.
+		/// </summary>
+		public const int OutlineShaderVPassId = 1;
+
+		/// <summary>
 		/// SRP not supported message.
 		/// </summary>
 		internal const string SrpNotSupported = "{0} works with built-in render pipeline only. It does not support SRP (including URP and HDRP).";
@@ -149,6 +168,31 @@ namespace UnityFx.Outline
 		/// Hashed name of _MainTex shader parameter.
 		/// </summary>
 		public readonly int MainTexId = Shader.PropertyToID(MainTexName);
+
+		/// <summary>
+		/// Texture identifier for _MainTex shader parameter.
+		/// </summary>
+		public readonly RenderTargetIdentifier MainTex = new RenderTargetIdentifier(MainTexName);
+
+		/// <summary>
+		/// Hashed name of _MaskTex shader parameter.
+		/// </summary>
+		public readonly int MaskTexId = Shader.PropertyToID(MaskTexName);
+
+		/// <summary>
+		/// Texture identifier for _MaskTex shader parameter.
+		/// </summary>
+		public readonly RenderTargetIdentifier MaskTex = new RenderTargetIdentifier(MaskTexName);
+
+		/// <summary>
+		/// Hashed name of _TempTex shader parameter.
+		/// </summary>
+		public readonly int TempTexId = Shader.PropertyToID(TempTexName);
+
+		/// <summary>
+		/// Texture identifier for _TempTex shader parameter.
+		/// </summary>
+		public readonly RenderTargetIdentifier TempTex = new RenderTargetIdentifier(TempTexName);
 
 		/// <summary>
 		/// Hashed name of _Color shader parameter.
@@ -214,8 +258,7 @@ namespace UnityFx.Outline
 					_renderMaterial = new Material(RenderShader)
 					{
 						name = "Outline - RenderColor",
-						hideFlags = HideFlags.HideAndDontSave,
-						enableInstancing = _enableInstancing
+						hideFlags = HideFlags.HideAndDontSave
 					};
 				}
 
@@ -235,8 +278,7 @@ namespace UnityFx.Outline
 					_outlineMaterial = new Material(OutlineShader)
 					{
 						name = "Outline - Main",
-						hideFlags = HideFlags.HideAndDontSave,
-						enableInstancing = _enableInstancing
+						hideFlags = HideFlags.HideAndDontSave
 					};
 
 					if (_useDrawMesh)
@@ -325,31 +367,6 @@ namespace UnityFx.Outline
 							_outlineMaterial.DisableKeyword(UseDrawMeshFeatureName);
 						}
 					}
-				}
-			}
-		}
-
-		/// <summary>
-		/// Gets or sets a value indicating whether instancing is enabled.
-		/// </summary>
-		public bool EnableInstancing
-		{
-			get
-			{
-				return _enableInstancing;
-			}
-			set
-			{
-				_enableInstancing = value;
-
-				if (_renderMaterial)
-				{
-					_renderMaterial.enableInstancing = value;
-				}
-
-				if (_outlineMaterial)
-				{
-					_outlineMaterial.enableInstancing = value;
 				}
 			}
 		}
@@ -448,6 +465,23 @@ namespace UnityFx.Outline
 			}
 
 			return samples;
+		}
+
+		#endregion
+
+		#region ScriptableObject
+
+		private void OnValidate()
+		{
+			if (_renderMaterial)
+			{
+				_renderMaterial.shader = _renderShader;
+			}
+
+			if (_outlineMaterial)
+			{
+				_outlineMaterial.shader = _outlineShader;
+			}
 		}
 
 		#endregion

@@ -1,0 +1,6 @@
+{
+    "m_Settings": [
+        "RemoveLegacyInputHelpersForReload",
+        "ShouldQueryLegacyPackageRemoval"
+    ]
+}

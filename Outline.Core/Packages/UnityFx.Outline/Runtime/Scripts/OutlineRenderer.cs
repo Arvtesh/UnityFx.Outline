@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using UnityEngine;
 using UnityEngine.Rendering;
+using UnityEngine.XR;
 
 namespace UnityFx.Outline
 {
@@ -38,13 +39,8 @@ namespace UnityFx.Outline
 
 		private const int _defaultRenderPassId = 0;
 		private const int _alphaTestRenderPassId = 1;
-		private const int _outlineHPassId = 0;
-		private const int _outlineVPassId = 1;
-		private const RenderTextureFormat _rtFormat = RenderTextureFormat.R8;
 
-		private static readonly int _maskRtId = Shader.PropertyToID("_MaskTex");
-		private static readonly int _hPassRtId = Shader.PropertyToID("_HPassTex");
-
+		private readonly TextureDimension _rtDimention;
 		private readonly RenderTargetIdentifier _rt;
 		private readonly RenderTargetIdentifier _depth;
 		private readonly CommandBuffer _commandBuffer;
@@ -58,6 +54,11 @@ namespace UnityFx.Outline
 		/// A default <see cref="CameraEvent"/> outline rendering should be assosiated with.
 		/// </summary>
 		public const CameraEvent RenderEvent = CameraEvent.AfterSkybox;
+
+		/// <summary>
+		/// A default render texture format for the outline effect.
+		/// </summary>
+		public const RenderTextureFormat RtFormat = RenderTextureFormat.R8;
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="OutlineRenderer"/> struct.
@@ -136,8 +137,26 @@ namespace UnityFx.Outline
 				rtSize.y = -1;
 			}
 
-			cmd.GetTemporaryRT(_maskRtId, rtSize.x, rtSize.y, 0, FilterMode.Bilinear, _rtFormat);
-			cmd.GetTemporaryRT(_hPassRtId, rtSize.x, rtSize.y, 0, FilterMode.Bilinear, _rtFormat);
+			if (XRSettings.enabled)
+			{
+				var rtDesc = XRSettings.eyeTextureDesc;
+
+				rtDesc.shadowSamplingMode = ShadowSamplingMode.None;
+				rtDesc.depthBufferBits = 0;
+				rtDesc.colorFormat = RtFormat;
+
+				cmd.GetTemporaryRT(resources.MaskTexId, rtDesc, FilterMode.Bilinear);
+				cmd.GetTemporaryRT(resources.TempTexId, rtDesc, FilterMode.Bilinear);
+
+				_rtDimention = rtDesc.dimension;
+			}
+			else
+			{
+				cmd.GetTemporaryRT(resources.MaskTexId, rtSize.x, rtSize.y, 0, FilterMode.Bilinear, RtFormat);
+				cmd.GetTemporaryRT(resources.TempTexId, rtSize.x, rtSize.y, 0, FilterMode.Bilinear, RtFormat);
+
+				_rtDimention = TextureDimension.Tex2D;
+			}
 
 			_rt = dst;
 			_depth = depth;
@@ -183,12 +202,12 @@ namespace UnityFx.Outline
 
 			rtDesc.shadowSamplingMode = ShadowSamplingMode.None;
 			rtDesc.depthBufferBits = 0;
-			rtDesc.colorFormat = _rtFormat;
-			rtDesc.volumeDepth = 1;
+			rtDesc.colorFormat = RtFormat;
 
-			cmd.GetTemporaryRT(_maskRtId, rtDesc, FilterMode.Bilinear);
-			cmd.GetTemporaryRT(_hPassRtId, rtDesc, FilterMode.Bilinear);
+			cmd.GetTemporaryRT(resources.MaskTexId, rtDesc, FilterMode.Bilinear);
+			cmd.GetTemporaryRT(resources.TempTexId, rtDesc, FilterMode.Bilinear);
 
+			_rtDimention = rtDesc.dimension;
 			_rt = dst;
 			_depth = depth;
 			_commandBuffer = cmd;
@@ -236,7 +255,13 @@ namespace UnityFx.Outline
 
 				_commandBuffer.BeginSample(sampleName);
 				{
-					RenderObject(settings, renderers);
+					RenderObjectClear(settings.OutlineRenderMode);
+
+					for (var i = 0; i < renderers.Count; ++i)
+					{
+						DrawRenderer(renderers[i], settings);
+					}
+
 					RenderOutline(settings);
 				}
 				_commandBuffer.EndSample(sampleName);
@@ -271,7 +296,8 @@ namespace UnityFx.Outline
 
 			_commandBuffer.BeginSample(sampleName);
 			{
-				RenderObject(settings, renderer);
+				RenderObjectClear(settings.OutlineRenderMode);
+				DrawRenderer(renderer, settings);
 				RenderOutline(settings);
 			}
 			_commandBuffer.EndSample(sampleName);
@@ -293,6 +319,74 @@ namespace UnityFx.Outline
 			return new RenderTextureDescriptor(-1, -1, RenderTextureFormat.R8, 0);
 		}
 
+		/// <summary>
+		/// Specialized render target setup. Do not use if not sure.
+		/// </summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public void RenderObjectClear(OutlineRenderFlags flags)
+		{
+			// NOTE: Use the camera depth buffer when rendering the mask. Shader only reads from the depth buffer (ZWrite Off).
+			if ((flags & OutlineRenderFlags.EnableDepthTesting) != 0)
+			{
+				if (_rtDimention == TextureDimension.Tex2DArray)
+				{
+					// NOTE: Need to use this SetRenderTarget overload for XR, otherwise single pass instanced rendering does not function properly.
+					_commandBuffer.SetRenderTarget(_resources.MaskTex, _depth, 0, CubemapFace.Unknown, -1);
+				}
+				else
+				{
+					_commandBuffer.SetRenderTarget(_resources.MaskTex, RenderBufferLoadAction.DontCare, RenderBufferStoreAction.Store, _depth, RenderBufferLoadAction.Load, RenderBufferStoreAction.DontCare);
+				}
+			}
+			else
+			{
+				if (_rtDimention == TextureDimension.Tex2DArray)
+				{
+					_commandBuffer.SetRenderTarget(_resources.MaskTex, 0, CubemapFace.Unknown, -1);
+				}
+				else
+				{
+					_commandBuffer.SetRenderTarget(_resources.MaskTex, RenderBufferLoadAction.DontCare, RenderBufferStoreAction.Store);
+				}
+			}
+
+			//_commandBuffer.SetSinglePassStereo(SinglePassStereoMode.Instancing);
+			_commandBuffer.ClearRenderTarget(false, true, Color.clear);
+		}
+
+		/// <summary>
+		/// Renders outline. Do not use if not sure.
+		/// </summary>
+		public void RenderOutline(IOutlineSettings settings)
+		{
+			var mat = _resources.OutlineMaterial;
+			var props = _resources.GetProperties(settings);
+
+			//_commandBuffer.SetSinglePassStereo(SinglePassStereoMode.Instancing);
+			_commandBuffer.SetGlobalFloatArray(_resources.GaussSamplesId, _resources.GetGaussSamples(settings.OutlineWidth));
+
+			if (_rtDimention == TextureDimension.Tex2DArray)
+			{
+				// HPass
+				_commandBuffer.SetRenderTarget(_resources.TempTex, 0, CubemapFace.Unknown, -1);
+				Blit(_resources.MaskTex, OutlineResources.OutlineShaderHPassId, mat, props);
+
+				// VPassBlend
+				_commandBuffer.SetRenderTarget(_rt, 0, CubemapFace.Unknown, -1);
+				Blit(_resources.TempTex, OutlineResources.OutlineShaderVPassId, mat, props);
+			}
+			else
+			{
+				// HPass
+				_commandBuffer.SetRenderTarget(_resources.TempTex, RenderBufferLoadAction.DontCare, RenderBufferStoreAction.Store);
+				Blit(_resources.MaskTex, OutlineResources.OutlineShaderHPassId, mat, props);
+
+				// VPassBlend
+				_commandBuffer.SetRenderTarget(_rt, RenderBufferLoadAction.Load, RenderBufferStoreAction.Store);
+				Blit(_resources.TempTex, OutlineResources.OutlineShaderVPassId, mat, props);
+			}
+		}
+
 		#endregion
 
 		#region IDisposable
@@ -302,28 +396,13 @@ namespace UnityFx.Outline
 		/// </summary>
 		public void Dispose()
 		{
-			_commandBuffer.ReleaseTemporaryRT(_hPassRtId);
-			_commandBuffer.ReleaseTemporaryRT(_maskRtId);
+			_commandBuffer.ReleaseTemporaryRT(_resources.TempTexId);
+			_commandBuffer.ReleaseTemporaryRT(_resources.MaskTexId);
 		}
 
 		#endregion
 
 		#region implementation
-
-		private void RenderObjectClear(OutlineRenderFlags flags)
-		{
-			if ((flags & OutlineRenderFlags.EnableDepthTesting) != 0)
-			{
-				// NOTE: Use the camera depth buffer when rendering the mask. Shader only reads from the depth buffer (ZWrite Off).
-				_commandBuffer.SetRenderTarget(_maskRtId, RenderBufferLoadAction.DontCare, RenderBufferStoreAction.Store, _depth, RenderBufferLoadAction.Load, RenderBufferStoreAction.DontCare);
-			}
-			else
-			{
-				_commandBuffer.SetRenderTarget(_maskRtId, RenderBufferLoadAction.DontCare, RenderBufferStoreAction.Store);
-			}
-
-			_commandBuffer.ClearRenderTarget(false, true, Color.clear);
-		}
 
 		private void DrawRenderer(Renderer renderer, IOutlineSettings settings)
 		{
@@ -365,53 +444,21 @@ namespace UnityFx.Outline
 			}
 		}
 
-		private void RenderObject(IOutlineSettings settings, IReadOnlyList<Renderer> renderers)
-		{
-			RenderObjectClear(settings.OutlineRenderMode);
-
-			for (var i = 0; i < renderers.Count; ++i)
-			{
-				DrawRenderer(renderers[i], settings);
-			}
-		}
-
-		private void RenderObject(IOutlineSettings settings, Renderer renderer)
-		{
-			RenderObjectClear(settings.OutlineRenderMode);
-			DrawRenderer(renderer, settings);
-		}
-
-		private void RenderOutline(IOutlineSettings settings)
-		{
-			var mat = _resources.OutlineMaterial;
-			var props = _resources.GetProperties(settings);
-
-			_commandBuffer.SetGlobalFloatArray(_resources.GaussSamplesId, _resources.GetGaussSamples(settings.OutlineWidth));
-
-			// HPass
-			_commandBuffer.SetRenderTarget(_hPassRtId, RenderBufferLoadAction.DontCare, RenderBufferStoreAction.Store);
-			Blit(_commandBuffer, _maskRtId, _resources, _outlineHPassId, mat, props);
-
-			// VPassBlend
-			_commandBuffer.SetRenderTarget(_rt, RenderBufferLoadAction.Load, RenderBufferStoreAction.Store);
-			Blit(_commandBuffer, _hPassRtId, _resources, _outlineVPassId, mat, props);
-		}
-
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		private static void Blit(CommandBuffer cmdBuffer, RenderTargetIdentifier src, OutlineResources resources, int shaderPass, Material mat, MaterialPropertyBlock props)
+		private void Blit(RenderTargetIdentifier src, int shaderPass, Material mat, MaterialPropertyBlock props)
 		{
 			// Set source texture as _MainTex to match Blit behavior.
-			cmdBuffer.SetGlobalTexture(resources.MainTexId, src);
+			_commandBuffer.SetGlobalTexture(_resources.MainTexId, src);
 
 			// NOTE: SystemInfo.graphicsShaderLevel check is not enough sometimes (esp. on mobiles), so there is SystemInfo.supportsInstancing
 			// check and a flag for forcing DrawMesh.
-			if (SystemInfo.graphicsShaderLevel >= 35 && SystemInfo.supportsInstancing && !resources.UseFullscreenTriangleMesh)
+			if (SystemInfo.graphicsShaderLevel >= 35 && SystemInfo.supportsInstancing && !_resources.UseFullscreenTriangleMesh)
 			{
-				cmdBuffer.DrawProcedural(Matrix4x4.identity, mat, shaderPass, MeshTopology.Triangles, 3, 1, props);
+				_commandBuffer.DrawProcedural(Matrix4x4.identity, mat, shaderPass, MeshTopology.Triangles, 3, 1, props);
 			}
 			else
 			{
-				cmdBuffer.DrawMesh(resources.FullscreenTriangleMesh, Matrix4x4.identity, mat, 0, shaderPass, props);
+				_commandBuffer.DrawMesh(_resources.FullscreenTriangleMesh, Matrix4x4.identity, mat, 0, shaderPass, props);
 			}
 		}
 

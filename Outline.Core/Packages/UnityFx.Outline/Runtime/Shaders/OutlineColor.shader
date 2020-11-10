@@ -9,7 +9,7 @@ Shader "Hidden/UnityFx/OutlineColor"
 
 		#include "UnityCG.cginc"
 
-		UNITY_DECLARE_SCREENSPACE_TEXTURE(_MainTex);
+		UNITY_DECLARE_TEX2D(_MainTex);
 		float _Cutoff;
 
 		v2f_img vert(appdata_img v)
@@ -17,11 +17,11 @@ Shader "Hidden/UnityFx/OutlineColor"
 			v2f_img o;
 			UNITY_SETUP_INSTANCE_ID(v);
 			UNITY_INITIALIZE_OUTPUT(v2f_img, o);
-			UNITY_TRANSFER_INSTANCE_ID(v, o);
 			UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO(o);
 
 			o.pos = UnityObjectToClipPos(v.vertex);
 			o.uv = v.texcoord;
+
 			return o;
 		}
 
@@ -32,9 +32,9 @@ Shader "Hidden/UnityFx/OutlineColor"
 
 		half4 frag_clip(v2f_img i) : SV_Target
 		{
-			UNITY_SETUP_INSTANCE_ID(i);
+			UNITY_SETUP_STEREO_EYE_INDEX_POST_VERTEX(i);
 
-			half4 c = UNITY_SAMPLE_SCREENSPACE_TEXTURE(_MainTex, i.uv);
+			half4 c = UNITY_SAMPLE_TEX2D(_MainTex, i.uv);
 			clip(c.a - _Cutoff);
 			return 1;
 		}
@@ -50,6 +50,8 @@ Shader "Hidden/UnityFx/OutlineColor"
 
 		Pass
 		{
+			Name "Opaque"
+
 			HLSLPROGRAM
 
 			#pragma multi_compile_instancing
@@ -61,6 +63,8 @@ Shader "Hidden/UnityFx/OutlineColor"
 
 		Pass
 		{
+			Name "Transparent"
+
 			HLSLPROGRAM
 
 			#pragma multi_compile_instancing

@@ -98,12 +98,6 @@ namespace UnityFx.Outline
 		}
 
 		[Test]
-		public void Remove_DoesNotThrowOnNullArgument()
-		{
-			Assert.DoesNotThrow(() => _layerCollection.Remove(null));
-		}
-
-		[Test]
 		public void Remove_SetsCount()
 		{
 			var layer = new OutlineLayer();

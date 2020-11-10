@@ -26,24 +26,30 @@ namespace UnityFx.Outline.URP
 		private OutlineResources _outlineResources;
 		[SerializeField, Tooltip(OutlineResources.OutlineLayerCollectionTooltip)]
 		private OutlineLayerCollection _outlineLayers;
+		[SerializeField]
+		private OutlineSettingsWithLayerMask _outlineSettings;
+		[SerializeField]
+		private RenderPassEvent _renderPassEvent = RenderPassEvent.AfterRenderingSkybox;
 
 #pragma warning restore 0649
 
 		private OutlinePass _outlinePass;
 
+		private string _featureName;
+
 		#endregion
 
 		#region interface
 
-		/// <summary>
-		/// Gets the outline resources.
-		/// </summary>
-		public OutlineResources OutlineResources => _outlineResources;
+		internal OutlineResources OutlineResources => _outlineResources;
 
-		/// <summary>
-		/// Gets outline layers collection attached.
-		/// </summary>
-		public OutlineLayerCollection OutlineLayers => _outlineLayers;
+		internal OutlineLayerCollection OutlineLayers => _outlineLayers;
+
+		internal IOutlineSettings OutlineSettings => _outlineSettings;
+
+		internal int OutlineLayerMask => _outlineSettings.OutlineLayerMask;
+
+		internal string FeatureName => _featureName;
 
 		#endregion
 
@@ -52,18 +58,27 @@ namespace UnityFx.Outline.URP
 		/// <inheritdoc/>
 		public override void Create()
 		{
+			if (_outlineSettings != null)
+			{
+				_featureName = OutlineResources.EffectName + '-' + _outlineSettings.OutlineLayerMask;
+			}
+			else
+			{
+				_featureName = OutlineResources.EffectName;
+			}
+
 			_outlinePass = new OutlinePass(this)
 			{
-				renderPassEvent = RenderPassEvent.AfterRenderingSkybox
+				renderPassEvent = _renderPassEvent
 			};
 		}
 
 		/// <inheritdoc/>
 		public override void AddRenderPasses(ScriptableRenderer renderer, ref RenderingData renderingData)
 		{
-			if (_outlineResources && _outlineResources.IsValid && _outlineLayers)
+			if (_outlineResources && _outlineResources.IsValid)
 			{
-				_outlinePass.Setup(renderer.cameraColorTarget, renderer.cameraDepth);
+				_outlinePass.Setup(renderer);
 				renderer.EnqueuePass(_outlinePass);
 			}
 		}

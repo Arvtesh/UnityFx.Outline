@@ -8,4 +8,8 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Examples/SimplePerCamera/Outline.unity
     guid: e1f1f5e7ceb61b746b9f2016f0e53a93
-  m_configObjects: {}
+  m_configObjects:
+    com.unity.xr.management.loader_settings: {fileID: 11400000, guid: 82aec1eceb005f64292d3e5f6108b4d6,
+      type: 2}
+    xr.sdk.mock-hmd.settings: {fileID: 11400000, guid: c3521b75f8cf98d4d90d8baa975f2345,
+      type: 2}
