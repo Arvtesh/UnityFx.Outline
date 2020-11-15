@@ -260,14 +260,7 @@ namespace UnityFx.Outline
 					if (camera)
 					{
 						cmdBuffer.Clear();
-
-						if (_renderers.Count > 0)
-						{
-							using (var renderer = new OutlineRenderer(cmdBuffer, _outlineResources, camera.actualRenderingPath))
-							{
-								renderer.Render(_renderers.GetList(), _outlineSettings, name);
-							}
-						}
+						FillCommandBuffer(camera, cmdBuffer);
 					}
 					else
 					{
@@ -410,6 +403,20 @@ namespace UnityFx.Outline
 					camera.AddCommandBuffer(_cameraEvent, cmdBuf);
 
 					_cameraMap.Add(camera, cmdBuf);
+#if UNITY_EDITOR
+					FillCommandBuffer(camera, cmdBuf);
+#endif
+				}
+			}
+		}
+
+		private void FillCommandBuffer(Camera camera, CommandBuffer cmdBuffer)
+		{
+			if (_renderers.Count > 0)
+			{
+				using (var renderer = new OutlineRenderer(cmdBuffer, _outlineResources, camera.actualRenderingPath))
+				{
+					renderer.Render(_renderers.GetList(), _outlineSettings, name);
 				}
 			}
 		}
