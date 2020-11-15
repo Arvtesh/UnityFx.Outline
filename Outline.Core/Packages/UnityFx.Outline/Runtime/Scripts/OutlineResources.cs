@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.Rendering;
@@ -465,6 +466,26 @@ namespace UnityFx.Outline
 			}
 
 			return samples;
+		}
+
+		/// <summary>
+		/// Writes a console warning if SRP is detected.
+		/// </summary>
+		public static void LogSrpNotSupported(UnityEngine.Object obj)
+		{
+			if (GraphicsSettings.renderPipelineAsset)
+			{
+				UnityEngine.Debug.LogWarningFormat(obj, SrpNotSupported, obj.GetType().Name);
+			}
+		}
+
+		/// <summary>
+		/// Writes a console warning if Post Processing Stack v2 is detected.
+		/// </summary>
+		[Conditional("UNITY_POST_PROCESSING_STACK_V2")]
+		public static void LogPpNotSupported(UnityEngine.Object obj)
+		{
+			UnityEngine.Debug.LogWarningFormat(obj, PpNotSupported, obj.GetType().Name);
 		}
 
 		#endregion

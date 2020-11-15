@@ -212,14 +212,8 @@ namespace UnityFx.Outline
 
 		private void Awake()
 		{
-			if (GraphicsSettings.renderPipelineAsset)
-			{
-				Debug.LogWarningFormat(this, OutlineResources.SrpNotSupported, GetType().Name);
-			}
-
-#if UNITY_POST_PROCESSING_STACK_V2
-			Debug.LogWarningFormat(this, OutlineResources.PpNotSupported, GetType().Name);
-#endif
+			OutlineResources.LogSrpNotSupported(this);
+			OutlineResources.LogPpNotSupported(this);
 
 			CreateRenderersIfNeeded();
 			CreateSettingsIfNeeded();
