@@ -171,7 +171,7 @@ namespace UnityFx.Outline
 			ReleaseCameraAndCommandBuffer();
 		}
 
-		private void Update()
+		private void OnPreRender()
 		{
 			FillCommandBuffer();
 		}
