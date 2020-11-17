@@ -61,13 +61,15 @@ namespace UnityFx.Outline
 		/// <summary>
 		/// Gets collection of outline layers.
 		/// </summary>
-		/// <seealso cref="ShareLayersWith(OutlineEffect)"/>
-		public IList<OutlineLayer> OutlineLayers
+		public OutlineLayerCollection OutlineLayers
 		{
 			get
 			{
-				CreateLayersIfNeeded();
 				return _outlineLayers;
+			}
+			set
+			{
+				_outlineLayers = value;
 			}
 		}
 
@@ -146,20 +148,6 @@ namespace UnityFx.Outline
 			if (_outlineLayers)
 			{
 				_outlineLayers.Remove(go);
-			}
-		}
-
-		/// <summary>
-		/// Shares <see cref="OutlineLayers"/> with another <see cref="OutlineEffect"/> instance.
-		/// </summary>
-		/// <param name="other">Effect to share <see cref="OutlineLayers"/> with.</param>
-		/// <seealso cref="OutlineLayers"/>
-		public void ShareLayersWith(OutlineEffect other)
-		{
-			if (other)
-			{
-				CreateLayersIfNeeded();
-				other._outlineLayers = _outlineLayers;
 			}
 		}
 
