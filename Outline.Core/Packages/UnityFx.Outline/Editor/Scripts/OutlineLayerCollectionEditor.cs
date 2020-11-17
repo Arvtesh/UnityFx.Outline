@@ -175,7 +175,7 @@ namespace UnityFx.Outline
 
 		private float OnGetElementHeight(int index)
 		{
-			var numberOfLines = 5;
+			var numberOfLines = 6;
 
 			if ((_layers[index].OutlineRenderMode & OutlineRenderFlags.Blurred) != 0)
 			{
