@@ -23,8 +23,6 @@ namespace UnityFx.Outline
 		private List<OutlineLayer> _layers = new List<OutlineLayer>();
 		[SerializeField, HideInInspector]
 		private int _layerMask;
-		[SerializeField, HideInInspector]
-		private bool _mergeLayerObjects;
 
 		#endregion
 
@@ -50,21 +48,6 @@ namespace UnityFx.Outline
 						layer.UpdateRenderers(value);
 					}
 				}
-			}
-		}
-
-		/// <summary>
-		/// Gets or sets a value indicating whether layer game objects should be trated as one.
-		/// </summary>
-		public bool MergeLayerObjects
-		{
-			get
-			{
-				return _mergeLayerObjects;
-			}
-			set
-			{
-				_mergeLayerObjects = value;
 			}
 		}
 
@@ -119,19 +102,9 @@ namespace UnityFx.Outline
 		/// </summary>
 		public void GetRenderObjects(IList<OutlineRenderObject> renderObjects)
 		{
-			if (_mergeLayerObjects)
+			foreach (var layer in _layers)
 			{
-				foreach (var layer in _layers)
-				{
-					renderObjects.Add(new OutlineRenderObject(layer.GetRenderers(), layer, layer.Name));
-				}
-			}
-			else
-			{
-				foreach (var layer in _layers)
-				{
-					layer.GetRenderObjects(renderObjects);
-				}
+				layer.GetRenderObjects(renderObjects);
 			}
 		}
 

@@ -26,6 +26,8 @@ namespace UnityFx.Outline
 		private string _name;
 		[SerializeField, HideInInspector]
 		private bool _enabled = true;
+		[SerializeField, HideInInspector]
+		private bool _mergeLayerObjects;
 
 		private OutlineLayerCollection _parentCollection;
 		private Dictionary<GameObject, OutlineRendererCollection> _outlineObjects = new Dictionary<GameObject, OutlineRendererCollection>();
@@ -64,6 +66,21 @@ namespace UnityFx.Outline
 			set
 			{
 				_enabled = value;
+			}
+		}
+
+		/// <summary>
+		/// Gets or sets a value indicating whether layer game objects should be trated as one.
+		/// </summary>
+		public bool MergeLayerObjects
+		{
+			get
+			{
+				return _mergeLayerObjects;
+			}
+			set
+			{
+				_mergeLayerObjects = value;
 			}
 		}
 
@@ -178,13 +195,20 @@ namespace UnityFx.Outline
 		{
 			if (_enabled)
 			{
-				foreach (var kvp in _outlineObjects)
+				if (_mergeLayerObjects)
 				{
-					var go = kvp.Key;
-
-					if (go && go.activeInHierarchy)
+					renderObjects.Add(new OutlineRenderObject(GetRenderers(), this, Name));
+				}
+				else
+				{
+					foreach (var kvp in _outlineObjects)
 					{
-						renderObjects.Add(new OutlineRenderObject(kvp.Value.GetList(), _settings, go.name));
+						var go = kvp.Key;
+
+						if (go && go.activeInHierarchy)
+						{
+							renderObjects.Add(new OutlineRenderObject(kvp.Value.GetList(), _settings, go.name));
+						}
 					}
 				}
 			}

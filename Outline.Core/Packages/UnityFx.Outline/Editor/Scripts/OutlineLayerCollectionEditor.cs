@@ -38,13 +38,11 @@ namespace UnityFx.Outline
 			EditorGUI.BeginChangeCheck();
 
 			var mask = EditorGUILayout.MaskField("Ignore layers", _layers.IgnoreLayerMask, InternalEditorUtility.layers);
-			var merge = EditorGUILayout.Toggle("Merge Layer Objects", _layers.MergeLayerObjects);
 
 			if (EditorGUI.EndChangeCheck())
 			{
-				Undo.RecordObject(_layers, "Change layer collection");
+				Undo.RecordObject(_layers, "Change ignore mask");
 				_layers.IgnoreLayerMask = mask;
-				_layers.MergeLayerObjects = merge;
 			}
 
 			EditorGUILayout.Space();
@@ -89,6 +87,7 @@ namespace UnityFx.Outline
 			var layer = _layers[index];
 
 			var obj = layer.OutlineSettings;
+			var merge = layer.MergeLayerObjects;
 			var enabled = layer.Enabled;
 			var name = layer.NameTag;
 			var color = layer.OutlineColor;
@@ -119,6 +118,9 @@ namespace UnityFx.Outline
 			// Layer properties
 			{
 				name = EditorGUI.TextField(new Rect(rect.x, y, rect.width, lineHeight), "Name", name);
+				y += lineOffset;
+
+				merge = EditorGUI.Toggle(new Rect(rect.x, y, rect.width, lineHeight), "Merge Layer Objects", merge);
 				y += lineOffset;
 			}
 
@@ -157,6 +159,7 @@ namespace UnityFx.Outline
 				layer.OutlineSettings = obj;
 				layer.Enabled = enabled;
 				layer.NameTag = name;
+				layer.MergeLayerObjects = merge;
 				layer.OutlineWidth = width;
 				layer.OutlineColor = color;
 				layer.OutlineRenderMode = renderMode;
