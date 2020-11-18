@@ -16,7 +16,6 @@ namespace UnityFx.Outline
 	/// <seealso cref="OutlineSettings"/>
 	/// <seealso href="https://willweissman.wordpress.com/tutorials/shaders/unity-shaderlab-object-outlines/"/>
 	[ExecuteInEditMode]
-	[DisallowMultipleComponent]
 	[RequireComponent(typeof(Camera))]
 	public sealed partial class OutlineEffect : MonoBehaviour
 	{
