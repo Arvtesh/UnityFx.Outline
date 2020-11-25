@@ -14,13 +14,27 @@ namespace UnityFx.Outline.URP
 	{
 		private readonly OutlineFeature _feature;
 		private readonly List<OutlineRenderObject> _renderObjects = new List<OutlineRenderObject>();
-		private readonly List<ShaderTagId> _shaderTagIdList = new List<ShaderTagId>() { new ShaderTagId("UniversalForward") };
+		private readonly List<ShaderTagId> _shaderTagIdList = new List<ShaderTagId>();
 
 		private ScriptableRenderer _renderer;
 
-		public OutlinePass(OutlineFeature feature)
+		public OutlinePass(OutlineFeature feature, string[] shaderTags)
 		{
 			_feature = feature;
+
+			if (shaderTags != null && shaderTags.Length > 0)
+			{
+				foreach (var passName in shaderTags)
+				{
+					_shaderTagIdList.Add(new ShaderTagId(passName));
+				}
+			}
+			else
+			{
+				_shaderTagIdList.Add(new ShaderTagId("UniversalForward"));
+				_shaderTagIdList.Add(new ShaderTagId("LightweightForward"));
+				_shaderTagIdList.Add(new ShaderTagId("SRPDefaultUnlit"));
+			}
 		}
 
 		public void Setup(ScriptableRenderer renderer)

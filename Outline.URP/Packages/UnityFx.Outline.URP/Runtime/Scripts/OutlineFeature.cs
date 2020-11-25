@@ -30,6 +30,8 @@ namespace UnityFx.Outline.URP
 		private OutlineSettingsWithLayerMask _outlineSettings;
 		[SerializeField]
 		private RenderPassEvent _renderPassEvent = RenderPassEvent.AfterRenderingSkybox;
+		[SerializeField]
+		public string[] _shaderPassNames;
 
 #pragma warning restore 0649
 
@@ -67,7 +69,7 @@ namespace UnityFx.Outline.URP
 				_featureName = OutlineResources.EffectName;
 			}
 
-			_outlinePass = new OutlinePass(this)
+			_outlinePass = new OutlinePass(this, _shaderPassNames)
 			{
 				renderPassEvent = _renderPassEvent
 			};
