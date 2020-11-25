@@ -51,7 +51,7 @@ namespace UnityFx.Outline.URP
 			if (_feature.OutlineLayerMask != 0)
 			{
 				var cmd = CommandBufferPool.Get(_feature.FeatureName);
-				var filteringSettings = new FilteringSettings(RenderQueueRange.all, _feature.OutlineLayerMask);
+				var filteringSettings = new FilteringSettings(RenderQueueRange.all, _feature.OutlineLayerMask, _feature.OutlineRenderingLayerMask);
 				var renderStateBlock = new RenderStateBlock(RenderStateMask.Nothing);
 				var sortingCriteria = camData.defaultOpaqueSortFlags;
 				var drawingSettings = CreateDrawingSettings(_shaderTagIdList, ref renderingData, sortingCriteria);

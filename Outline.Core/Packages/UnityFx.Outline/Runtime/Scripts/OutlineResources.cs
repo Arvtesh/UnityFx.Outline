@@ -146,6 +146,11 @@ namespace UnityFx.Outline
 		public const string OutlineLayerMaskTooltip = "Layer mask for outined objects.";
 
 		/// <summary>
+		/// Tooltip text for outline <see cref="LayerMask"/> field.
+		/// </summary>
+		public const string OutlineRenderingLayerMaskTooltip = "Rendering layer mask for outined objects.";
+
+		/// <summary>
 		/// Index of the HPass in <see cref="OutlineShader"/>.
 		/// </summary>
 		public const int OutlineShaderHPassId = 0;

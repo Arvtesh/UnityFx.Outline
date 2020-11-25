@@ -12,7 +12,9 @@ namespace UnityFx.Outline
 	[CustomEditor(typeof(OutlineSettings))]
 	public class OutlineSettingsEditor : Editor
 	{
-		private const string _layerMaskPropName = "_outlineLayerMask";
+		private const string _filterModePropName = "_filterMode";
+		private const string _layerMaskPropName = "_layerMask";
+		private const string _renderingLayerMaskPropName = "_renderingLayerMask";
 		private const string _settingsPropName = "_outlineSettings";
 		private const string _colorPropName = "_outlineColor";
 		private const string _widthPropName = "_outlineWidth";
@@ -20,7 +22,9 @@ namespace UnityFx.Outline
 		private const string _cutoffPropName = "_outlineAlphaCutoff";
 		private const string _renderModePropName = "_outlineMode";
 
-		private static readonly GUIContent _layerMaskContent = new GUIContent("Outline Layer Mask", OutlineResources.OutlineLayerMaskTooltip);
+		private static readonly GUIContent _filterModeContent = new GUIContent("Outline Filter Settings", "");
+		private static readonly GUIContent _layerMaskContent = new GUIContent("Layer Mask", OutlineResources.OutlineLayerMaskTooltip);
+		private static readonly GUIContent _renderingLayerMaskContent = new GUIContent("Rendering Layer Mask", OutlineResources.OutlineRenderingLayerMaskTooltip);
 		private static readonly GUIContent _colorContent = new GUIContent("Color", "Outline color.");
 		private static readonly GUIContent _widthContent = new GUIContent("Width", "Outline width in pixels.");
 		private static readonly GUIContent _renderModeContent = new GUIContent("Render Flags", "Outline render flags. Multiple values can be selected at the same time.");
@@ -80,13 +84,25 @@ namespace UnityFx.Outline
 		internal static float GetSettingsWithMaskHeight(SerializedProperty property)
 		{
 			var lineCy = EditorGUIUtility.singleLineHeight + EditorGUIUtility.standardVerticalSpacing;
-			var layerMaskProp = property.FindPropertyRelative(_layerMaskPropName);
+			var filterModeProp = property.FindPropertyRelative(_filterModePropName);
+			var renderOutlineSettings = false;
 
-			if (layerMaskProp.intValue != 0)
+			if (filterModeProp.intValue == (int)OutlineFilterMode.UseLayerMask)
+			{
+				var layerMaskProp = property.FindPropertyRelative(_layerMaskPropName);
+				renderOutlineSettings = true;
+			}
+			else if (filterModeProp.intValue == (int)OutlineFilterMode.UseRenderingLayerMask)
+			{
+				var renderingLayerMaskProp = property.FindPropertyRelative(_renderingLayerMaskPropName);
+				renderOutlineSettings = true;
+			}
+
+			if (renderOutlineSettings)
 			{
 				var renderModeProp = property.FindPropertyRelative(_renderModePropName);
 				var renderMode = (OutlineRenderFlags)renderModeProp.intValue;
-				var result = lineCy * 5;
+				var result = lineCy * 6;
 
 				if ((renderMode & OutlineRenderFlags.Blurred) != 0)
 				{
@@ -140,14 +156,30 @@ namespace UnityFx.Outline
 
 		internal static void DrawSettingsWithMask(Rect rc, SerializedProperty property)
 		{
-			var layerMaskProp = property.FindPropertyRelative(_layerMaskPropName);
+			var lineCy = EditorGUIUtility.singleLineHeight + EditorGUIUtility.standardVerticalSpacing;
+			var filterModeProp = property.FindPropertyRelative(_filterModePropName);
 
-			EditorGUI.PropertyField(new Rect(rc.x, rc.y, rc.width, EditorGUIUtility.singleLineHeight), layerMaskProp, _layerMaskContent);
+			EditorGUI.PropertyField(new Rect(rc.x, rc.y, rc.width, EditorGUIUtility.singleLineHeight), filterModeProp, _filterModeContent);
 
-			if (layerMaskProp.intValue != 0)
+			if (filterModeProp.intValue == (int)OutlineFilterMode.UseLayerMask)
 			{
-				var lineCy = EditorGUIUtility.singleLineHeight + EditorGUIUtility.standardVerticalSpacing;
-				DrawSettingsInstance(new Rect(rc.x, rc.y + lineCy, rc.width, rc.height - lineCy), property);
+				var layerMaskProp = property.FindPropertyRelative(_layerMaskPropName);
+
+				EditorGUI.indentLevel += 1;
+				EditorGUI.PropertyField(new Rect(rc.x, rc.y + lineCy, rc.width, EditorGUIUtility.singleLineHeight), layerMaskProp, _layerMaskContent);
+				EditorGUI.indentLevel -= 1;
+
+				DrawSettingsInstance(new Rect(rc.x, rc.y + lineCy * 2, rc.width, rc.height - lineCy), property);
+			}
+			else if (filterModeProp.intValue == (int)OutlineFilterMode.UseRenderingLayerMask)
+			{
+				var renderingLayerMaskProp = property.FindPropertyRelative(_renderingLayerMaskPropName);
+
+				EditorGUI.indentLevel += 1;
+				EditorGUI.PropertyField(new Rect(rc.x, rc.y + lineCy, rc.width, EditorGUIUtility.singleLineHeight), renderingLayerMaskProp, _renderingLayerMaskContent);
+				EditorGUI.indentLevel -= 1;
+
+				DrawSettingsInstance(new Rect(rc.x, rc.y + lineCy * 2, rc.width, rc.height - lineCy), property);	
 			}
 		}
 

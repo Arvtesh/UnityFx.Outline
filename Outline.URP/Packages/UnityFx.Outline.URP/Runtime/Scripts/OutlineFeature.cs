@@ -36,7 +36,6 @@ namespace UnityFx.Outline.URP
 #pragma warning restore 0649
 
 		private OutlinePass _outlinePass;
-
 		private string _featureName;
 
 		#endregion
@@ -50,6 +49,8 @@ namespace UnityFx.Outline.URP
 		internal IOutlineSettings OutlineSettings => _outlineSettings;
 
 		internal int OutlineLayerMask => _outlineSettings.OutlineLayerMask;
+
+		internal uint OutlineRenderingLayerMask => _outlineSettings.OutlineRenderingLayerMask;
 
 		internal string FeatureName => _featureName;
 
