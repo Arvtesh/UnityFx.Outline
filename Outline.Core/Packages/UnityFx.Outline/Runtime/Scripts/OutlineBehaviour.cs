@@ -26,7 +26,7 @@ namespace UnityFx.Outline
 		[SerializeField, HideInInspector]
 		private OutlineSettingsInstance _outlineSettings;
 		[SerializeField, HideInInspector]
-		private int _layerMask;
+		private int _ignoreLayerMask;
 		[SerializeField, HideInInspector]
 		private CameraEvent _cameraEvent = OutlineRenderer.RenderEvent;
 		[SerializeField, HideInInspector]
@@ -99,13 +99,13 @@ namespace UnityFx.Outline
 		{
 			get
 			{
-				return _layerMask;
+				return _ignoreLayerMask;
 			}
 			set
 			{
-				if (_layerMask != value)
+				if (_ignoreLayerMask != value)
 				{
-					_layerMask = value;
+					_ignoreLayerMask = value;
 					_renderers?.Reset(false, value);
 				}
 			}
@@ -203,7 +203,7 @@ namespace UnityFx.Outline
 		/// <seealso cref="OutlineRenderers"/>
 		public void UpdateRenderers()
 		{
-			_renderers?.Reset(false, _layerMask);
+			_renderers?.Reset(false, _ignoreLayerMask);
 		}
 
 		#endregion
@@ -249,7 +249,7 @@ namespace UnityFx.Outline
 
 				if (_updateRenderers)
 				{
-					_renderers.Reset(false, _layerMask);
+					_renderers.Reset(false, _ignoreLayerMask);
 				}
 
 				foreach (var kvp in _cameraMap)
@@ -288,7 +288,7 @@ namespace UnityFx.Outline
 		{
 			if (_renderers != null)
 			{
-				_renderers.Reset(false, _layerMask);
+				_renderers.Reset(false, _ignoreLayerMask);
 			}
 		}
 
@@ -434,7 +434,7 @@ namespace UnityFx.Outline
 			if (_renderers == null)
 			{
 				_renderers = new OutlineRendererCollection(gameObject);
-				_renderers.Reset(false, _layerMask);
+				_renderers.Reset(false, _ignoreLayerMask);
 			}
 		}
 

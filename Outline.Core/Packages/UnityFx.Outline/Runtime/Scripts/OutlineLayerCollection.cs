@@ -22,7 +22,7 @@ namespace UnityFx.Outline
 		[SerializeField, HideInInspector]
 		private List<OutlineLayer> _layers = new List<OutlineLayer>();
 		[SerializeField, HideInInspector]
-		private int _layerMask;
+		private int _ignoreLayerMask;
 
 		#endregion
 
@@ -35,13 +35,13 @@ namespace UnityFx.Outline
 		{
 			get
 			{
-				return _layerMask;
+				return _ignoreLayerMask;
 			}
 			set
 			{
-				if (_layerMask != value)
+				if (_ignoreLayerMask != value)
 				{
-					_layerMask = value;
+					_ignoreLayerMask = value;
 
 					foreach (var layer in _layers)
 					{
