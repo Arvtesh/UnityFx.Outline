@@ -15,7 +15,7 @@ namespace UnityFx.Outline
 	/// <seealso cref="OutlineBehaviour"/>
 	/// <seealso cref="OutlineSettings"/>
 	/// <seealso href="https://willweissman.wordpress.com/tutorials/shaders/unity-shaderlab-object-outlines/"/>
-	[DisallowMultipleComponent]
+	[ExecuteInEditMode]
 	[RequireComponent(typeof(Camera))]
 	public sealed partial class OutlineEffect : MonoBehaviour
 	{
@@ -60,13 +60,15 @@ namespace UnityFx.Outline
 		/// <summary>
 		/// Gets collection of outline layers.
 		/// </summary>
-		/// <seealso cref="ShareLayersWith(OutlineEffect)"/>
-		public IList<OutlineLayer> OutlineLayers
+		public OutlineLayerCollection OutlineLayers
 		{
 			get
 			{
-				CreateLayersIfNeeded();
 				return _outlineLayers;
+			}
+			set
+			{
+				_outlineLayers = value;
 			}
 		}
 
@@ -148,72 +150,29 @@ namespace UnityFx.Outline
 			}
 		}
 
-		/// <summary>
-		/// Shares <see cref="OutlineLayers"/> with another <see cref="OutlineEffect"/> instance.
-		/// </summary>
-		/// <param name="other">Effect to share <see cref="OutlineLayers"/> with.</param>
-		/// <seealso cref="OutlineLayers"/>
-		public void ShareLayersWith(OutlineEffect other)
-		{
-			if (other)
-			{
-				CreateLayersIfNeeded();
-				other._outlineLayers = _outlineLayers;
-			}
-		}
-
 		#endregion
 
 		#region MonoBehaviour
 
 		private void Awake()
 		{
-			if (GraphicsSettings.renderPipelineAsset)
-			{
-				Debug.LogWarningFormat(this, OutlineResources.SrpNotSupported, GetType().Name);
-			}
-
-#if UNITY_POST_PROCESSING_STACK_V2
-			Debug.LogWarningFormat(this, OutlineResources.PpNotSupported, GetType().Name);
-#endif
+			OutlineResources.LogSrpNotSupported(this);
+			OutlineResources.LogPpNotSupported(this);
 		}
 
 		private void OnEnable()
 		{
-			_camera = GetComponent<Camera>();
-
-			if (_camera)
-			{
-				_commandBuffer = new CommandBuffer
-				{
-					name = string.Format("{0} - {1}", GetType().Name, name)
-				};
-
-				_camera.depthTextureMode |= DepthTextureMode.Depth;
-				_camera.AddCommandBuffer(_cameraEvent, _commandBuffer);
-			}
+			InitCameraAndCommandBuffer();
 		}
 
 		private void OnDisable()
 		{
-			if (_camera)
-			{
-				_camera.RemoveCommandBuffer(_cameraEvent, _commandBuffer);
-			}
-
-			if (_commandBuffer != null)
-			{
-				_commandBuffer.Dispose();
-				_commandBuffer = null;
-			}
+			ReleaseCameraAndCommandBuffer();
 		}
 
-		private void Update()
+		private void OnPreRender()
 		{
-			if (_camera && _outlineLayers)
-			{
-				FillCommandBuffer();
-			}
+			FillCommandBuffer();
 		}
 
 		private void OnDestroy()
@@ -227,6 +186,12 @@ namespace UnityFx.Outline
 
 #if UNITY_EDITOR
 
+		//private void OnValidate()
+		//{
+		//	InitCameraAndCommandBuffer();
+		//	FillCommandBuffer();
+		//}
+
 		private void Reset()
 		{
 			_outlineLayers = null;
@@ -238,20 +203,55 @@ namespace UnityFx.Outline
 
 		#region implementation
 
+		private void InitCameraAndCommandBuffer()
+		{
+			_camera = GetComponent<Camera>();
+
+			if (_camera && _commandBuffer is null)
+			{
+				_commandBuffer = new CommandBuffer
+				{
+					name = string.Format("{0} - {1}", GetType().Name, name)
+				};
+
+				_camera.depthTextureMode |= DepthTextureMode.Depth;
+				_camera.AddCommandBuffer(_cameraEvent, _commandBuffer);
+			}
+		}
+
+		private void ReleaseCameraAndCommandBuffer()
+		{
+			if (_commandBuffer != null)
+			{
+				if (_camera)
+				{
+					_camera.RemoveCommandBuffer(_cameraEvent, _commandBuffer);
+				}
+
+				_commandBuffer.Dispose();
+				_commandBuffer = null;
+			}
+
+			_camera = null;
+		}
+
 		private void FillCommandBuffer()
 		{
-			_commandBuffer.Clear();
-
-			if (_outlineResources && _outlineResources.IsValid)
+			if (_camera && _outlineLayers && _commandBuffer != null)
 			{
-				using (var renderer = new OutlineRenderer(_commandBuffer, _outlineResources, _camera.actualRenderingPath))
-				{
-					_renderObjects.Clear();
-					_outlineLayers.GetRenderObjects(_renderObjects);
+				_commandBuffer.Clear();
 
-					foreach (var renderObject in _renderObjects)
+				if (_outlineResources && _outlineResources.IsValid)
+				{
+					using (var renderer = new OutlineRenderer(_commandBuffer, _outlineResources, _camera.actualRenderingPath))
 					{
-						renderer.Render(renderObject);
+						_renderObjects.Clear();
+						_outlineLayers.GetRenderObjects(_renderObjects);
+
+						foreach (var renderObject in _renderObjects)
+						{
+							renderer.Render(renderObject);
+						}
 					}
 				}
 			}

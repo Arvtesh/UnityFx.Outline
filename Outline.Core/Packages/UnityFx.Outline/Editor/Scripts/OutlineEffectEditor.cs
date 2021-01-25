@@ -45,13 +45,16 @@ namespace UnityFx.Outline
 				}
 			}
 
-			if (_effect.OutlineLayers.Count > 0)
+			if (_effect.OutlineLayers)
 			{
-				_previewOpened = EditorGUILayout.Foldout(_previewOpened, "Preview", true);
-
-				if (_previewOpened)
+				if (_effect.OutlineLayers.Count > 0)
 				{
-					OutlineEditorUtility.RenderPreview(_effect.OutlineLayers, true);
+					_previewOpened = EditorGUILayout.Foldout(_previewOpened, "Preview", true);
+
+					if (_previewOpened)
+					{
+						OutlineEditorUtility.RenderPreview(_effect.OutlineLayers, true);
+					}
 				}
 			}
 		}

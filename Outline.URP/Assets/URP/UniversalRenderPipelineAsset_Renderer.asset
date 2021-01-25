@@ -21,11 +21,14 @@ MonoBehaviour:
     _outlineWidth: 11
     _outlineIntensity: 2
     _outlineAlphaCutoff: 0.9
-    _outlineMode: 1
-    _outlineLayerMask:
+    _outlineMode: 3
+    _filterMode: 1
+    _layerMask:
       serializedVersion: 2
       m_Bits: 256
+    _renderingLayerMask: 1
   _renderPassEvent: 400
+  _shaderPassNames: []
 --- !u!114 &11400000
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -41,7 +44,7 @@ MonoBehaviour:
   m_RendererFeatures:
   - {fileID: -2278397774415627597}
   - {fileID: 7677070003599340959}
-  m_RendererFeatureMap: 9f7558507e6e8a6a
+  m_RendererFeatureMap: 9f7558507e6e8a6acd610d4e1a0787b3
   postProcessData: {fileID: 11400000, guid: 41439944d30ece34e96484bdb6645b55, type: 2}
   shaders:
     blitPS: {fileID: 4800000, guid: c17132b1f77d20942aa75f8429c0f8bc, type: 3}
@@ -86,7 +89,10 @@ MonoBehaviour:
     _outlineIntensity: 2
     _outlineAlphaCutoff: 0.9
     _outlineMode: 0
-    _outlineLayerMask:
+    _filterMode: 1
+    _layerMask:
       serializedVersion: 2
       m_Bits: 512
+    _renderingLayerMask: 1
   _renderPassEvent: 400
+  _shaderPassNames: []

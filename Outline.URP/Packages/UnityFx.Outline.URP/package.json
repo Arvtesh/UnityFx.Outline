@@ -1,11 +1,11 @@
 {
   "name": "com.unityfx.outline.urp",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "displayName": "Outline toolkit (URP)",
   "description": "This package contains configurable outline implementation for Universal Render Pipeline.",
   "unity": "2019.4",
   "dependencies": {
-    "com.unityfx.outline": "0.8.2",
+    "com.unityfx.outline": "0.8.3",
     "com.unity.render-pipelines.universal": "7.0.0"
   },
   "keywords": [

@@ -68,8 +68,8 @@ Npm core package is available at [npmjs.com](https://www.npmjs.com/package/com.u
     }
   ],
   "dependencies": {
-    "com.unityfx.outline": "0.8.2",
-    "com.unityfx.outline.urp": "0.2.0",
+    "com.unityfx.outline": "0.8.3",
+    "com.unityfx.outline.urp": "0.3.0",
   }
 }
 ```

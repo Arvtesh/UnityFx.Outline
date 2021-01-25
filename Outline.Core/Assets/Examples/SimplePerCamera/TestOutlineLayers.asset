@@ -18,24 +18,30 @@ MonoBehaviour:
         type: 2}
       _outlineColor: {r: 1, g: 0, b: 0, a: 1}
       _outlineWidth: 5
-      _outlineIntensity: 2
+      _outlineIntensity: 1
+      _outlineAlphaCutoff: 0.9
       _outlineMode: 0
     _name: My pretty layer
     _enabled: 1
+    _mergeLayerObjects: 0
   - _settings:
       _outlineSettings: {fileID: 0}
       _outlineColor: {r: 1, g: 1, b: 0, a: 1}
       _outlineWidth: 15
       _outlineIntensity: 2
+      _outlineAlphaCutoff: 0.9
       _outlineMode: 1
     _name: The second layer
     _enabled: 1
+    _mergeLayerObjects: 0
   - _settings:
       _outlineSettings: {fileID: 0}
       _outlineColor: {r: 1, g: 0, b: 1, a: 1}
       _outlineWidth: 4
       _outlineIntensity: 2
+      _outlineAlphaCutoff: 0.9
       _outlineMode: 4
     _name: The best layer
     _enabled: 1
+    _mergeLayerObjects: 0
   _layerMask: 2

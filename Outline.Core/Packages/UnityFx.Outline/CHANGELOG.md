@@ -3,6 +3,20 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/); this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [0.8.3] - 2021.01.25
+
+Misc improvements and bugfixes.
+
+### Fixed
+- Fixed `OutlineBehaviour` not working in edit mode after disabling and enabling it again.
+
+### Changed
+- `OutlineEffect` now works in edit-mode.
+- `OutlineEffect` now exposes `OutlineLayerCollection` instead of `IList`.
+- `OutlineEffect` now uses `OnPreRender` to update its command buffer.
+- Moved `MergeLayerObjects` flag to `OutlineLayer` from `OutlineLayerCollection`.
+- Multiple `OutlineEffect` component instances can now be added to a camera.
+
 ## [0.8.2] - 2020.11.10
 
 Misc improvements.

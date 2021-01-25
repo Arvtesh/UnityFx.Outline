@@ -3,6 +3,25 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/); this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [0.8.3] - 2021.01.25
+
+Misc improvements and bugfixes.
+
+### Added
+- Added possibility to set custom shader tags for URP outlines.
+- Added support for filtering URP outline renderers by [rendering layer mask](https://docs.unity3d.com/ScriptReference/Renderer-renderingLayerMask.html) ([#22](https://github.com/Arvtesh/UnityFx.Outline/issues/22)).
+
+### Fixed
+- Fixed URP outlines rendering issue when both depth-testing and MSAA are enabled ([#23](https://github.com/Arvtesh/UnityFx.Outline/issues/23)).
+- Fixed `OutlineBehaviour` not working in edit mode after disabling and enabling it again.
+
+### Changed
+- `OutlineEffect` now works in edit-mode.
+- `OutlineEffect` now exposes `OutlineLayerCollection` instead of `IList`.
+- `OutlineEffect` now uses `OnPreRender` to update its command buffer.
+- Moved `MergeLayerObjects` flag to `OutlineLayer` from `OutlineLayerCollection`.
+- Multiple `OutlineEffect` component instances can now be added to a camera.
+
 ## [0.8.2] - 2020.11.10
 
 [URP](https://docs.unity3d.com/Packages/com.unity.render-pipelines.universal@8.1/manual/index.html) per-layer outlines and misc improvements.

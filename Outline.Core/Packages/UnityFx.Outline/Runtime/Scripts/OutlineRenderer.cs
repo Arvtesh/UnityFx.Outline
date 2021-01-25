@@ -203,6 +203,7 @@ namespace UnityFx.Outline
 			rtDesc.shadowSamplingMode = ShadowSamplingMode.None;
 			rtDesc.depthBufferBits = 0;
 			rtDesc.colorFormat = RtFormat;
+			rtDesc.msaaSamples = 1;
 
 			cmd.GetTemporaryRT(resources.MaskTexId, rtDesc, FilterMode.Bilinear);
 			cmd.GetTemporaryRT(resources.TempTexId, rtDesc, FilterMode.Bilinear);
@@ -312,14 +313,6 @@ namespace UnityFx.Outline
 		}
 
 		/// <summary>
-		/// Creates a default instance or <see cref="RenderTextureDescriptor"/>.
-		/// </summary>
-		public static RenderTextureDescriptor GetDefaultRtDesc()
-		{
-			return new RenderTextureDescriptor(-1, -1, RenderTextureFormat.R8, 0);
-		}
-
-		/// <summary>
 		/// Specialized render target setup. Do not use if not sure.
 		/// </summary>
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -350,7 +343,6 @@ namespace UnityFx.Outline
 				}
 			}
 
-			//_commandBuffer.SetSinglePassStereo(SinglePassStereoMode.Instancing);
 			_commandBuffer.ClearRenderTarget(false, true, Color.clear);
 		}
 
