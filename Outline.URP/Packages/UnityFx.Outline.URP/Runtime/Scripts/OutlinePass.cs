@@ -55,11 +55,12 @@ namespace UnityFx.Outline.URP
 				var renderStateBlock = new RenderStateBlock(RenderStateMask.Nothing);
 				var sortingCriteria = camData.defaultOpaqueSortFlags;
 				var drawingSettings = CreateDrawingSettings(_shaderTagIdList, ref renderingData, sortingCriteria);
+				var depthTexture = new RenderTargetIdentifier("_CameraDepthTexture");
 
 				drawingSettings.enableDynamicBatching = false;
 				drawingSettings.overrideMaterial = outlineResources.RenderMaterial;
 
-				using (var renderer = new OutlineRenderer(cmd, outlineResources, _renderer.cameraColorTarget, _renderer.cameraDepth, camData.cameraTargetDescriptor))
+				using (var renderer = new OutlineRenderer(cmd, outlineResources, _renderer.cameraColorTarget, depthTexture/*_renderer.cameraDepth*/, camData.cameraTargetDescriptor))
 				{
 					renderer.RenderObjectClear(outlineSettings.OutlineRenderMode);
 					context.ExecuteCommandBuffer(cmd);
