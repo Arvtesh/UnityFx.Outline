@@ -10,8 +10,14 @@ Shader "Hidden/UnityFx/OutlineColor.URP"
 		#include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
 		#include "Packages/com.unity.render-pipelines.universal/Shaders/PostProcessing/Common.hlsl"
 
+#if _ALPHATEST_ON
+
 		TEXTURE2D(_MainTex);
 		SAMPLER(sampler_MainTex);
+
+		half _Cutoff;
+
+#endif
 
 		half4 FragmentSimple(Varyings input) : SV_Target
 		{
@@ -20,8 +26,10 @@ Shader "Hidden/UnityFx/OutlineColor.URP"
 
 		half4 FragmentAlphaTest(Varyings input) : SV_Target
 		{
+#if _ALPHATEST_ON
 			half4 c = SAMPLE_TEXTURE2D(_MainTex, sampler_MainTex, input.uv);
-			AlphaDiscard(c.a, 1);
+			AlphaDiscard(c.a, _Cutoff);
+#endif
 			return 1;
 		}
 
