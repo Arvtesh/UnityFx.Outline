@@ -37,9 +37,6 @@ namespace UnityFx.Outline
 	{
 		#region data
 
-		private const int _defaultRenderPassId = 0;
-		private const int _alphaTestRenderPassId = 1;
-
 		private readonly TextureDimension _rtDimention;
 		private readonly RenderTargetIdentifier _rt;
 		private readonly RenderTargetIdentifier _depth;
@@ -354,7 +351,6 @@ namespace UnityFx.Outline
 			var mat = _resources.OutlineMaterial;
 			var props = _resources.GetProperties(settings);
 
-			//_commandBuffer.SetSinglePassStereo(SinglePassStereoMode.Instancing);
 			_commandBuffer.SetGlobalFloatArray(_resources.GaussSamplesId, _resources.GetGaussSamples(settings.OutlineWidth));
 
 			if (_rtDimention == TextureDimension.Tex2DArray)
@@ -400,13 +396,11 @@ namespace UnityFx.Outline
 		{
 			if (renderer && renderer.enabled && renderer.isVisible && renderer.gameObject.activeInHierarchy)
 			{
-				var alphaTest = (settings.OutlineRenderMode & OutlineRenderFlags.EnableAlphaTesting) != 0;
-
 				// NOTE: Accessing Renderer.sharedMaterials triggers GC.Alloc. That's why we use a temporary
 				// list of materials, cached with the outline resources.
 				renderer.GetSharedMaterials(_resources.TmpMaterials);
 
-				if (alphaTest)
+				if (settings.IsAlphaTestingEnabled())
 				{
 					for (var i = 0; i < _resources.TmpMaterials.Count; ++i)
 					{
@@ -423,14 +417,14 @@ namespace UnityFx.Outline
 						}
 
 						_commandBuffer.SetGlobalTexture(_resources.MainTexId, _resources.TmpMaterials[i].mainTexture);
-						_commandBuffer.DrawRenderer(renderer, _resources.RenderMaterial, i, _alphaTestRenderPassId);
+						_commandBuffer.DrawRenderer(renderer, _resources.RenderMaterial, i, OutlineResources.RenderShaderAlphaTestPassId);
 					}
 				}
 				else
 				{
 					for (var i = 0; i < _resources.TmpMaterials.Count; ++i)
 					{
-						_commandBuffer.DrawRenderer(renderer, _resources.RenderMaterial, i, _defaultRenderPassId);
+						_commandBuffer.DrawRenderer(renderer, _resources.RenderMaterial, i, OutlineResources.RenderShaderDefaultPassId);
 					}
 				}
 			}

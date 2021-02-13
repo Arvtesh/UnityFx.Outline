@@ -1,7 +1,7 @@
 {
   "dependencies": {
     "com.unity.render-pipelines.universal": "7.3.1",
-    "com.unity.xr.management": "3.2.16",
+    "com.unity.xr.management": "3.2.17",
     "com.unity.xr.mock-hmd": "1.2.0-preview.1",
     "com.unityfx.outline": "file:../../Outline.Core/Packages/UnityFx.Outline",
     "com.unity.modules.ai": "1.0.0",

@@ -60,6 +60,15 @@ namespace UnityFx.Outline.URP
 				drawingSettings.enableDynamicBatching = false;
 				drawingSettings.overrideMaterial = outlineResources.RenderMaterial;
 
+				if (outlineSettings.IsAlphaTestingEnabled())
+				{
+					drawingSettings.overrideMaterialPassIndex = OutlineResources.RenderShaderAlphaTestPassId;
+				}
+				else
+				{
+					drawingSettings.overrideMaterialPassIndex = OutlineResources.RenderShaderDefaultPassId;
+				}
+
 				using (var renderer = new OutlineRenderer(cmd, outlineResources, _renderer.cameraColorTarget, depthTexture/*_renderer.cameraDepth*/, camData.cameraTargetDescriptor))
 				{
 					renderer.RenderObjectClear(outlineSettings.OutlineRenderMode);

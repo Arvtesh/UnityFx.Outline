@@ -151,6 +151,16 @@ namespace UnityFx.Outline
 		public const string OutlineRenderingLayerMaskTooltip = "Rendering layer mask for outined objects.";
 
 		/// <summary>
+		/// Index of the default pass in <see cref="RenderShader"/>.
+		/// </summary>
+		public const int RenderShaderDefaultPassId = 0;
+
+		/// <summary>
+		/// Index of the alpha-test pass in <see cref="RenderShader"/>.
+		/// </summary>
+		public const int RenderShaderAlphaTestPassId = 1;
+
+		/// <summary>
 		/// Index of the HPass in <see cref="OutlineShader"/>.
 		/// </summary>
 		public const int OutlineShaderHPassId = 0;

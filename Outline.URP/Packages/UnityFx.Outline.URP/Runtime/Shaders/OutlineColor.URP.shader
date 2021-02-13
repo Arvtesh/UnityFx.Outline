@@ -29,7 +29,7 @@ Shader "Hidden/UnityFx/OutlineColor.URP"
 
 	SubShader
 	{
-		Tags { "RenderPipeline"="UniversalPipeline" }
+		Tags { "RenderPipeline" = "UniversalPipeline" }
 
 		Cull Off
 		ZWrite Off
