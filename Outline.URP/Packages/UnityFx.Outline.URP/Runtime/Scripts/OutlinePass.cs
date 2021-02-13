@@ -79,9 +79,10 @@ namespace UnityFx.Outline.URP
 					{
 						renderer.RenderObjectClear(outlineSettings.OutlineRenderMode);
 						context.ExecuteCommandBuffer(cmd);
-						cmd.Clear();
 
 						context.DrawRenderers(renderingData.cullResults, ref drawingSettings, ref filteringSettings, ref renderStateBlock);
+
+						cmd.Clear();
 						renderer.RenderOutline(outlineSettings);
 					}
 				}
@@ -98,11 +99,7 @@ namespace UnityFx.Outline.URP
 				{
 					_renderObjects.Clear();
 					_feature.OutlineLayers.GetRenderObjects(_renderObjects);
-
-					foreach (var obj in _renderObjects)
-					{
-						renderer.Render(obj);
-					}
+					renderer.Render(_renderObjects);
 				}
 
 				context.ExecuteCommandBuffer(cmd);

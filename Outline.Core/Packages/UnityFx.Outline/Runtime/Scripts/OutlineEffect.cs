@@ -247,11 +247,7 @@ namespace UnityFx.Outline
 					{
 						_renderObjects.Clear();
 						_outlineLayers.GetRenderObjects(_renderObjects);
-
-						foreach (var renderObject in _renderObjects)
-						{
-							renderer.Render(renderObject);
-						}
+						renderer.Render(_renderObjects);
 					}
 				}
 			}

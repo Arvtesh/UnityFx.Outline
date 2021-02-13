@@ -40,7 +40,7 @@ namespace UnityFx.Outline
 		private readonly TextureDimension _rtDimention;
 		private readonly RenderTargetIdentifier _rt;
 		private readonly RenderTargetIdentifier _depth;
-		private readonly CommandBuffer _commandBuffer;
+		private readonly CommandBuffer _commandBuffer; 
 		private readonly OutlineResources _resources;
 
 		#endregion
@@ -213,24 +213,41 @@ namespace UnityFx.Outline
 		}
 
 		/// <summary>
-		/// Renders outline around a single object. This version allows enumeration of <paramref name="renderers"/> with no GC allocations.
+		/// Renders outline around a single object.
 		/// </summary>
 		/// <param name="obj">An object to be outlined.</param>
-		/// <seealso cref="Render(IReadOnlyList{Renderer}, IOutlineSettings)"/>
-		/// <seealso cref="Render(Renderer, IOutlineSettings)"/>
+		/// <seealso cref="Render(IReadOnlyList{OutlineRenderObject})"/>
 		public void Render(OutlineRenderObject obj)
 		{
 			Render(obj.Renderers, obj.OutlineSettings, obj.Tag);
 		}
 
 		/// <summary>
-		/// Renders outline around a single object. This version allows enumeration of <paramref name="renderers"/> with no GC allocations.
+		/// Renders outline around multiple <paramref name="objects"/>.
+		/// </summary>
+		/// <param name="objects">An object to be outlined.</param>
+		/// <exception cref="ArgumentNullException">Thrown if <paramref name="objects"/> is <see langword="null"/>.</exception>
+		/// <seealso cref="Render(OutlineRenderObject)"/>
+		public void Render(IReadOnlyList<OutlineRenderObject> objects)
+		{
+			if (objects is null)
+			{
+				throw new ArgumentNullException(nameof(objects));
+			}
+
+			for (var i = 0; i < objects.Count; i++)
+			{
+				Render(objects[i]);
+			}
+		}
+
+		/// <summary>
+		/// Renders outline around multiple <paramref name="renderers"/>.
 		/// </summary>
 		/// <param name="renderers">One or more renderers representing a single object to be outlined.</param>
 		/// <param name="settings">Outline settings.</param>
 		/// <param name="sampleName">Optional name of the sample (visible in profiler).</param>
 		/// <exception cref="ArgumentNullException">Thrown if any of the arguments is <see langword="null"/>.</exception>
-		/// <seealso cref="Render(OutlineRenderObject)"/>
 		/// <seealso cref="Render(Renderer, IOutlineSettings, string)"/>
 		public void Render(IReadOnlyList<Renderer> renderers, IOutlineSettings settings, string sampleName = null)
 		{
@@ -267,13 +284,12 @@ namespace UnityFx.Outline
 		}
 
 		/// <summary>
-		/// Renders outline around a single object.
+		/// Renders outline around a single <paramref name="renderer"/>.
 		/// </summary>
 		/// <param name="renderer">A <see cref="Renderer"/> representing an object to be outlined.</param>
 		/// <param name="settings">Outline settings.</param>
 		/// <param name="sampleName">Optional name of the sample (visible in profiler).</param>
 		/// <exception cref="ArgumentNullException">Thrown if any of the arguments is <see langword="null"/>.</exception>
-		/// <seealso cref="Render(OutlineRenderObject)"/>
 		/// <seealso cref="Render(IReadOnlyList{Renderer}, IOutlineSettings, string)"/>
 		public void Render(Renderer renderer, IOutlineSettings settings, string sampleName = null)
 		{
@@ -302,17 +318,8 @@ namespace UnityFx.Outline
 		}
 
 		/// <summary>
-		/// Gets depth texture identifier for built-in render pipeline.
-		/// </summary>
-		public static RenderTargetIdentifier GetBuiltinDepth(RenderingPath renderingPath)
-		{
-			return (renderingPath == RenderingPath.DeferredShading || renderingPath == RenderingPath.DeferredLighting) ? BuiltinRenderTextureType.ResolvedDepth : BuiltinRenderTextureType.Depth;
-		}
-
-		/// <summary>
 		/// Specialized render target setup. Do not use if not sure.
 		/// </summary>
-		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public void RenderObjectClear(OutlineRenderFlags flags)
 		{
 			// NOTE: Use the camera depth buffer when rendering the mask. Shader only reads from the depth buffer (ZWrite Off).
@@ -446,6 +453,11 @@ namespace UnityFx.Outline
 			{
 				_commandBuffer.DrawMesh(_resources.FullscreenTriangleMesh, Matrix4x4.identity, mat, 0, shaderPass, props);
 			}
+		}
+
+		private static RenderTargetIdentifier GetBuiltinDepth(RenderingPath renderingPath)
+		{
+			return (renderingPath == RenderingPath.DeferredShading || renderingPath == RenderingPath.DeferredLighting) ? BuiltinRenderTextureType.ResolvedDepth : BuiltinRenderTextureType.Depth;
 		}
 
 		#endregion
