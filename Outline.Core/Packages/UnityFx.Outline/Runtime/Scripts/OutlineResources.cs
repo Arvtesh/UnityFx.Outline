@@ -238,7 +238,7 @@ namespace UnityFx.Outline
 		/// <summary>
 		/// Temp materials list. Used by <see cref="OutlineRenderer"/> to avoid GC allocations.
 		/// </summary>
-		public readonly List<Material> TmpMaterials = new List<Material>();
+		internal readonly List<Material> TmpMaterials = new List<Material>();
 
 		/// <summary>
 		/// Gets or sets a <see cref="Shader"/> that renders objects outlined with a solid while color.
