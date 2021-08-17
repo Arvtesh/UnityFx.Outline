@@ -1,6 +1,6 @@
 {
     "name": "com.unityfx.outline",
-    "version": "0.8.3",
+    "version": "0.8.4",
     "displayName": "Outline toolkit",
     "description": "This package contains configurable per-object and per-camera outline effect implementation for built-in render pipeline. Both solid and blurred outline modes are supported (Gauss blur), as well as depth testing. Reusable and extensible API.",
     "unity": "2018.4",

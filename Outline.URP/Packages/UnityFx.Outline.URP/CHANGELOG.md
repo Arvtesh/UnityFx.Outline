@@ -3,6 +3,12 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/); this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [0.4.0] - 2021.08.17
+Misc improvements.
+
+### Added
+- Added support for URP sprite outlines ([#28](https://github.com/Arvtesh/UnityFx.Outline/issues/28)).
+
 ## [0.3.0] - 2021.01.25
 
 Misc improvements and bugfixes.
