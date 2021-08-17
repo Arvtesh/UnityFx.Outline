@@ -1,4 +1,4 @@
-﻿// Copyright (C) 2019-2020 Alexander Bogarsukov. All rights reserved.
+﻿// Copyright (C) 2019-2021 Alexander Bogarsukov. All rights reserved.
 // See the LICENSE.md file in the project root for more information.
 
 using System;
@@ -151,6 +151,16 @@ namespace UnityFx.Outline
 		public const string OutlineRenderingLayerMaskTooltip = "Rendering layer mask for outined objects.";
 
 		/// <summary>
+		/// Index of the default pass in <see cref="RenderShader"/>.
+		/// </summary>
+		public const int RenderShaderDefaultPassId = 0;
+
+		/// <summary>
+		/// Index of the alpha-test pass in <see cref="RenderShader"/>.
+		/// </summary>
+		public const int RenderShaderAlphaTestPassId = 1;
+
+		/// <summary>
 		/// Index of the HPass in <see cref="OutlineShader"/>.
 		/// </summary>
 		public const int OutlineShaderHPassId = 0;
@@ -228,10 +238,10 @@ namespace UnityFx.Outline
 		/// <summary>
 		/// Temp materials list. Used by <see cref="OutlineRenderer"/> to avoid GC allocations.
 		/// </summary>
-		public readonly List<Material> TmpMaterials = new List<Material>();
+		internal readonly List<Material> TmpMaterials = new List<Material>();
 
 		/// <summary>
-		/// Gets or sets a <see cref="Shader"/> that renders objects outlined with a solid while color.
+		/// Gets a <see cref="Shader"/> that renders objects outlined with a solid while color.
 		/// </summary>
 		public Shader RenderShader
 		{
@@ -242,7 +252,7 @@ namespace UnityFx.Outline
 		}
 
 		/// <summary>
-		/// Gets or sets a <see cref="Shader"/> that renders outline around the mask, that was generated with <see cref="RenderShader"/>.
+		/// Gets a <see cref="Shader"/> that renders outline around the mask, that was generated with <see cref="RenderShader"/>.
 		/// </summary>
 		public Shader OutlineShader
 		{
@@ -261,7 +271,9 @@ namespace UnityFx.Outline
 			{
 				if (_renderMaterial == null)
 				{
-					_renderMaterial = new Material(RenderShader)
+					UnityEngine.Debug.Assert(_renderShader != null, "No RenderShader is set in outline resources.", this);
+
+					_renderMaterial = new Material(_renderShader)
 					{
 						name = "Outline - RenderColor",
 						hideFlags = HideFlags.HideAndDontSave
@@ -281,7 +293,9 @@ namespace UnityFx.Outline
 			{
 				if (_outlineMaterial == null)
 				{
-					_outlineMaterial = new Material(OutlineShader)
+					UnityEngine.Debug.Assert(_outlineShader != null, "No OutlineShader is set in outline resources.", this);
+
+					_outlineMaterial = new Material(_outlineShader)
 					{
 						name = "Outline - Main",
 						hideFlags = HideFlags.HideAndDontSave

@@ -1,4 +1,4 @@
-﻿// Copyright (C) 2019-2020 Alexander Bogarsukov. All rights reserved.
+﻿// Copyright (C) 2019-2021 Alexander Bogarsukov. All rights reserved.
 // See the LICENSE.md file in the project root for more information.
 
 // Renders everything with while color.
@@ -13,6 +13,8 @@ Shader "Hidden/UnityFx/OutlineColor.URP"
 		TEXTURE2D(_MainTex);
 		SAMPLER(sampler_MainTex);
 
+		half _Cutoff;
+
 		half4 FragmentSimple(Varyings input) : SV_Target
 		{
 			return 1;
@@ -21,7 +23,7 @@ Shader "Hidden/UnityFx/OutlineColor.URP"
 		half4 FragmentAlphaTest(Varyings input) : SV_Target
 		{
 			half4 c = SAMPLE_TEXTURE2D(_MainTex, sampler_MainTex, input.uv);
-			AlphaDiscard(c.a, 1);
+			clip(c.a - _Cutoff);
 			return 1;
 		}
 
@@ -29,7 +31,7 @@ Shader "Hidden/UnityFx/OutlineColor.URP"
 
 	SubShader
 	{
-		Tags { "RenderPipeline"="UniversalPipeline" }
+		Tags { "RenderPipeline" = "UniversalPipeline" }
 
 		Cull Off
 		ZWrite Off
@@ -55,7 +57,6 @@ Shader "Hidden/UnityFx/OutlineColor.URP"
 
 			HLSLPROGRAM
 
-			#pragma shader_feature _ALPHATEST_ON
 			#pragma multi_compile_instancing
 			#pragma vertex Vert
 			#pragma fragment FragmentAlphaTest

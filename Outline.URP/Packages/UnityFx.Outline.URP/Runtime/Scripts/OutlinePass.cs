@@ -1,4 +1,4 @@
-﻿// Copyright (C) 2019-2020 Alexander Bogarsukov. All rights reserved.
+﻿// Copyright (C) 2019-2021 Alexander Bogarsukov. All rights reserved.
 // See the LICENSE.md file in the project root for more information.
 
 using System;
@@ -12,6 +12,9 @@ namespace UnityFx.Outline.URP
 {
 	internal class OutlinePass : ScriptableRenderPass
 	{
+		private const string _profilerTag = "OutlinePass";
+		private static readonly ProfilingSampler _profilingSampler = new ProfilingSampler(_profilerTag);
+
 		private readonly OutlineFeature _feature;
 		private readonly List<OutlineRenderObject> _renderObjects = new List<OutlineRenderObject>();
 		private readonly List<ShaderTagId> _shaderTagIdList = new List<ShaderTagId>();
@@ -57,17 +60,31 @@ namespace UnityFx.Outline.URP
 				var drawingSettings = CreateDrawingSettings(_shaderTagIdList, ref renderingData, sortingCriteria);
 				var depthTexture = new RenderTargetIdentifier("_CameraDepthTexture");
 
-				drawingSettings.enableDynamicBatching = false;
+				drawingSettings.enableDynamicBatching = true;
 				drawingSettings.overrideMaterial = outlineResources.RenderMaterial;
 
-				using (var renderer = new OutlineRenderer(cmd, outlineResources, _renderer.cameraColorTarget, depthTexture/*_renderer.cameraDepth*/, camData.cameraTargetDescriptor))
+				if (outlineSettings.IsAlphaTestingEnabled())
 				{
-					renderer.RenderObjectClear(outlineSettings.OutlineRenderMode);
-					context.ExecuteCommandBuffer(cmd);
-					cmd.Clear();
+					drawingSettings.overrideMaterialPassIndex = OutlineResources.RenderShaderAlphaTestPassId;
+					cmd.SetGlobalFloat(outlineResources.AlphaCutoffId, outlineSettings.OutlineAlphaCutoff);
+				}
+				else
+				{
+					drawingSettings.overrideMaterialPassIndex = OutlineResources.RenderShaderDefaultPassId;
+				}
 
-					context.DrawRenderers(renderingData.cullResults, ref drawingSettings, ref filteringSettings, ref renderStateBlock);
-					renderer.RenderOutline(outlineSettings);
+				using (new ProfilingScope(cmd, _profilingSampler))
+				{
+					using (var renderer = new OutlineRenderer(cmd, outlineResources, _renderer.cameraColorTarget, depthTexture/*_renderer.cameraDepth*/, camData.cameraTargetDescriptor))
+					{
+						renderer.RenderObjectClear(outlineSettings.OutlineRenderMode);
+						context.ExecuteCommandBuffer(cmd);
+
+						context.DrawRenderers(renderingData.cullResults, ref drawingSettings, ref filteringSettings, ref renderStateBlock);
+
+						cmd.Clear();
+						renderer.RenderOutline(outlineSettings);
+					}
 				}
 
 				context.ExecuteCommandBuffer(cmd);
@@ -82,11 +99,7 @@ namespace UnityFx.Outline.URP
 				{
 					_renderObjects.Clear();
 					_feature.OutlineLayers.GetRenderObjects(_renderObjects);
-
-					foreach (var obj in _renderObjects)
-					{
-						renderer.Render(obj);
-					}
+					renderer.Render(_renderObjects);
 				}
 
 				context.ExecuteCommandBuffer(cmd);
