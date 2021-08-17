@@ -241,7 +241,7 @@ namespace UnityFx.Outline
 		internal readonly List<Material> TmpMaterials = new List<Material>();
 
 		/// <summary>
-		/// Gets or sets a <see cref="Shader"/> that renders objects outlined with a solid while color.
+		/// Gets a <see cref="Shader"/> that renders objects outlined with a solid while color.
 		/// </summary>
 		public Shader RenderShader
 		{
@@ -252,7 +252,7 @@ namespace UnityFx.Outline
 		}
 
 		/// <summary>
-		/// Gets or sets a <see cref="Shader"/> that renders outline around the mask, that was generated with <see cref="RenderShader"/>.
+		/// Gets a <see cref="Shader"/> that renders outline around the mask, that was generated with <see cref="RenderShader"/>.
 		/// </summary>
 		public Shader OutlineShader
 		{
@@ -271,7 +271,9 @@ namespace UnityFx.Outline
 			{
 				if (_renderMaterial == null)
 				{
-					_renderMaterial = new Material(RenderShader)
+					UnityEngine.Debug.Assert(_renderShader != null, "No RenderShader is set in outline resources.", this);
+
+					_renderMaterial = new Material(_renderShader)
 					{
 						name = "Outline - RenderColor",
 						hideFlags = HideFlags.HideAndDontSave
@@ -291,7 +293,9 @@ namespace UnityFx.Outline
 			{
 				if (_outlineMaterial == null)
 				{
-					_outlineMaterial = new Material(OutlineShader)
+					UnityEngine.Debug.Assert(_outlineShader != null, "No OutlineShader is set in outline resources.", this);
+
+					_outlineMaterial = new Material(_outlineShader)
 					{
 						name = "Outline - Main",
 						hideFlags = HideFlags.HideAndDontSave

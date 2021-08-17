@@ -407,32 +407,40 @@ namespace UnityFx.Outline
 				// list of materials, cached with the outline resources.
 				renderer.GetSharedMaterials(_resources.TmpMaterials);
 
-				if (settings.IsAlphaTestingEnabled())
+				if (_resources.TmpMaterials.Count > 0)
 				{
-					for (var i = 0; i < _resources.TmpMaterials.Count; ++i)
+					if (settings.IsAlphaTestingEnabled())
 					{
-						var mat = _resources.TmpMaterials[i];
-
-						// Use material cutoff value if available.
-						if (mat.HasProperty(_resources.AlphaCutoffId))
+						for (var i = 0; i < _resources.TmpMaterials.Count; ++i)
 						{
-							_commandBuffer.SetGlobalFloat(_resources.AlphaCutoffId, mat.GetFloat(_resources.AlphaCutoffId));
-						}
-						else
-						{
-							_commandBuffer.SetGlobalFloat(_resources.AlphaCutoffId, settings.OutlineAlphaCutoff);
-						}
+							var mat = _resources.TmpMaterials[i];
 
-						_commandBuffer.SetGlobalTexture(_resources.MainTexId, _resources.TmpMaterials[i].mainTexture);
-						_commandBuffer.DrawRenderer(renderer, _resources.RenderMaterial, i, OutlineResources.RenderShaderAlphaTestPassId);
+							// Use material cutoff value if available.
+							if (mat.HasProperty(_resources.AlphaCutoffId))
+							{
+								_commandBuffer.SetGlobalFloat(_resources.AlphaCutoffId, mat.GetFloat(_resources.AlphaCutoffId));
+							}
+							else
+							{
+								_commandBuffer.SetGlobalFloat(_resources.AlphaCutoffId, settings.OutlineAlphaCutoff);
+							}
+
+							_commandBuffer.SetGlobalTexture(_resources.MainTexId, _resources.TmpMaterials[i].mainTexture);
+							_commandBuffer.DrawRenderer(renderer, _resources.RenderMaterial, i, OutlineResources.RenderShaderAlphaTestPassId);
+						}
+					}
+					else
+					{
+						for (var i = 0; i < _resources.TmpMaterials.Count; ++i)
+						{
+							_commandBuffer.DrawRenderer(renderer, _resources.RenderMaterial, i, OutlineResources.RenderShaderDefaultPassId);
+						}
 					}
 				}
 				else
 				{
-					for (var i = 0; i < _resources.TmpMaterials.Count; ++i)
-					{
-						_commandBuffer.DrawRenderer(renderer, _resources.RenderMaterial, i, OutlineResources.RenderShaderDefaultPassId);
-					}
+					// NOTE: No materials set for renderer means we should still render outline for it.
+					_commandBuffer.DrawRenderer(renderer, _resources.RenderMaterial, 0, OutlineResources.RenderShaderDefaultPassId);
 				}
 			}
 		}
