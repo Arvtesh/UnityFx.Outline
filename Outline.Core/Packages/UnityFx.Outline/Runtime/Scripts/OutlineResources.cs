@@ -494,6 +494,16 @@ namespace UnityFx.Outline
 		{
 			if (GraphicsSettings.renderPipelineAsset)
 			{
+
+#if UNITY_EDITOR
+				// check whether package for urp installed or not.
+				string srpPackagePath = "Packages/com.unityfx.outline.urp/package/json";
+				string absolutePath = System.IO.Path.GetFullPath(path);
+
+				if (System.IO.File.Exist(absolutePath)) {
+					return;
+				}
+#endif
 				UnityEngine.Debug.LogWarningFormat(obj, SrpNotSupported, obj.GetType().Name);
 			}
 		}
