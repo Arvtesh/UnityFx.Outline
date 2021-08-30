@@ -94,8 +94,9 @@ namespace UnityFx.Outline.URP
 			if (_feature.OutlineLayers)
 			{
 				var cmd = CommandBufferPool.Get(OutlineResources.EffectName);
+				var depthTexture = new RenderTargetIdentifier("_CameraDepthTexture");
 
-				using (var renderer = new OutlineRenderer(cmd, outlineResources, _renderer.cameraColorTarget, _renderer.cameraDepth, camData.cameraTargetDescriptor))
+				using (var renderer = new OutlineRenderer(cmd, outlineResources, _renderer.cameraColorTarget, depthTexture /*_renderer.cameraDepth*/, camData.cameraTargetDescriptor))
 				{
 					_renderObjects.Clear();
 					_feature.OutlineLayers.GetRenderObjects(_renderObjects);
