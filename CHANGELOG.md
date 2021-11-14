@@ -3,7 +3,20 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/); this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [0.8.5] - pending
+
+Bugfixes and improvements.
+
+### Added
+- Added support for HDR color pickers ([#42](https://github.com/Arvtesh/UnityFx.Outline/issues/42)).
+
+### Fixed
+- Fixed URP depth testing with MSAA enabled when using `OutlineLayerCollection`, thanks @AGM-GR for the help ([#39](https://github.com/Arvtesh/UnityFx.Outline/issues/39)).
+- Added loop unroll statement to make shaders compatible with some platforms (WebGL 1.0) ([#45](https://github.com/Arvtesh/UnityFx.Outline/issues/45)).
+- Removed `BeginSample`/`EndSample` profiler calls when rendering outlines to get rid of the editor errors ([#44](https://github.com/Arvtesh/UnityFx.Outline/issues/44)).
+
 ## [0.8.4] - 2021.08.17
+
 Misc improvements.
 
 ### Added
