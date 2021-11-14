@@ -75,17 +75,34 @@ Shader "Hidden/UnityFx/Outline.URP"
 
 #endif
 
+		float CalcIntensityN0(float2 uv, float2 offset, int k)
+		{
+			return SAMPLE_TEXTURE2D_X(_MainTex, sampler_MainTex, uv + k * offset).r * _GaussSamples[k];
+		}
+
+		float CalcIntensityN1(float2 uv, float2 offset, int k)
+		{
+			return SAMPLE_TEXTURE2D_X(_MainTex, sampler_MainTex, uv - k * offset).r * _GaussSamples[k];
+		}
+
 		float CalcIntensity(float2 uv, float2 offset)
 		{
 			float intensity = 0;
 
 			// Accumulates horizontal or vertical blur intensity for the specified texture position.
 			// Set offset = (tx, 0) for horizontal sampling and offset = (0, ty) for vertical.
-			for (int k = -_Width; k <= _Width; ++k)
+			// 
+			// NOTE: Unroll directive is needed to make the method function on platforms like WebGL 1.0 where loops are not supported.
+			// If maximum outline width is changed here, it should be changed in OutlineResources.MaxWidth as well.
+			//
+			[unroll(32)]
+			for (int k = 1; k <= _Width; ++k)
 			{
-				intensity += SAMPLE_TEXTURE2D_X(_MainTex, sampler_MainTex, uv + k * offset).r * _GaussSamples[abs(k)];
+				intensity += CalcIntensityN0(uv, offset, k);
+				intensity += CalcIntensityN1(uv, offset, k);
 			}
 
+			intensity += CalcIntensityN0(uv, offset, 0);
 			return intensity;
 		}
 

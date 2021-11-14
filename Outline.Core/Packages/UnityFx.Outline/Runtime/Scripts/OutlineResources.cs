@@ -44,6 +44,9 @@ namespace UnityFx.Outline
 		/// <summary>
 		/// Maximum value of outline width parameter.
 		/// </summary>
+		/// <remarks>
+		/// If the value is changed here, it should be adjusted in Outline.shader as well.
+		/// </remarks>
 		/// <seealso cref="MinWidth"/>
 		public const int MaxWidth = 32;
 
