@@ -263,12 +263,13 @@ namespace UnityFx.Outline
 
 			if (renderers.Count > 0)
 			{
-				if (string.IsNullOrEmpty(sampleName))
-				{
-					sampleName = renderers[0].name;
-				}
+				// NOTE: Remove BeginSample/EndSample for now (https://github.com/Arvtesh/UnityFx.Outline/issues/44).
+				//if (string.IsNullOrEmpty(sampleName))
+				//{
+				//	sampleName = renderers[0].name;
+				//}
 
-				_commandBuffer.BeginSample(sampleName);
+				//_commandBuffer.BeginSample(sampleName);
 				{
 					RenderObjectClear(settings.OutlineRenderMode);
 
@@ -279,7 +280,7 @@ namespace UnityFx.Outline
 
 					RenderOutline(settings);
 				}
-				_commandBuffer.EndSample(sampleName);
+				//_commandBuffer.EndSample(sampleName);
 			}
 		}
 
@@ -303,18 +304,20 @@ namespace UnityFx.Outline
 				throw new ArgumentNullException(nameof(settings));
 			}
 
-			if (string.IsNullOrEmpty(sampleName))
-			{
-				sampleName = renderer.name;
-			}
+			// NOTE: Remove BeginSample/EndSample for now (https://github.com/Arvtesh/UnityFx.Outline/issues/44).
+			//if (string.IsNullOrEmpty(sampleName))
+			//{
+			//	sampleName = renderer.name;
+			//}
 
-			_commandBuffer.BeginSample(sampleName);
+			// NOTE: Remove this for now (https://github.com/Arvtesh/UnityFx.Outline/issues/44).
+			//_commandBuffer.BeginSample(sampleName);
 			{
 				RenderObjectClear(settings.OutlineRenderMode);
 				DrawRenderer(renderer, settings);
 				RenderOutline(settings);
 			}
-			_commandBuffer.EndSample(sampleName);
+			//_commandBuffer.EndSample(sampleName);
 		}
 
 		/// <summary>
