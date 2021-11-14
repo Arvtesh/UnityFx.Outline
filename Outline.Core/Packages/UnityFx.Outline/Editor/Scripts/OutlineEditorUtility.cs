@@ -11,6 +11,15 @@ namespace UnityFx.Outline
 {
 	public static class OutlineEditorUtility
 	{
+		public static readonly GUIContent FilterSettingsContent = new GUIContent("Outline Filter Settings", "");
+		public static readonly GUIContent LayerMaskContent = new GUIContent("Layer Mask", OutlineResources.OutlineLayerMaskTooltip);
+		public static readonly GUIContent RenderingLayerMaskContent = new GUIContent("Rendering Layer Mask", OutlineResources.OutlineRenderingLayerMaskTooltip);
+		public static readonly GUIContent ColorContent = new GUIContent("Color", "Outline color.");
+		public static readonly GUIContent WidthContent = new GUIContent("Width", "Outline width in pixels.");
+		public static readonly GUIContent RenderFlagsContent = new GUIContent("Render Flags", "Outline render flags. Multiple values can be selected at the same time.");
+		public static readonly GUIContent BlurIntensityContent = new GUIContent("Blur Intensity", "Outline intensity value. It is only usable for blurred outlines.");
+		public static readonly GUIContent AlphaCutoffContent = new GUIContent("Alpha Cutoff", "Outline alpha cutoff value. It is only usable when alpha testing is enabled and the material doesn't have _Cutoff property.");
+
 		public static void RenderPreview(OutlineLayer layer, int layerIndex, bool showObjects)
 		{
 			if (layer != null)

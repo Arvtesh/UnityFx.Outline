@@ -128,24 +128,24 @@ namespace UnityFx.Outline
 			{
 				EditorGUI.BeginDisabledGroup(obj != null);
 
-				color = EditorGUI.ColorField(new Rect(rect.x, y, rect.width, lineHeight), "Color", color);
+				color = EditorGUI.ColorField(new Rect(rect.x, y, rect.width, lineHeight), OutlineEditorUtility.ColorContent, color, true, true, true);
 				y += lineOffset;
 
-				width = EditorGUI.IntSlider(new Rect(rect.x, y, rect.width, lineHeight), "Width", width, OutlineResources.MinWidth, OutlineResources.MaxWidth);
+				width = EditorGUI.IntSlider(new Rect(rect.x, y, rect.width, lineHeight), OutlineEditorUtility.WidthContent, width, OutlineResources.MinWidth, OutlineResources.MaxWidth);
 				y += lineOffset;
 
-				renderMode = (OutlineRenderFlags)EditorGUI.EnumFlagsField(new Rect(rect.x, y, rect.width, lineHeight), "Render Flags", renderMode);
+				renderMode = (OutlineRenderFlags)EditorGUI.EnumFlagsField(new Rect(rect.x, y, rect.width, lineHeight), OutlineEditorUtility.RenderFlagsContent, renderMode);
 				y += lineOffset;
 
 				if ((renderMode & OutlineRenderFlags.Blurred) != 0)
 				{
-					blurIntensity = EditorGUI.Slider(new Rect(rect.x, y, rect.width, lineHeight), "Blur Intensity", blurIntensity, OutlineResources.MinIntensity, OutlineResources.MaxIntensity);
+					blurIntensity = EditorGUI.Slider(new Rect(rect.x, y, rect.width, lineHeight), OutlineEditorUtility.BlurIntensityContent, blurIntensity, OutlineResources.MinIntensity, OutlineResources.MaxIntensity);
 					y += lineOffset;
 				}
 
 				if ((renderMode & OutlineRenderFlags.EnableAlphaTesting) != 0)
 				{
-					alphaCutoff = EditorGUI.Slider(new Rect(rect.x, y, rect.width, lineHeight), "Alpha Cutoff", alphaCutoff, OutlineResources.MinAlphaCutoff, OutlineResources.MaxAlphaCutoff);
+					alphaCutoff = EditorGUI.Slider(new Rect(rect.x, y, rect.width, lineHeight), OutlineEditorUtility.AlphaCutoffContent, alphaCutoff, OutlineResources.MinAlphaCutoff, OutlineResources.MaxAlphaCutoff);
 				}
 
 				EditorGUI.EndDisabledGroup();
