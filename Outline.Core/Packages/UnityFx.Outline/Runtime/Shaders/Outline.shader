@@ -66,12 +66,12 @@ Shader "Hidden/UnityFx/Outline"
 
 		float CalcIntensityN0(float2 uv, float2 offset, int k)
 		{
-			return SAMPLE_TEXTURE2D_X(_MainTex, sampler_MainTex, uv + k * offset).r * _GaussSamples[k];
+			return UNITY_SAMPLE_SCREENSPACE_TEXTURE(_MainTex, uv + k * offset).r * _GaussSamples[k];
 		}
 
 		float CalcIntensityN1(float2 uv, float2 offset, int k)
 		{
-			return SAMPLE_TEXTURE2D_X(_MainTex, sampler_MainTex, uv - k * offset).r * _GaussSamples[k];
+			return UNITY_SAMPLE_SCREENSPACE_TEXTURE(_MainTex, uv - k * offset).r * _GaussSamples[k];
 		}
 
 		float CalcIntensity(float2 uv, float2 offset)
