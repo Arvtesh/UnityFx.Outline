@@ -35,6 +35,7 @@ Supported platforms:
 - Windows/Mac standalone;
 - Android;
 - iOS;
+- WebGL;
 - Other platforms (untested).
 
 Please see [CHANGELOG](CHANGELOG.md) for information on recent changes.
@@ -68,8 +69,8 @@ Npm core package is available at [npmjs.com](https://www.npmjs.com/package/com.u
     }
   ],
   "dependencies": {
-    "com.unityfx.outline": "0.8.4",
-    "com.unityfx.outline.urp": "0.4.0",
+    "com.unityfx.outline": "0.8.5",
+    "com.unityfx.outline.urp": "0.5.0",
   }
 }
 ```

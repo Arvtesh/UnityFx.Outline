@@ -22,15 +22,6 @@ namespace UnityFx.Outline
 		private const string _cutoffPropName = "_outlineAlphaCutoff";
 		private const string _renderModePropName = "_outlineMode";
 
-		private static readonly GUIContent _filterModeContent = new GUIContent("Outline Filter Settings", "");
-		private static readonly GUIContent _layerMaskContent = new GUIContent("Layer Mask", OutlineResources.OutlineLayerMaskTooltip);
-		private static readonly GUIContent _renderingLayerMaskContent = new GUIContent("Rendering Layer Mask", OutlineResources.OutlineRenderingLayerMaskTooltip);
-		private static readonly GUIContent _colorContent = new GUIContent("Color", "Outline color.");
-		private static readonly GUIContent _widthContent = new GUIContent("Width", "Outline width in pixels.");
-		private static readonly GUIContent _renderModeContent = new GUIContent("Render Flags", "Outline render flags. Multiple values can be selected at the same time.");
-		private static readonly GUIContent _intensityContent = new GUIContent("Blur Intensity", "Outline intensity value. It is only usable for blurred outlines.");
-		private static readonly GUIContent _cutoffContent = new GUIContent("Alpha Cutoff", "Outline alpha cutoff value. It is only usable when alpha testing is enabled and the material doesn't have _Cutoff property.");
-
 		public override void OnInspectorGUI()
 		{
 			base.OnInspectorGUI();
@@ -42,20 +33,22 @@ namespace UnityFx.Outline
 			var renderModeProp = serializedObject.FindProperty(_renderModePropName);
 			var renderMode = (OutlineRenderFlags)renderModeProp.intValue;
 
-			EditorGUILayout.PropertyField(colorProp, _colorContent);
-			EditorGUILayout.PropertyField(widthProp, _widthContent);
+			//EditorGUILayout.PropertyField(colorProp, _colorContent);
+			colorProp.colorValue = EditorGUILayout.ColorField(OutlineEditorUtility.ColorContent, colorProp.colorValue, true, true, true);
+
+			EditorGUILayout.PropertyField(widthProp, OutlineEditorUtility.WidthContent);
 
 			//EditorGUILayout.PropertyField(renderModeProp, _renderModeContent);
-			renderModeProp.intValue = (int)(OutlineRenderFlags)EditorGUILayout.EnumFlagsField(_renderModeContent, renderMode);
+			renderModeProp.intValue = (int)(OutlineRenderFlags)EditorGUILayout.EnumFlagsField(OutlineEditorUtility.RenderFlagsContent, renderMode);
 
 			if ((renderMode & OutlineRenderFlags.Blurred) != 0)
 			{
-				EditorGUILayout.PropertyField(intensityProp, _intensityContent);
+				EditorGUILayout.PropertyField(intensityProp, OutlineEditorUtility.BlurIntensityContent);
 			}
 
 			if ((renderMode & OutlineRenderFlags.EnableAlphaTesting) != 0)
 			{
-				EditorGUILayout.PropertyField(cutoffProp, _cutoffContent);
+				EditorGUILayout.PropertyField(cutoffProp, OutlineEditorUtility.AlphaCutoffContent);
 			}
 
 			serializedObject.ApplyModifiedProperties();
@@ -159,14 +152,14 @@ namespace UnityFx.Outline
 			var lineCy = EditorGUIUtility.singleLineHeight + EditorGUIUtility.standardVerticalSpacing;
 			var filterModeProp = property.FindPropertyRelative(_filterModePropName);
 
-			EditorGUI.PropertyField(new Rect(rc.x, rc.y, rc.width, EditorGUIUtility.singleLineHeight), filterModeProp, _filterModeContent);
+			EditorGUI.PropertyField(new Rect(rc.x, rc.y, rc.width, EditorGUIUtility.singleLineHeight), filterModeProp, OutlineEditorUtility.FilterSettingsContent);
 
 			if (filterModeProp.intValue == (int)OutlineFilterMode.UseLayerMask)
 			{
 				var layerMaskProp = property.FindPropertyRelative(_layerMaskPropName);
 
 				EditorGUI.indentLevel += 1;
-				EditorGUI.PropertyField(new Rect(rc.x, rc.y + lineCy, rc.width, EditorGUIUtility.singleLineHeight), layerMaskProp, _layerMaskContent);
+				EditorGUI.PropertyField(new Rect(rc.x, rc.y + lineCy, rc.width, EditorGUIUtility.singleLineHeight), layerMaskProp, OutlineEditorUtility.LayerMaskContent);
 				EditorGUI.indentLevel -= 1;
 
 				DrawSettingsInstance(new Rect(rc.x, rc.y + lineCy * 2, rc.width, rc.height - lineCy), property);
@@ -176,10 +169,10 @@ namespace UnityFx.Outline
 				var renderingLayerMaskProp = property.FindPropertyRelative(_renderingLayerMaskPropName);
 
 				EditorGUI.indentLevel += 1;
-				EditorGUI.PropertyField(new Rect(rc.x, rc.y + lineCy, rc.width, EditorGUIUtility.singleLineHeight), renderingLayerMaskProp, _renderingLayerMaskContent);
+				EditorGUI.PropertyField(new Rect(rc.x, rc.y + lineCy, rc.width, EditorGUIUtility.singleLineHeight), renderingLayerMaskProp, OutlineEditorUtility.RenderingLayerMaskContent);
 				EditorGUI.indentLevel -= 1;
 
-				DrawSettingsInstance(new Rect(rc.x, rc.y + lineCy * 2, rc.width, rc.height - lineCy), property);	
+				DrawSettingsInstance(new Rect(rc.x, rc.y + lineCy * 2, rc.width, rc.height - lineCy), property);
 			}
 		}
 
@@ -189,20 +182,22 @@ namespace UnityFx.Outline
 			var lineCy = EditorGUIUtility.singleLineHeight + EditorGUIUtility.standardVerticalSpacing;
 			var n = 4;
 
-			EditorGUI.PropertyField(new Rect(rc.x, rc.y + 1 * lineCy, rc.width, EditorGUIUtility.singleLineHeight), colorProp, _colorContent);
-			EditorGUI.PropertyField(new Rect(rc.x, rc.y + 2 * lineCy, rc.width, EditorGUIUtility.singleLineHeight), widthProp, _widthContent);
+			//EditorGUI.PropertyField(new Rect(rc.x, rc.y + 1 * lineCy, rc.width, EditorGUIUtility.singleLineHeight), colorProp, _colorContent);
+			colorProp.colorValue = EditorGUI.ColorField(new Rect(rc.x, rc.y + 1 * lineCy, rc.width, EditorGUIUtility.singleLineHeight), OutlineEditorUtility.ColorContent, colorProp.colorValue, true, true, true);
+
+			EditorGUI.PropertyField(new Rect(rc.x, rc.y + 2 * lineCy, rc.width, EditorGUIUtility.singleLineHeight), widthProp, OutlineEditorUtility.WidthContent);
 
 			// NOTE: EditorGUI.PropertyField doesn't allow multi-selection, have to use EnumFlagsField explixitly.
-			renderModeProp.intValue = (int)(OutlineRenderFlags)EditorGUI.EnumFlagsField(new Rect(rc.x, rc.y + 3 * lineCy, rc.width, EditorGUIUtility.singleLineHeight), _renderModeContent, renderMode);
+			renderModeProp.intValue = (int)(OutlineRenderFlags)EditorGUI.EnumFlagsField(new Rect(rc.x, rc.y + 3 * lineCy, rc.width, EditorGUIUtility.singleLineHeight), OutlineEditorUtility.RenderFlagsContent, renderMode);
 
 			if ((renderMode & OutlineRenderFlags.Blurred) != 0)
 			{
-				EditorGUI.PropertyField(new Rect(rc.x, rc.y + n++ * lineCy, rc.width, EditorGUIUtility.singleLineHeight), intensityProp, _intensityContent);
+				EditorGUI.PropertyField(new Rect(rc.x, rc.y + n++ * lineCy, rc.width, EditorGUIUtility.singleLineHeight), intensityProp, OutlineEditorUtility.BlurIntensityContent);
 			}
 
 			if ((renderMode & OutlineRenderFlags.EnableAlphaTesting) != 0)
 			{
-				EditorGUI.PropertyField(new Rect(rc.x, rc.y + n * lineCy, rc.width, EditorGUIUtility.singleLineHeight), cutoffProp, _cutoffContent);
+				EditorGUI.PropertyField(new Rect(rc.x, rc.y + n * lineCy, rc.width, EditorGUIUtility.singleLineHeight), cutoffProp, OutlineEditorUtility.AlphaCutoffContent);
 			}
 		}
 	}

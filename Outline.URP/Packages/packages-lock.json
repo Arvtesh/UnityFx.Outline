@@ -84,7 +84,7 @@
       "depth": 0,
       "source": "embedded",
       "dependencies": {
-        "com.unityfx.outline": "0.8.3",
+        "com.unityfx.outline": "0.8.5",
         "com.unity.render-pipelines.universal": "7.0.0"
       }
     },
