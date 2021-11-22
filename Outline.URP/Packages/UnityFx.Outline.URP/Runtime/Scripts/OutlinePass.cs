@@ -50,6 +50,7 @@ namespace UnityFx.Outline.URP
 			var outlineResources = _feature.OutlineResources;
 			var outlineSettings = _feature.OutlineSettings;
 			var camData = renderingData.cameraData;
+			var depthTexture = new RenderTargetIdentifier("_CameraDepthTexture");
 
 			if (_feature.OutlineLayerMask != 0)
 			{
@@ -58,7 +59,6 @@ namespace UnityFx.Outline.URP
 				var renderStateBlock = new RenderStateBlock(RenderStateMask.Nothing);
 				var sortingCriteria = camData.defaultOpaqueSortFlags;
 				var drawingSettings = CreateDrawingSettings(_shaderTagIdList, ref renderingData, sortingCriteria);
-				var depthTexture = new RenderTargetIdentifier("_CameraDepthTexture");
 
 				drawingSettings.enableDynamicBatching = true;
 				drawingSettings.overrideMaterial = outlineResources.RenderMaterial;
@@ -75,7 +75,7 @@ namespace UnityFx.Outline.URP
 
 				using (new ProfilingScope(cmd, _profilingSampler))
 				{
-					using (var renderer = new OutlineRenderer(cmd, outlineResources, _renderer.cameraColorTarget, depthTexture/*_renderer.cameraDepth*/, camData.cameraTargetDescriptor))
+					using (var renderer = new OutlineRenderer(cmd, outlineResources, _renderer.cameraColorTarget, depthTexture, camData.cameraTargetDescriptor))
 					{
 						renderer.RenderObjectClear(outlineSettings.OutlineRenderMode);
 						context.ExecuteCommandBuffer(cmd);
@@ -94,9 +94,8 @@ namespace UnityFx.Outline.URP
 			if (_feature.OutlineLayers)
 			{
 				var cmd = CommandBufferPool.Get(OutlineResources.EffectName);
-				var depthTexture = new RenderTargetIdentifier("_CameraDepthTexture");
 
-				using (var renderer = new OutlineRenderer(cmd, outlineResources, _renderer.cameraColorTarget, depthTexture /*_renderer.cameraDepth*/, camData.cameraTargetDescriptor))
+				using (var renderer = new OutlineRenderer(cmd, outlineResources, _renderer.cameraColorTarget, depthTexture, camData.cameraTargetDescriptor))
 				{
 					_renderObjects.Clear();
 					_feature.OutlineLayers.GetRenderObjects(_renderObjects);
