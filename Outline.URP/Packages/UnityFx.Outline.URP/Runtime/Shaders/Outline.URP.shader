@@ -44,9 +44,7 @@ Shader "Hidden/UnityFx/Outline.URP"
 			UNITY_SETUP_INSTANCE_ID(input);
 			UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO(output);
 
-			float4 pos = TransformObjectToHClip(input.positionOS.xyz);
-
-			output.positionCS = float4(pos.xy, UNITY_NEAR_CLIP_VALUE, 1);
+			output.positionCS = float4(input.positionOS.xy, UNITY_NEAR_CLIP_VALUE, 1);
 			output.uv = ComputeScreenPos(output.positionCS).xy;
 
 			return output;
