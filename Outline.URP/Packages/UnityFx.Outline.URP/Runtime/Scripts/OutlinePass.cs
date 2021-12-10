@@ -13,7 +13,6 @@ namespace UnityFx.Outline.URP
 	internal class OutlinePass : ScriptableRenderPass
 	{
 		private const string _profilerTag = "OutlinePass";
-		private static readonly ProfilingSampler _profilingSampler = new ProfilingSampler(_profilerTag);
 
 		private readonly OutlineFeature _feature;
 		private readonly List<OutlineRenderObject> _renderObjects = new List<OutlineRenderObject>();
@@ -73,18 +72,15 @@ namespace UnityFx.Outline.URP
 					drawingSettings.overrideMaterialPassIndex = OutlineResources.RenderShaderDefaultPassId;
 				}
 
-				using (new ProfilingScope(cmd, _profilingSampler))
+				using (var renderer = new OutlineRenderer(cmd, outlineResources, _renderer.cameraColorTarget, depthTexture, camData.cameraTargetDescriptor))
 				{
-					using (var renderer = new OutlineRenderer(cmd, outlineResources, _renderer.cameraColorTarget, depthTexture, camData.cameraTargetDescriptor))
-					{
-						renderer.RenderObjectClear(outlineSettings.OutlineRenderMode);
-						context.ExecuteCommandBuffer(cmd);
+					renderer.RenderObjectClear(outlineSettings.OutlineRenderMode);
+					context.ExecuteCommandBuffer(cmd);
 
-						context.DrawRenderers(renderingData.cullResults, ref drawingSettings, ref filteringSettings, ref renderStateBlock);
+					context.DrawRenderers(renderingData.cullResults, ref drawingSettings, ref filteringSettings, ref renderStateBlock);
 
-						cmd.Clear();
-						renderer.RenderOutline(outlineSettings);
-					}
+					cmd.Clear();
+					renderer.RenderOutline(outlineSettings);
 				}
 
 				context.ExecuteCommandBuffer(cmd);
