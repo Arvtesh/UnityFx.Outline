@@ -22,6 +22,42 @@ namespace UnityFx.Outline
 		private const string _cutoffPropName = "_outlineAlphaCutoff";
 		private const string _renderModePropName = "_outlineMode";
 
+		private static readonly string[] _renderingLayerMaskNames = new string[]
+		{
+			"Layer1",
+			"Layer2",
+			"Layer3",
+			"Layer4",
+			"Layer5",
+			"Layer6",
+			"Layer7",
+			"Layer8",
+			"Layer9",
+			"Layer10",
+			"Layer11",
+			"Layer12",
+			"Layer13",
+			"Layer14",
+			"Layer15",
+			"Layer16",
+			"Layer17",
+			"Layer18",
+			"Layer19",
+			"Layer20",
+			"Layer21",
+			"Layer22",
+			"Layer23",
+			"Layer24",
+			"Layer25",
+			"Layer26",
+			"Layer27",
+			"Layer28",
+			"Layer29",
+			"Layer30",
+			"Layer31",
+			"Layer32",
+		};
+
 		public override void OnInspectorGUI()
 		{
 			base.OnInspectorGUI();
@@ -169,7 +205,7 @@ namespace UnityFx.Outline
 				var renderingLayerMaskProp = property.FindPropertyRelative(_renderingLayerMaskPropName);
 
 				EditorGUI.indentLevel += 1;
-				EditorGUI.PropertyField(new Rect(rc.x, rc.y + lineCy, rc.width, EditorGUIUtility.singleLineHeight), renderingLayerMaskProp, OutlineEditorUtility.RenderingLayerMaskContent);
+				renderingLayerMaskProp.intValue = EditorGUI.MaskField(new Rect(rc.x, rc.y + lineCy, rc.width, EditorGUIUtility.singleLineHeight), OutlineEditorUtility.RenderingLayerMaskContent, renderingLayerMaskProp.intValue, _renderingLayerMaskNames);
 				EditorGUI.indentLevel -= 1;
 
 				DrawSettingsInstance(new Rect(rc.x, rc.y + lineCy * 2, rc.width, rc.height - lineCy), property);
