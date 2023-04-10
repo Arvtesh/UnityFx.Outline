@@ -22,8 +22,8 @@ Shader "Hidden/UnityFx/OutlineColor.URP"
 
 		half4 FragmentAlphaTest(Varyings input) : SV_Target
 		{
-			half4 c = SAMPLE_TEXTURE2D(_MainTex, sampler_MainTex, input.uv);
-			clip(c.a - _Cutoff);
+			//half4 c = SAMPLE_TEXTURE2D(_MainTex, sampler_MainTex, input.uv);
+			//clip(c.a - _Cutoff);
 			return 1;
 		}
 
@@ -59,7 +59,7 @@ Shader "Hidden/UnityFx/OutlineColor.URP"
 
 			#pragma multi_compile_instancing
 			#pragma vertex Vert
-			#pragma fragment FragmentAlphaTest
+			// #pragma fragment FragmentAlphaTest
 
 			ENDHLSL
 		}
