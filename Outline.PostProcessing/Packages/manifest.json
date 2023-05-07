@@ -1,8 +1,17 @@
 {
   "dependencies": {
-    "com.unity.package-manager-ui": "2.0.8",
+    "com.unity.2d.sprite": "1.0.0",
+    "com.unity.2d.tilemap": "1.0.0",
+    "com.unity.ide.rider": "3.0.18",
+    "com.unity.ide.visualstudio": "2.0.17",
+    "com.unity.ide.vscode": "1.2.5",
+    "com.unity.test-framework": "1.1.31",
+    "com.unity.timeline": "1.6.4",
+    "com.unity.ugui": "1.0.0",
+    "com.unity.xr.legacyinputhelpers": "2.1.10",
     "com.unityfx.outline": "file:../../Outline.Core/Packages/UnityFx.Outline",
     "com.unity.modules.ai": "1.0.0",
+    "com.unity.modules.androidjni": "1.0.0",
     "com.unity.modules.animation": "1.0.0",
     "com.unity.modules.assetbundle": "1.0.0",
     "com.unity.modules.audio": "1.0.0",
